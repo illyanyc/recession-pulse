@@ -80,10 +80,14 @@ export function DashboardContent({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Send failed");
       setSendStatus("success");
-      const msg = data.stats
-        ? `Sent ${data.stats.sent}, queued ${data.stats.queued}, ${data.stats.failed} failed`
-        : "Alerts sent";
-      setSendResult(msg);
+      const parts: string[] = [];
+      if (data.stats) {
+        parts.push(`Sent ${data.stats.sent}, queued ${data.stats.queued}, ${data.stats.failed} failed`);
+      }
+      if (data.errors?.length) {
+        parts.push(data.errors.join("; "));
+      }
+      setSendResult(parts.length ? parts.join(" — ") : "Alerts sent");
       router.refresh();
     } catch (err) {
       setSendStatus("error");
