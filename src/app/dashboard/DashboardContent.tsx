@@ -80,14 +80,18 @@ export function DashboardContent({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Send failed");
       setSendStatus("success");
-      const parts: string[] = [];
-      if (data.stats) {
-        parts.push(`Sent ${data.stats.sent}, queued ${data.stats.queued}, ${data.stats.failed} failed`);
+      if (data.channels) {
+        const lines = (data.channels as { name: string; status: string; error?: string }[]).map((ch) => {
+          if (ch.status === "sent") return `✓ ${ch.name}`;
+          if (ch.status === "skipped") return `– ${ch.name}: ${ch.error}`;
+          return `✗ ${ch.name}: ${ch.error}`;
+        });
+        const hasFail = data.channels.some((ch: { status: string }) => ch.status === "failed");
+        if (hasFail) setSendStatus("error");
+        setSendResult(lines.join("  |  "));
+      } else {
+        setSendResult("Alerts sent");
       }
-      if (data.errors?.length) {
-        parts.push(data.errors.join("; "));
-      }
-      setSendResult(parts.length ? parts.join(" — ") : "Alerts sent");
       router.refresh();
     } catch (err) {
       setSendStatus("error");

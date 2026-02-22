@@ -30,8 +30,7 @@ export async function POST() {
   }
 
   const plan = profile.subscriptions?.[0]?.plan || "pulse";
-  const stats = { queued: 0, sent: 0, failed: 0 };
-  const errors: string[] = [];
+  const channels: { name: string; status: "sent" | "failed" | "skipped"; error?: string }[] = [];
 
   try {
     const today = new Date().toISOString().split("T")[0];
@@ -64,27 +63,21 @@ export async function POST() {
     // SMS — recession alert
     if (profile.phone && profile.sms_enabled) {
       const recessionMessage = formatRecessionSMS(indicatorsWithTrends);
-      stats.queued++;
       const result = await sendSMS(profile.phone, recessionMessage);
-      if (result.success) {
-        stats.sent++;
-      } else {
-        stats.failed++;
-        errors.push(`SMS recession: ${result.error}`);
-      }
+      channels.push(result.success
+        ? { name: "SMS", status: "sent" }
+        : { name: "SMS", status: "failed", error: result.error });
+    } else {
+      channels.push({ name: "SMS", status: "skipped", error: !profile.phone ? "No phone number" : "SMS disabled" });
     }
 
     // SMS — stock alert (pro only)
     if (plan === "pulse_pro" && profile.phone && profile.sms_enabled && stockSignals?.length) {
       const stockMessage = formatStockAlertSMS((stockSignals as StockSignal[]) || []);
-      stats.queued++;
       const result = await sendSMS(profile.phone, stockMessage);
-      if (result.success) {
-        stats.sent++;
-      } else {
-        stats.failed++;
-        errors.push(`SMS stock: ${result.error}`);
-      }
+      channels.push(result.success
+        ? { name: "SMS (stocks)", status: "sent" }
+        : { name: "SMS (stocks)", status: "failed", error: result.error });
     }
 
     // Email
@@ -95,25 +88,19 @@ export async function POST() {
         (stockSignals as StockSignal[]) || [],
         emailPlan
       );
-      stats.queued++;
       const result = await sendEmail({
         to: profile.email,
         subject: `RecessionPulse Daily Briefing — ${new Date().toLocaleDateString()}`,
         html,
       });
-      if (result.success) {
-        stats.sent++;
-      } else {
-        stats.failed++;
-        errors.push(`Email: ${result.error}`);
-      }
+      channels.push(result.success
+        ? { name: "Email", status: "sent" }
+        : { name: "Email", status: "failed", error: result.error });
+    } else {
+      channels.push({ name: "Email", status: "skipped", error: !profile.email ? "No email" : "Email disabled" });
     }
 
-    return NextResponse.json({
-      message: "Alerts sent",
-      stats,
-      ...(errors.length > 0 && { errors }),
-    });
+    return NextResponse.json({ message: "Alerts processed", channels });
   } catch (err) {
     console.error("Send-now error:", err);
     return NextResponse.json(
