@@ -4,6 +4,7 @@ import { sendSMS } from "@/lib/sms";
 import { sendEmail } from "@/lib/resend";
 import { formatRecessionSMS, formatStockAlertSMS } from "@/lib/message-formatter";
 import { buildDailyBriefingEmail } from "@/lib/email-templates";
+import { fetchIndicatorTrends, mergeWithTrends } from "@/lib/indicator-history";
 import type { RecessionIndicator, StockSignal } from "@/types";
 
 export async function GET(request: Request) {
@@ -38,13 +39,17 @@ export async function GET(request: Request) {
         )
       : [];
 
-    // 2. Get latest stock signals
+    // 2. Fetch historical trends from Supabase (past week)
+    const trends = await fetchIndicatorTrends(latestIndicators);
+    const indicatorsWithTrends = mergeWithTrends(latestIndicators, trends);
+
+    // 3. Get latest stock signals
     const { data: stockSignals } = await supabase
       .from("stock_signals")
       .select("*")
       .eq("screened_at", today);
 
-    // 3. Get active subscribers
+    // 4. Get active subscribers
     const { data: subscribers } = await supabase
       .from("profiles")
       .select("*, subscriptions!inner(plan, status)")
@@ -54,8 +59,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "No active subscribers", stats });
     }
 
-    // 4. Format messages
-    const recessionMessage = formatRecessionSMS(latestIndicators);
+    // 5. Format messages (with trend context)
+    const recessionMessage = formatRecessionSMS(indicatorsWithTrends);
     const stockMessage = formatStockAlertSMS((stockSignals as StockSignal[]) || []);
 
     // 5. Queue messages for each subscriber
@@ -95,11 +100,11 @@ export async function GET(request: Request) {
         });
       }
 
-      // Email alerts (branded HTML)
+      // Email alerts (branded HTML with trend data)
       if (sub.email && sub.email_alerts_enabled) {
         const emailPlan = plan === "pulse_pro" ? "pulse_pro" : "pulse";
         const { html: emailHtml } = buildDailyBriefingEmail(
-          latestIndicators,
+          indicatorsWithTrends,
           (stockSignals as StockSignal[]) || [],
           emailPlan
         );

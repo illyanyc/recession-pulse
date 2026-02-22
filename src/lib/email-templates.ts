@@ -1,4 +1,11 @@
-import type { RecessionIndicator, StockSignal } from "@/types";
+import type {
+  RecessionIndicator,
+  StockSignal,
+  IndicatorWithTrend,
+  IndicatorTrend,
+  TrendDirection,
+  IndicatorStatus,
+} from "@/types";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://recessionpulse.com";
 
@@ -101,6 +108,42 @@ export function getSupabaseEmailTemplates() {
       ${btn("Accept Invite", "{{ .ConfirmationURL }}")}
     `),
   };
+}
+
+// ─── Trend Helpers ───
+
+const ARROW_HTML: Record<TrendDirection, string> = {
+  up: '<span style="color:#ff4757;">▲</span>',
+  down: '<span style="color:#00ff87;">▼</span>',
+  flat: '<span style="color:#6b7280;">–</span>',
+};
+
+function trendBadge(trend: IndicatorTrend): string {
+  const arrow = ARROW_HTML[trend.direction_1d];
+  if (trend.pct_change_1d !== null && Math.abs(trend.pct_change_1d) >= 0.1) {
+    const sign = trend.pct_change_1d > 0 ? "+" : "";
+    return `${arrow} <span style="font-size:11px;color:#9ca3af;">${sign}${trend.pct_change_1d.toFixed(1)}%</span>`;
+  }
+  return arrow;
+}
+
+function statusChangeBadge(trend: IndicatorTrend, currentStatus: IndicatorStatus): string | null {
+  if (trend.status_changed_1d && trend.prev_status_1d) {
+    return `<span style="display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;background:#1e1e2e;color:#ffa502;margin-top:2px;">${trend.prev_status_1d} → ${currentStatus}</span>`;
+  }
+  if (trend.status_changed_7d && trend.prev_status_7d) {
+    return `<span style="display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;background:#1e1e2e;color:#6b7280;margin-top:2px;">7d: ${trend.prev_status_7d} → ${currentStatus}</span>`;
+  }
+  return null;
+}
+
+function weekTrendCell(trend: IndicatorTrend): string {
+  const arrow = ARROW_HTML[trend.direction_7d];
+  if (trend.pct_change_7d !== null && Math.abs(trend.pct_change_7d) >= 0.5) {
+    const sign = trend.pct_change_7d > 0 ? "+" : "";
+    return `${arrow} <span style="font-size:11px;color:#9ca3af;">${sign}${trend.pct_change_7d.toFixed(1)}%</span>`;
+  }
+  return arrow;
 }
 
 // ─── App Transactional Emails ───
@@ -214,7 +257,7 @@ export function buildWeeklyRecapEmail(
 }
 
 export function buildDailyBriefingEmail(
-  indicators: RecessionIndicator[],
+  indicators: RecessionIndicator[] | IndicatorWithTrend[],
   stockSignals?: StockSignal[],
   plan?: string
 ): { subject: string; html: string } {
@@ -228,6 +271,7 @@ export function buildDailyBriefingEmail(
   const danger = indicators.filter((i) => i.status === "danger" || i.status === "warning");
   const watch = indicators.filter((i) => i.status === "watch");
   const safe = indicators.filter((i) => i.status === "safe");
+  const hasTrends = indicators.length > 0 && "trend" in indicators[0];
 
   let subjectPrefix: string;
   if (danger.length >= 3) subjectPrefix = "🔴 HIGH ALERT";
@@ -235,13 +279,57 @@ export function buildDailyBriefingEmail(
   else if (watch.length >= 3) subjectPrefix = "🟡 WATCHFUL";
   else subjectPrefix = "🟢 ALL CLEAR";
 
-  const indicatorRows = indicators.map((ind) => `
+  // Build subject suffix for status changes
+  let subjectSuffix = "";
+  if (hasTrends) {
+    const changed = (indicators as IndicatorWithTrend[]).filter(
+      (i) => i.trend.status_changed_1d
+    );
+    if (changed.length > 0) {
+      subjectSuffix = ` · ${changed.length} signal${changed.length > 1 ? "s" : ""} changed`;
+    }
+  }
+
+  const indicatorRows = indicators.map((ind) => {
+    const trend = hasTrends ? (ind as IndicatorWithTrend).trend : null;
+    const dayCol = trend ? `<td style="padding:10px 6px;font-size:12px;text-align:center;white-space:nowrap;">${trendBadge(trend)}</td>` : "";
+    const weekCol = trend ? `<td style="padding:10px 6px;font-size:12px;text-align:center;white-space:nowrap;">${weekTrendCell(trend)}</td>` : "";
+    const changeBadge = trend ? statusChangeBadge(trend, ind.status) : null;
+    const nameCell = `${statusDot(ind.status)}${ind.name}${changeBadge ? `<br/>${changeBadge}` : ""}`;
+
+    return `
     <tr style="border-bottom:1px solid #1e1e2e;">
-      <td style="padding:10px 8px;font-size:13px;color:#e5e7eb;">${statusDot(ind.status)}${ind.name}</td>
+      <td style="padding:10px 8px;font-size:13px;color:#e5e7eb;">${nameCell}</td>
       <td style="padding:10px 8px;font-size:13px;font-family:monospace;color:#ffffff;text-align:right;">${ind.latest_value}</td>
-      <td style="padding:10px 8px;font-size:12px;color:#9ca3af;max-width:160px;">${ind.signal}</td>
-    </tr>
-  `).join("");
+      ${dayCol}
+      ${weekCol}
+      <td style="padding:10px 8px;font-size:12px;color:#9ca3af;max-width:140px;">${ind.signal}</td>
+    </tr>`;
+  }).join("");
+
+  const dayHeader = hasTrends ? '<th style="padding:10px 6px;font-size:11px;color:#6b7280;text-align:center;text-transform:uppercase;">1D</th>' : "";
+  const weekHeader = hasTrends ? '<th style="padding:10px 6px;font-size:11px;color:#6b7280;text-align:center;text-transform:uppercase;">7D</th>' : "";
+
+  // Status changes callout
+  let changesSection = "";
+  if (hasTrends) {
+    const changed = (indicators as IndicatorWithTrend[]).filter(
+      (i) => i.trend.status_changed_1d || i.trend.status_changed_7d
+    );
+    if (changed.length > 0) {
+      const changeRows = changed.map((ind) => {
+        const prev = ind.trend.status_changed_1d ? ind.trend.prev_status_1d : ind.trend.prev_status_7d;
+        const timeframe = ind.trend.status_changed_1d ? "today" : "past 7 days";
+        return `<li style="margin:4px 0;font-size:13px;color:#e5e7eb;">${statusDot(ind.status)}<strong>${ind.name}</strong>: ${prev} → ${ind.status} <span style="font-size:11px;color:#6b7280;">(${timeframe})</span></li>`;
+      }).join("");
+
+      changesSection = `
+        <div style="background:#1a1520;border:1px solid #2d1f3d;border-radius:12px;padding:16px 20px;margin-bottom:20px;">
+          <p style="margin:0 0 8px;color:#ffa502;font-weight:600;font-size:13px;">🔄 Signal Changes</p>
+          <ul style="margin:0;padding-left:16px;">${changeRows}</ul>
+        </div>`;
+    }
+  }
 
   let stockSection = "";
   if (plan === "pulse_pro" && stockSignals && stockSignals.length > 0) {
@@ -273,7 +361,7 @@ export function buildDailyBriefingEmail(
   }
 
   return {
-    subject: `${subjectPrefix} — RecessionPulse ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+    subject: `${subjectPrefix} — RecessionPulse ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}${subjectSuffix}`,
     html: wrapper(`
       <h2 style="margin:0 0 4px;font-size:20px;color:#e5e7eb;">Daily Recession Briefing</h2>
       <p style="margin:0 0 20px;font-size:13px;color:#6b7280;">${date}</p>
@@ -285,12 +373,16 @@ export function buildDailyBriefingEmail(
         <span style="font-size:13px;color:#e5e7eb;">${statusDot("warning")}<strong>${danger.length}</strong> Alert</span>
       </div>
 
+      ${changesSection}
+
       <!-- Indicators table -->
       <div style="background:#12121a;border:1px solid #1e1e2e;border-radius:12px;overflow:hidden;">
         <table style="width:100%;border-collapse:collapse;">
           <tr style="border-bottom:1px solid #1e1e2e;">
             <th style="padding:10px 8px;font-size:11px;color:#6b7280;text-align:left;text-transform:uppercase;">Indicator</th>
             <th style="padding:10px 8px;font-size:11px;color:#6b7280;text-align:right;text-transform:uppercase;">Value</th>
+            ${dayHeader}
+            ${weekHeader}
             <th style="padding:10px 8px;font-size:11px;color:#6b7280;text-align:left;text-transform:uppercase;">Signal</th>
           </tr>
           ${indicatorRows}

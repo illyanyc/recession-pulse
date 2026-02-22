@@ -5,6 +5,7 @@ export interface RecessionIndicator {
   name: string;
   slug: string;
   latest_value: string;
+  numeric_value?: number;
   trigger_level: string;
   status: IndicatorStatus;
   status_text: string;
@@ -12,7 +13,28 @@ export interface RecessionIndicator {
   signal_emoji: string;
   source_url?: string;
   category: "primary" | "secondary" | "liquidity" | "market";
+  reading_date?: string;
   updated_at: string;
+}
+
+export type TrendDirection = "up" | "down" | "flat";
+
+export interface IndicatorTrend {
+  slug: string;
+  direction_1d: TrendDirection;
+  direction_7d: TrendDirection;
+  value_change_1d: number | null;
+  value_change_7d: number | null;
+  pct_change_1d: number | null;
+  pct_change_7d: number | null;
+  status_changed_1d: boolean;
+  status_changed_7d: boolean;
+  prev_status_1d: IndicatorStatus | null;
+  prev_status_7d: IndicatorStatus | null;
+}
+
+export interface IndicatorWithTrend extends RecessionIndicator {
+  trend: IndicatorTrend;
 }
 
 export interface StockSignal {
