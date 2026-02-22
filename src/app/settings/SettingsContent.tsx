@@ -10,21 +10,22 @@ import { Activity, Bell, Phone, Mail, Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { UserProfile } from "@/types";
 
-function formatPhoneDisplay(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length === 0) return "";
-  const national = digits.startsWith("1") && digits.length > 10 ? digits.slice(1) : digits;
-  if (national.length <= 3) return `+1 (${national}`;
-  if (national.length <= 6) return `+1 (${national.slice(0, 3)}) ${national.slice(3)}`;
-  return `+1 (${national.slice(0, 3)}) ${national.slice(3, 6)}-${national.slice(6, 10)}`;
-}
-
 function normalizePhoneE164(raw: string): string {
   const digits = raw.replace(/\D/g, "");
   if (digits.length === 0) return "";
   if (digits.startsWith("1") && digits.length === 11) return `+${digits}`;
   if (digits.length === 10) return `+1${digits}`;
-  return `+${digits}`;
+  return raw.startsWith("+") ? raw : `+${digits}`;
+}
+
+function formatPhoneDisplay(e164: string): string {
+  const digits = e164.replace(/\D/g, "");
+  if (digits.length === 0) return "";
+  const national = digits.startsWith("1") && digits.length >= 11 ? digits.slice(1) : digits;
+  if (national.length === 10) {
+    return `+1 (${national.slice(0, 3)}) ${national.slice(3, 6)}-${national.slice(6)}`;
+  }
+  return e164;
 }
 
 export function SettingsContent() {
@@ -57,7 +58,7 @@ export function SettingsContent() {
 
       if (data) {
         setProfile(data);
-        setPhone(data.phone ? formatPhoneDisplay(data.phone) : "");
+        setPhone(data.phone || "");
         setFullName(data.full_name || "");
         setSmsEnabled(data.sms_enabled);
         setEmailEnabled(data.email_alerts_enabled);
@@ -151,11 +152,15 @@ export function SettingsContent() {
                 label="Phone number"
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(formatPhoneDisplay(e.target.value))}
+                onChange={(e) => setPhone(e.target.value)}
+                onBlur={() => {
+                  const normalized = normalizePhoneE164(phone);
+                  if (normalized) setPhone(formatPhoneDisplay(normalized));
+                }}
                 placeholder="+1 (555) 000-0000"
               />
               <p className="text-xs text-pulse-muted">
-                US numbers auto-formatted with +1. This number will receive daily SMS alerts.
+                Enter your number — it will be formatted automatically. This number will receive daily SMS alerts.
               </p>
 
               <div className="flex items-center justify-between p-3 rounded-lg bg-pulse-dark border border-pulse-border">
