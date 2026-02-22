@@ -199,7 +199,7 @@ export function IndicatorModal({ indicator, onClose }: IndicatorModalProps) {
                   <XAxis
                     dataKey="date"
                     tick={{ fontSize: 10, fill: "#6b7280" }}
-                    tickFormatter={(d: string) => {
+                    tickFormatter={(d) => {
                       const dt = new Date(d);
                       return `${dt.getMonth() + 1}/${dt.getDate()}`;
                     }}
@@ -218,7 +218,7 @@ export function IndicatorModal({ indicator, onClose }: IndicatorModalProps) {
                       fontSize: "12px",
                       color: "#e5e7eb",
                     }}
-                    labelFormatter={(d: string) => new Date(d).toLocaleDateString()}
+                    labelFormatter={(d) => new Date(String(d)).toLocaleDateString()}
                   />
                   <Area
                     type="monotone"

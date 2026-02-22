@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/resend";
 
-const CONTACT_EMAIL = process.env.CONTACT_EMAIL || "support@alphainertia.com";
+const CONTACT_EMAIL = process.env.CONTACT_EMAIL || "support@recessionpulse.com";
 
 const VALID_TYPES = ["bug", "suggestion", "question", "other"] as const;
 

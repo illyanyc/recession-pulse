@@ -150,8 +150,8 @@ export function IndicatorCard({ indicator, onClick }: IndicatorCardProps) {
                     fontSize: "11px",
                     color: "#e5e7eb",
                   }}
-                  labelFormatter={(d: string) => new Date(d + "T00:00:00").toLocaleDateString()}
-                  formatter={(value: number) => [value.toLocaleString(), "Value"]}
+                  labelFormatter={(d) => new Date(String(d) + "T00:00:00").toLocaleDateString()}
+                  formatter={(value) => [Number(value).toLocaleString(), "Value"]}
                   cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: "3 3" }}
                 />
                 <Area

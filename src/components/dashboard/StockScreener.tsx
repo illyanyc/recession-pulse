@@ -214,8 +214,8 @@ function StockCard({ signal, onClick }: { signal: StockSignal; onClick: () => vo
                     fontSize: "11px",
                     color: "#e5e7eb",
                   }}
-                  labelFormatter={(d: string) => new Date(d + "T00:00:00").toLocaleDateString()}
-                  formatter={(value: number) => [`$${value.toFixed(2)}`, "Price"]}
+                  labelFormatter={(d) => new Date(String(d) + "T00:00:00").toLocaleDateString()}
+                  formatter={(value) => [`$${Number(value).toFixed(2)}`, "Price"]}
                   cursor={{ stroke: chartColor, strokeWidth: 1, strokeDasharray: "3 3" }}
                 />
                 <ReferenceLine

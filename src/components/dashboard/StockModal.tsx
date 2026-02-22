@@ -251,7 +251,7 @@ export function StockModal({ signal, onClose }: StockModalProps) {
                   <XAxis
                     dataKey="date"
                     tick={{ fontSize: 10, fill: "#6b7280" }}
-                    tickFormatter={(d: string) => {
+                    tickFormatter={(d) => {
                       const dt = new Date(d);
                       return `${dt.getMonth() + 1}/${dt.getDate()}`;
                     }}
@@ -261,7 +261,7 @@ export function StockModal({ signal, onClose }: StockModalProps) {
                     tick={{ fontSize: 10, fill: "#6b7280" }}
                     domain={["auto", "auto"]}
                     width={55}
-                    tickFormatter={(v: number) => `$${v.toFixed(0)}`}
+                    tickFormatter={(v) => `$${Number(v).toFixed(0)}`}
                   />
                   <Tooltip
                     contentStyle={{
@@ -271,8 +271,8 @@ export function StockModal({ signal, onClose }: StockModalProps) {
                       fontSize: "12px",
                       color: "#e5e7eb",
                     }}
-                    labelFormatter={(d: string) => new Date(d).toLocaleDateString()}
-                    formatter={(value: number) => [`$${value.toFixed(2)}`, "Price"]}
+                    labelFormatter={(d) => new Date(String(d)).toLocaleDateString()}
+                    formatter={(value) => [`$${Number(value).toFixed(2)}`, "Price"]}
                   />
                   <ReferenceLine
                     y={signal.ema_200}
