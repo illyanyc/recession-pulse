@@ -6,137 +6,61 @@ import type {
   TrendDirection,
 } from "@/types";
 
-const DIRECTION_ARROW: Record<TrendDirection, string> = { up: "↑", down: "↓", flat: "→" };
+const ARROW: Record<TrendDirection, string> = { up: "^", down: "v", flat: "-" };
 
 function trendTag(trend: IndicatorTrend): string {
-  const arrow = DIRECTION_ARROW[trend.direction_1d];
-
-  if (trend.status_changed_1d) {
-    return `${arrow} NEW`;
-  }
-
+  const arrow = ARROW[trend.direction_1d];
+  if (trend.status_changed_1d) return `${arrow} NEW`;
   if (trend.pct_change_1d !== null && Math.abs(trend.pct_change_1d) >= 0.1) {
     const sign = trend.pct_change_1d > 0 ? "+" : "";
     return `${arrow}${sign}${trend.pct_change_1d.toFixed(1)}%`;
   }
-
   return arrow;
-}
-
-function weekSummary(trend: IndicatorTrend): string | null {
-  if (trend.status_changed_7d && trend.prev_status_7d) {
-    return `7d: ${trend.prev_status_7d}→now`;
-  }
-  if (trend.pct_change_7d !== null && Math.abs(trend.pct_change_7d) >= 0.5) {
-    const arrow = DIRECTION_ARROW[trend.direction_7d];
-    const sign = trend.pct_change_7d > 0 ? "+" : "";
-    return `7d: ${arrow}${sign}${trend.pct_change_7d.toFixed(1)}%`;
-  }
-  return null;
-}
-
-/**
- * Builds an indicator line with trend context for SMS.
- * Example: "🔴 Sahm Rule: 0.53 ↑+2.1% (7d: safe→now)"
- */
-function indicatorLine(ind: IndicatorWithTrend, verbose: boolean): string[] {
-  const tag = trendTag(ind.trend);
-  const lines: string[] = [];
-  lines.push(`${ind.signal_emoji} ${ind.name}: ${ind.latest_value} ${tag}`);
-
-  if (verbose) {
-    lines.push(`  → ${ind.signal}`);
-    const wk = weekSummary(ind.trend);
-    if (wk) lines.push(`  📅 ${wk}`);
-  } else {
-    const wk = weekSummary(ind.trend);
-    if (wk) lines.push(`  📅 ${wk}`);
-  }
-
-  return lines;
 }
 
 export function formatRecessionSMS(indicators: RecessionIndicator[]): string;
 export function formatRecessionSMS(indicators: IndicatorWithTrend[]): string;
 export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWithTrend)[]): string {
-  const date = new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  const date = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
   const dangerCount = indicators.filter((i) => i.status === "danger" || i.status === "warning").length;
   const watchCount = indicators.filter((i) => i.status === "watch").length;
   const safeCount = indicators.filter((i) => i.status === "safe").length;
   const hasTrends = indicators.length > 0 && "trend" in indicators[0];
 
-  let header: string;
-  if (dangerCount >= 3) {
-    header = `🔴 RECESSION PULSE ${date} — HIGH ALERT`;
-  } else if (dangerCount >= 1) {
-    header = `⚠️ RECESSION PULSE ${date} — CAUTION`;
-  } else if (watchCount >= 3) {
-    header = `🟡 RECESSION PULSE ${date} — WATCHFUL`;
-  } else {
-    header = `🟢 RECESSION PULSE ${date} — ALL CLEAR`;
-  }
+  let level: string;
+  if (dangerCount >= 3) level = "HIGH ALERT";
+  else if (dangerCount >= 1) level = "CAUTION";
+  else if (watchCount >= 3) level = "WATCHFUL";
+  else level = "ALL CLEAR";
 
-  const lines = [header, ""];
+  const lines = [`RECESSION PULSE ${date} - ${level}`, ""];
 
   const critical = indicators.filter((i) => i.status === "danger" || i.status === "warning");
   const watching = indicators.filter((i) => i.status === "watch");
-  const safe = indicators.filter((i) => i.status === "safe");
-
-  // Highlight status changes from past week
-  if (hasTrends) {
-    const changed = (indicators as IndicatorWithTrend[]).filter(
-      (i) => i.trend.status_changed_1d || i.trend.status_changed_7d
-    );
-    if (changed.length > 0) {
-      lines.push("🔄 CHANGES:");
-      for (const ind of changed) {
-        const prev = ind.trend.status_changed_1d
-          ? ind.trend.prev_status_1d
-          : ind.trend.prev_status_7d;
-        const timeframe = ind.trend.status_changed_1d ? "1d" : "7d";
-        lines.push(`  ${ind.signal_emoji} ${ind.name}: ${prev} → ${ind.status} (${timeframe})`);
-      }
-      lines.push("");
-    }
-  }
 
   if (critical.length > 0) {
-    lines.push("⚠️ ALERTS:");
-    for (const ind of critical) {
-      if (hasTrends) {
-        lines.push(...indicatorLine(ind as IndicatorWithTrend, true));
-      } else {
-        lines.push(`${ind.signal_emoji} ${ind.name}: ${ind.latest_value}`);
-        lines.push(`  → ${ind.signal}`);
-      }
+    lines.push("ALERTS:");
+    for (const ind of critical.slice(0, 3)) {
+      const tag = hasTrends ? ` ${trendTag((ind as IndicatorWithTrend).trend)}` : "";
+      lines.push(`* ${ind.name}: ${ind.latest_value}${tag}`);
     }
+    if (critical.length > 3) lines.push(`+${critical.length - 3} more`);
     lines.push("");
   }
 
   if (watching.length > 0) {
-    lines.push("👀 WATCHING:");
-    for (const ind of watching) {
-      if (hasTrends) {
-        lines.push(...indicatorLine(ind as IndicatorWithTrend, false));
-      } else {
-        lines.push(`${ind.signal_emoji} ${ind.name}: ${ind.latest_value}`);
-      }
+    lines.push("WATCH:");
+    for (const ind of watching.slice(0, 3)) {
+      const tag = hasTrends ? ` ${trendTag((ind as IndicatorWithTrend).trend)}` : "";
+      lines.push(`* ${ind.name}: ${ind.latest_value}${tag}`);
     }
+    if (watching.length > 3) lines.push(`+${watching.length - 3} more`);
     lines.push("");
   }
 
-  if (safe.length > 0) {
-    lines.push(`✅ ${safeCount} indicator${safeCount !== 1 ? "s" : ""} safe`);
-    lines.push("");
-  }
-
-  lines.push(`Score: ${safeCount}✅ ${watchCount}🟡 ${dangerCount}🔴`);
-  lines.push("");
-  lines.push("📊 recessionpulse.com/dashboard");
+  lines.push(`Score: ${safeCount} safe / ${watchCount} watch / ${dangerCount} alert`);
+  lines.push("Full report: recessionpulse.com/dashboard");
 
   return lines.join("\n");
 }
@@ -144,77 +68,51 @@ export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWi
 export function formatStockAlertSMS(signals: StockSignal[]): string {
   if (signals.length === 0) {
     return [
-      "📈 PULSE PRO STOCK SCAN",
+      "PULSE PRO STOCK SCAN",
       "",
-      "No stocks passing strict filters today.",
+      "No stocks passing filters today.",
       "Criteria: <200 EMA, RSI<30, P/E<15",
       "",
-      "Market may be overextended.",
-      "Patience is alpha.",
-      "",
-      "📊 recessionpulse.com/dashboard",
+      "recessionpulse.com/dashboard",
     ].join("\n");
   }
 
-  const date = new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  const date = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const lines = [`PULSE PRO SCAN ${date}`, ""];
 
-  const valuePicks = signals.filter((s) => s.signal_type === "value_dividend");
-  const oversoldPicks = signals.filter((s) => s.signal_type === "oversold_growth");
-
-  const lines = [`📈 PULSE PRO SCAN ${date}`, ""];
-
-  if (valuePicks.length > 0) {
-    lines.push("💰 VALUE/DIVIDEND PICKS:");
-    for (const s of valuePicks.slice(0, 5)) {
-      lines.push(
-        `$${s.ticker} $${s.price.toFixed(2)} | P/E ${s.forward_pe.toFixed(1)} | Yld ${(s.dividend_yield || 0).toFixed(1)}%`
-      );
-    }
-    lines.push("");
+  for (const s of signals.slice(0, 5)) {
+    const type = s.signal_type === "value_dividend" ? "VAL" : "OVS";
+    lines.push(`${type} $${s.ticker} $${s.price.toFixed(2)} P/E:${s.forward_pe.toFixed(1)}`);
   }
+  if (signals.length > 5) lines.push(`+${signals.length - 5} more`);
 
-  if (oversoldPicks.length > 0) {
-    lines.push("📉 OVERSOLD (RSI<30):");
-    for (const s of oversoldPicks.slice(0, 5)) {
-      lines.push(
-        `$${s.ticker} $${s.price.toFixed(2)} | RSI ${s.rsi_14.toFixed(0)} | P/E ${s.forward_pe.toFixed(1)}`
-      );
-    }
-    lines.push("");
-  }
-
+  lines.push("");
   lines.push(`${signals.length} stocks passing filters`);
-  lines.push("📊 recessionpulse.com/dashboard");
+  lines.push("recessionpulse.com/dashboard");
 
   return lines.join("\n");
 }
 
 export function formatWelcomeSMS(): string {
   return [
-    "🟢 Welcome to RecessionPulse!",
+    "Welcome to RecessionPulse!",
     "",
-    "You'll receive daily recession indicator briefings every morning at 8am ET.",
+    "Daily recession indicators every morning at 8am ET.",
+    "Dashboard: recessionpulse.com/dashboard",
     "",
-    "Your dashboard is live at:",
-    "recessionpulse.com/dashboard",
-    "",
-    "Reply STOP to unsubscribe from SMS.",
+    "Reply STOP to unsubscribe.",
   ].join("\n");
 }
 
 export function formatConfirmationSMS(plan: string): string {
   return [
-    `✅ ${plan} plan activated!`,
+    `${plan} plan activated!`,
     "",
     plan === "Pulse Pro"
-      ? "You'll receive daily recession indicators AND stock screener alerts."
-      : "You'll receive daily recession indicator alerts.",
+      ? "Daily recession indicators + stock screener alerts."
+      : "Daily recession indicator alerts.",
     "",
-    "First briefing arrives tomorrow at 8am ET.",
-    "",
-    "📊 recessionpulse.com/dashboard",
+    "First briefing tomorrow at 8am ET.",
+    "recessionpulse.com/dashboard",
   ].join("\n");
 }

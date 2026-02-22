@@ -44,36 +44,11 @@ async function logSocialPost(
 async function smsToOwner(label: string, content: string): Promise<boolean> {
   try {
     const phone = getOwnerPhone();
-    const message = `[RecessionPulse ${label}]\n\nReady to post on X:\n\n${content}`;
+    const trimmed = content.length > 280 ? content.slice(0, 277) + "..." : content;
+    const message = `[RP ${label}] ${trimmed}`;
 
-    // Brevo SMS has a 160-char limit per segment; split long content
-    // into multiple messages if needed
-    if (message.length <= 800) {
-      const result = await sendSMS(phone, message);
-      return result.success;
-    }
-
-    // For long content (threads), send in chunks
-    const chunks: string[] = [];
-    const lines = content.split("\n");
-    let current = `[RecessionPulse ${label}]\n`;
-    for (const line of lines) {
-      if ((current + line + "\n").length > 750) {
-        chunks.push(current.trim());
-        current = "";
-      }
-      current += line + "\n";
-    }
-    if (current.trim()) chunks.push(current.trim());
-
-    let allSent = true;
-    for (let i = 0; i < chunks.length; i++) {
-      const prefix = chunks.length > 1 ? `(${i + 1}/${chunks.length}) ` : "";
-      const result = await sendSMS(phone, prefix + chunks[i]);
-      if (!result.success) allSent = false;
-      await new Promise((r) => setTimeout(r, 500));
-    }
-    return allSent;
+    const result = await sendSMS(phone, message);
+    return result.success;
   } catch (error) {
     console.error("SMS to owner failed:", error);
     return false;
