@@ -1,5 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { sendSMS } from "@/lib/sms";
+import { sendEmail } from "@/lib/resend";
+import { formatRecessionSMS, formatStockAlertSMS } from "@/lib/message-formatter";
+import { buildDailyBriefingEmail } from "@/lib/email-templates";
+import { fetchIndicatorTrends, mergeWithTrends } from "@/lib/indicator-history";
 import { NextResponse } from "next/server";
+import type { RecessionIndicator, StockSignal } from "@/types";
 
 export async function POST() {
   const supabase = await createClient();
@@ -9,35 +16,108 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: sub } = await supabase
-    .from("subscriptions")
-    .select("status")
-    .eq("user_id", user.id)
-    .eq("status", "active")
+  const service = createServiceClient();
+
+  const { data: profile } = await service
+    .from("profiles")
+    .select("*, subscriptions!inner(plan, status)")
+    .eq("id", user.id)
+    .eq("subscriptions.status", "active")
     .single();
 
-  if (!sub) {
+  if (!profile) {
     return NextResponse.json({ error: "Active subscription required" }, { status: 403 });
   }
 
+  const plan = profile.subscriptions?.[0]?.plan || "pulse";
+  const stats = { queued: 0, sent: 0, failed: 0 };
+  const errors: string[] = [];
+
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const secret = process.env.CRON_SECRET;
+    const today = new Date().toISOString().split("T")[0];
 
-    const res = await fetch(`${appUrl}/api/cron/send-alerts?secret=${secret}`);
+    const { data: indicators } = await service
+      .from("indicator_readings")
+      .select("*")
+      .eq("reading_date", today);
 
-    let data;
-    try {
-      data = await res.json();
-    } catch {
-      return NextResponse.json({ error: "Failed to parse response from alert service" }, { status: 502 });
+    const latestIndicators: RecessionIndicator[] = indicators
+      ? Object.values(
+          indicators.reduce(
+            (acc: Record<string, RecessionIndicator>, ind: RecessionIndicator) => {
+              if (!acc[ind.slug]) acc[ind.slug] = ind;
+              return acc;
+            },
+            {}
+          )
+        )
+      : [];
+
+    const trends = await fetchIndicatorTrends(latestIndicators);
+    const indicatorsWithTrends = mergeWithTrends(latestIndicators, trends);
+
+    const { data: stockSignals } = await service
+      .from("stock_signals")
+      .select("*")
+      .eq("screened_at", today);
+
+    // SMS — recession alert
+    if (profile.phone && profile.sms_enabled) {
+      const recessionMessage = formatRecessionSMS(indicatorsWithTrends);
+      stats.queued++;
+      const result = await sendSMS(profile.phone, recessionMessage);
+      if (result.success) {
+        stats.sent++;
+      } else {
+        stats.failed++;
+        errors.push(`SMS recession: ${result.error}`);
+      }
     }
 
-    return NextResponse.json(data, { status: res.status });
+    // SMS — stock alert (pro only)
+    if (plan === "pulse_pro" && profile.phone && profile.sms_enabled && stockSignals?.length) {
+      const stockMessage = formatStockAlertSMS((stockSignals as StockSignal[]) || []);
+      stats.queued++;
+      const result = await sendSMS(profile.phone, stockMessage);
+      if (result.success) {
+        stats.sent++;
+      } else {
+        stats.failed++;
+        errors.push(`SMS stock: ${result.error}`);
+      }
+    }
+
+    // Email
+    if (profile.email && profile.email_alerts_enabled) {
+      const emailPlan = plan === "pulse_pro" ? "pulse_pro" : "pulse";
+      const { html } = buildDailyBriefingEmail(
+        indicatorsWithTrends,
+        (stockSignals as StockSignal[]) || [],
+        emailPlan
+      );
+      stats.queued++;
+      const result = await sendEmail({
+        to: profile.email,
+        subject: `RecessionPulse Daily Briefing — ${new Date().toLocaleDateString()}`,
+        html,
+      });
+      if (result.success) {
+        stats.sent++;
+      } else {
+        stats.failed++;
+        errors.push(`Email: ${result.error}`);
+      }
+    }
+
+    return NextResponse.json({
+      message: "Alerts sent",
+      stats,
+      ...(errors.length > 0 && { errors }),
+    });
   } catch (err) {
-    console.error("Send-now route error:", err);
+    console.error("Send-now error:", err);
     return NextResponse.json(
-      { error: "Failed to send alerts. Please try again." },
+      { error: "Failed to send alerts", details: err instanceof Error ? err.message : "Unknown" },
       { status: 500 }
     );
   }
