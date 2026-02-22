@@ -14,8 +14,8 @@ const SLUG_TO_FRED: Record<string, string> = {
   "unemployment-rate": "UNRATE",
   "on-rrp-facility": "RRPONTSYD",
   "dxy-dollar-index": "DTWEXBGS",
-  "credit-spreads-hy": "BAMLH0A0HYM2",
-  "gdp-growth-forecast": "GDPC1",
+  "credit-spreads": "BAMLH0A0HYM2",
+  "gdp-growth": "GDPC1",
 };
 
 export async function GET(

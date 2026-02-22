@@ -23,13 +23,19 @@ interface IndicatorContext {
 }
 
 const SYSTEM_PROMPT =
-  "You are a concise macro-economic analyst. Write a 2-3 sentence plain-English summary of this recession indicator for a retail investor. Be factual, cite the numbers, mention the trend direction, and note what it means for recession risk. No disclaimers or hedging — just the signal.";
+  "You are a concise macro-economic analyst writing a daily briefing. Write a 2-3 sentence plain-English summary of this recession indicator for a retail investor. Reference the current value and date. Be factual, cite the numbers, mention the trend direction, and state clearly what it means for recession risk right now. No disclaimers or hedging — just the signal.";
 
 function buildUserPrompt(ctx: IndicatorContext): string {
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
   const historyBlock = ctx.history?.length
     ? `\nRecent readings:\n${ctx.history.map((h) => `  ${h.date}: ${h.value}`).join("\n")}`
     : "";
-  return `Indicator: ${ctx.name}\nCurrent value: ${ctx.latestValue}\nStatus: ${ctx.status}\nSignal: ${ctx.signal}\nTrigger: ${ctx.triggerLevel}${historyBlock}`;
+  return `Date: ${today}\nIndicator: ${ctx.name}\nCurrent value: ${ctx.latestValue}\nStatus: ${ctx.status}\nSignal: ${ctx.signal}\nTrigger: ${ctx.triggerLevel}${historyBlock}`;
 }
 
 export async function generateIndicatorSummary(ctx: IndicatorContext): Promise<string> {

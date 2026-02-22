@@ -1,12 +1,18 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createServiceClient, createClient } from "@/lib/supabase/server";
 import { INDICATORS_SEO, ALL_INDICATOR_SLUGS } from "@/lib/indicators-metadata";
 import { Badge } from "@/components/ui/Badge";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
-import { TrendingDown, TrendingUp, Minus, ArrowRight, Activity } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus, ArrowRight, Activity, Lock } from "lucide-react";
 import type { IndicatorStatus } from "@/types";
+
+const FREE_INDICATOR_SLUGS = new Set([
+  "sahm-rule",
+  "yield-curve-2s10s",
+  "yield-curve-2s30s",
+]);
 
 export const revalidate = 3600;
 
@@ -52,6 +58,9 @@ interface IndicatorRow {
 
 export default async function IndicatorsIndexPage() {
   const supabase = createServiceClient();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
+  const isSignedIn = !!user;
 
   const { data: readings } = await supabase
     .from("indicator_readings")
@@ -112,6 +121,30 @@ export default async function IndicatorsIndexPage() {
             ))}
           </div>
 
+          {/* Sign-in prompt for non-authenticated users */}
+          {!isSignedIn && (
+            <div className="bg-gradient-to-r from-pulse-green/10 to-pulse-card border border-pulse-green/20 rounded-xl p-6 mb-12 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Lock className="h-5 w-5 text-pulse-green flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-white">
+                    Sign in to unlock all {ALL_INDICATOR_SLUGS.length} indicators
+                  </p>
+                  <p className="text-xs text-pulse-muted">
+                    Sahm Rule and Yield Curve are free. Sign in to access the full dashboard.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 bg-pulse-green text-pulse-darker text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-pulse-green/90 transition-colors flex-shrink-0"
+              >
+                Sign in
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          )}
+
           {/* Indicators by category */}
           {categories.map((cat) => {
             const items = ALL_INDICATOR_SLUGS
@@ -161,53 +194,110 @@ export default async function IndicatorsIndexPage() {
                   {cat.label}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {items.map(({ slug, seo, row }) => (
-                    <Link
-                      key={slug}
-                      href={`/indicators/${slug}`}
-                      className="group bg-pulse-card border border-pulse-border rounded-xl p-5 hover:border-pulse-green/30 transition-all duration-300"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-sm font-semibold text-white group-hover:text-pulse-green transition-colors">
-                          {seo!.shortName}
-                        </h3>
-                        {row ? (
-                          <Badge status={row.status as IndicatorStatus}>
-                            {row.status_text || row.status}
-                          </Badge>
-                        ) : (
-                          <span className="text-xs text-pulse-muted">No data</span>
+                  {items.map(({ slug, seo, row }) => {
+                    const isFree = FREE_INDICATOR_SLUGS.has(slug);
+                    const isLocked = !isFree && !isSignedIn;
+
+                    if (isLocked) {
+                      return (
+                        <div
+                          key={slug}
+                          className="relative bg-pulse-card border border-pulse-border rounded-xl p-5 overflow-hidden"
+                        >
+                          <div className="blur-[6px] select-none pointer-events-none" aria-hidden="true">
+                            <div className="flex items-start justify-between mb-3">
+                              <h3 className="text-sm font-semibold text-white">
+                                {seo!.shortName}
+                              </h3>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-pulse-border text-pulse-muted">
+                                ••••••
+                              </span>
+                            </div>
+                            <div className="flex items-end gap-3 mb-3">
+                              <span className="text-2xl font-bold font-mono text-white">
+                                ••••
+                              </span>
+                              <Minus className="h-4 w-4 text-pulse-muted" />
+                            </div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="text-lg">⬤</span>
+                              <span className="text-xs text-pulse-muted">
+                                ••••••••••••••••
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between pt-3 border-t border-pulse-border">
+                              <span className="text-xs text-pulse-muted">Updated •••••</span>
+                              <ArrowRight className="h-4 w-4 text-pulse-muted" />
+                            </div>
+                          </div>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-pulse-card/60 backdrop-blur-[2px]">
+                            <Lock className="h-5 w-5 text-pulse-muted mb-2" />
+                            <p className="text-sm font-medium text-white mb-1">
+                              {seo!.shortName}
+                            </p>
+                            <p className="text-xs text-pulse-muted mb-3">
+                              Sign in to view live data
+                            </p>
+                            <Link
+                              href="/login"
+                              className="inline-flex items-center gap-1.5 bg-pulse-green text-pulse-darker text-xs font-semibold px-4 py-2 rounded-lg hover:bg-pulse-green/90 transition-colors"
+                            >
+                              Sign in
+                              <ArrowRight className="h-3 w-3" />
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={slug}
+                        href={`/indicators/${slug}`}
+                        className="group bg-pulse-card border border-pulse-border rounded-xl p-5 hover:border-pulse-green/30 transition-all duration-300"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="text-sm font-semibold text-white group-hover:text-pulse-green transition-colors">
+                            {seo!.shortName}
+                          </h3>
+                          {row ? (
+                            <Badge status={row.status as IndicatorStatus}>
+                              {row.status_text || row.status}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-pulse-muted">No data</span>
+                          )}
+                        </div>
+
+                        {row && (
+                          <div className="flex items-end gap-3 mb-3">
+                            <span className="text-2xl font-bold font-mono text-white">
+                              {row.latest_value}
+                            </span>
+                            <TrendIcon status={row.status as IndicatorStatus} />
+                          </div>
                         )}
-                      </div>
 
-                      {row && (
-                        <div className="flex items-end gap-3 mb-3">
-                          <span className="text-2xl font-bold font-mono text-white">
-                            {row.latest_value}
+                        {row && (
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">{row.signal_emoji}</span>
+                            <span className="text-xs text-pulse-muted line-clamp-1">
+                              {row.signal}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between pt-3 border-t border-pulse-border">
+                          <span className="text-xs text-pulse-muted">
+                            {row
+                              ? `Updated ${new Date(row.reading_date).toLocaleDateString()}`
+                              : "Awaiting data"}
                           </span>
-                          <TrendIcon status={row.status as IndicatorStatus} />
+                          <ArrowRight className="h-4 w-4 text-pulse-muted group-hover:text-pulse-green transition-colors" />
                         </div>
-                      )}
-
-                      {row && (
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-lg">{row.signal_emoji}</span>
-                          <span className="text-xs text-pulse-muted line-clamp-1">
-                            {row.signal}
-                          </span>
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between pt-3 border-t border-pulse-border">
-                        <span className="text-xs text-pulse-muted">
-                          {row
-                            ? `Updated ${new Date(row.reading_date).toLocaleDateString()}`
-                            : "Awaiting data"}
-                        </span>
-                        <ArrowRight className="h-4 w-4 text-pulse-muted group-hover:text-pulse-green transition-colors" />
-                      </div>
-                    </Link>
-                  ))}
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
             );

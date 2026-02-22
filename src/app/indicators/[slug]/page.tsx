@@ -88,7 +88,25 @@ export default async function IndicatorPage({ params }: PageProps) {
         }))
     : [];
 
-  const aiSummary = await getGlobalSummary(slug);
+  let aiSummary = await getGlobalSummary(slug);
+
+  if (!aiSummary) {
+    try {
+      const { data: dbSummary } = await supabase
+        .from("indicator_summaries")
+        .select("summary")
+        .eq("slug", slug)
+        .order("reading_date", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (dbSummary?.summary) {
+        aiSummary = dbSummary.summary;
+      }
+    } catch {
+      // indicator_summaries table may not exist yet
+    }
+  }
 
   const relatedSlugs = ALL_INDICATOR_SLUGS.filter((s) => s !== slug).slice(0, 3);
 
@@ -235,9 +253,16 @@ export default async function IndicatorPage({ params }: PageProps) {
           {/* AI Summary */}
           {aiSummary && (
             <div className="bg-pulse-card border border-pulse-border rounded-xl p-6 mb-8">
-              <div className="flex items-center gap-2 mb-3">
-                <Brain className="h-5 w-5 text-pulse-green" />
-                <h2 className="text-lg font-semibold text-white">AI Analysis</h2>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-pulse-green" />
+                  <h2 className="text-lg font-semibold text-white">AI Analysis</h2>
+                </div>
+                {latest && (
+                  <span className="text-xs text-pulse-muted">
+                    Updated {new Date(latest.reading_date).toLocaleDateString()}
+                  </span>
+                )}
               </div>
               <p className="text-pulse-text leading-relaxed">{aiSummary}</p>
             </div>

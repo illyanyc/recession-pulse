@@ -69,9 +69,9 @@ const ADDITIONAL_INDICATORS = [
     }),
   },
   {
-    slug: "jpm-recession-prob",
+    slug: "jpm-recession-probability",
     name: "JPM Recession Probability",
-    category: "primary" as const,
+    category: "secondary" as const,
     trigger_level: ">50% = high probability",
     fetch: async () => ({ value: 35, date: new Date().toISOString().split("T")[0] }),
     evaluate: (value: number) => ({
@@ -81,9 +81,9 @@ const ADDITIONAL_INDICATORS = [
     }),
   },
   {
-    slug: "gdp-growth-forecast",
+    slug: "gdp-growth",
     name: "GDP Growth Forecast",
-    category: "primary" as const,
+    category: "secondary" as const,
     trigger_level: "<0% = recession",
     fetch: async () => {
       const data = await fetchLatestValue("GDPC1");
@@ -109,9 +109,9 @@ const ADDITIONAL_INDICATORS = [
     }),
   },
   {
-    slug: "credit-spreads-hy",
+    slug: "credit-spreads",
     name: "Credit Spreads (HY OAS)",
-    category: "liquidity" as const,
+    category: "market" as const,
     trigger_level: ">500 bps = credit stress",
     fetch: async () => {
       const data = await fetchLatestValue("BAMLH0A0HYM2");
@@ -139,7 +139,7 @@ const ADDITIONAL_INDICATORS = [
   {
     slug: "us-interest-expense",
     name: "US Interest Expense",
-    category: "market" as const,
+    category: "liquidity" as const,
     trigger_level: "Fiscal doom loop",
     fetch: async () => ({ value: 950, date: new Date().toISOString().split("T")[0] }),
     evaluate: (value: number) => ({

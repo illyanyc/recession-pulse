@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { Footer } from "@/components/landing/Footer";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -87,19 +88,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {children}
       </main>
 
-      {/* Legal footer */}
-      <footer className="hidden md:block border-t border-pulse-border py-6 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
-          <p className="text-xs text-pulse-muted">
-            &copy; {new Date().getFullYear()} RecessionPulse. For informational purposes only — not investment advice.
-          </p>
-          <div className="flex items-center gap-4">
-            <Link href="/privacy" className="text-xs text-pulse-muted hover:text-pulse-green transition-colors">Privacy</Link>
-            <Link href="/terms" className="text-xs text-pulse-muted hover:text-pulse-green transition-colors">Terms</Link>
-            <Link href="/disclaimer" className="text-xs text-pulse-muted hover:text-pulse-green transition-colors">Disclaimer</Link>
-          </div>
-        </div>
-      </footer>
+      <div className="hidden md:block">
+        <Footer />
+      </div>
     </div>
   );
 }
