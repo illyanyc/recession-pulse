@@ -18,6 +18,18 @@ function trendTag(trend: IndicatorTrend): string {
   return arrow;
 }
 
+function weekSummary(trend: IndicatorTrend): string | null {
+  if (trend.status_changed_7d && trend.prev_status_7d) {
+    return `7d: ${trend.prev_status_7d} -> now`;
+  }
+  if (trend.pct_change_7d !== null && Math.abs(trend.pct_change_7d) >= 0.5) {
+    const arrow = ARROW[trend.direction_7d];
+    const sign = trend.pct_change_7d > 0 ? "+" : "";
+    return `7d: ${arrow}${sign}${trend.pct_change_7d.toFixed(1)}%`;
+  }
+  return null;
+}
+
 export function formatRecessionSMS(indicators: RecessionIndicator[]): string;
 export function formatRecessionSMS(indicators: IndicatorWithTrend[]): string;
 export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWithTrend)[]): string {
@@ -38,28 +50,63 @@ export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWi
 
   const critical = indicators.filter((i) => i.status === "danger" || i.status === "warning");
   const watching = indicators.filter((i) => i.status === "watch");
+  const safe = indicators.filter((i) => i.status === "safe");
+
+  if (hasTrends) {
+    const changed = (indicators as IndicatorWithTrend[]).filter(
+      (i) => i.trend.status_changed_1d || i.trend.status_changed_7d
+    );
+    if (changed.length > 0) {
+      lines.push("CHANGES:");
+      for (const ind of changed) {
+        const prev = ind.trend.status_changed_1d
+          ? ind.trend.prev_status_1d
+          : ind.trend.prev_status_7d;
+        const timeframe = ind.trend.status_changed_1d ? "1d" : "7d";
+        lines.push(`  ${ind.name}: ${prev} -> ${ind.status} (${timeframe})`);
+      }
+      lines.push("");
+    }
+  }
 
   if (critical.length > 0) {
     lines.push("ALERTS:");
-    for (const ind of critical.slice(0, 3)) {
+    for (const ind of critical) {
       const tag = hasTrends ? ` ${trendTag((ind as IndicatorWithTrend).trend)}` : "";
       lines.push(`* ${ind.name}: ${ind.latest_value}${tag}`);
+      lines.push(`  ${ind.signal}`);
+      if (hasTrends) {
+        const wk = weekSummary((ind as IndicatorWithTrend).trend);
+        if (wk) lines.push(`  ${wk}`);
+      }
     }
-    if (critical.length > 3) lines.push(`+${critical.length - 3} more`);
     lines.push("");
   }
 
   if (watching.length > 0) {
-    lines.push("WATCH:");
-    for (const ind of watching.slice(0, 3)) {
+    lines.push("WATCHING:");
+    for (const ind of watching) {
+      const tag = hasTrends ? ` ${trendTag((ind as IndicatorWithTrend).trend)}` : "";
+      lines.push(`* ${ind.name}: ${ind.latest_value}${tag}`);
+      if (hasTrends) {
+        const wk = weekSummary((ind as IndicatorWithTrend).trend);
+        if (wk) lines.push(`  ${wk}`);
+      }
+    }
+    lines.push("");
+  }
+
+  if (safe.length > 0) {
+    lines.push("SAFE:");
+    for (const ind of safe) {
       const tag = hasTrends ? ` ${trendTag((ind as IndicatorWithTrend).trend)}` : "";
       lines.push(`* ${ind.name}: ${ind.latest_value}${tag}`);
     }
-    if (watching.length > 3) lines.push(`+${watching.length - 3} more`);
     lines.push("");
   }
 
   lines.push(`Score: ${safeCount} safe / ${watchCount} watch / ${dangerCount} alert`);
+  lines.push("");
   lines.push("Full report: recessionpulse.com/dashboard");
 
   return lines.join("\n");
@@ -70,23 +117,43 @@ export function formatStockAlertSMS(signals: StockSignal[]): string {
     return [
       "PULSE PRO STOCK SCAN",
       "",
-      "No stocks passing filters today.",
+      "No stocks passing strict filters today.",
       "Criteria: <200 EMA, RSI<30, P/E<15",
+      "",
+      "Market may be overextended.",
+      "Patience is alpha.",
       "",
       "recessionpulse.com/dashboard",
     ].join("\n");
   }
 
   const date = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  const valuePicks = signals.filter((s) => s.signal_type === "value_dividend");
+  const oversoldPicks = signals.filter((s) => s.signal_type === "oversold_growth");
+
   const lines = [`PULSE PRO SCAN ${date}`, ""];
 
-  for (const s of signals.slice(0, 5)) {
-    const type = s.signal_type === "value_dividend" ? "VAL" : "OVS";
-    lines.push(`${type} $${s.ticker} $${s.price.toFixed(2)} P/E:${s.forward_pe.toFixed(1)}`);
+  if (valuePicks.length > 0) {
+    lines.push("VALUE/DIVIDEND:");
+    for (const s of valuePicks.slice(0, 5)) {
+      lines.push(
+        `$${s.ticker} $${s.price.toFixed(2)} | P/E ${s.forward_pe.toFixed(1)} | Yld ${(s.dividend_yield || 0).toFixed(1)}%`
+      );
+    }
+    lines.push("");
   }
-  if (signals.length > 5) lines.push(`+${signals.length - 5} more`);
 
-  lines.push("");
+  if (oversoldPicks.length > 0) {
+    lines.push("OVERSOLD (RSI<30):");
+    for (const s of oversoldPicks.slice(0, 5)) {
+      lines.push(
+        `$${s.ticker} $${s.price.toFixed(2)} | RSI ${s.rsi_14.toFixed(0)} | P/E ${s.forward_pe.toFixed(1)}`
+      );
+    }
+    lines.push("");
+  }
+
   lines.push(`${signals.length} stocks passing filters`);
   lines.push("recessionpulse.com/dashboard");
 
@@ -97,10 +164,12 @@ export function formatWelcomeSMS(): string {
   return [
     "Welcome to RecessionPulse!",
     "",
-    "Daily recession indicators every morning at 8am ET.",
-    "Dashboard: recessionpulse.com/dashboard",
+    "You'll receive daily recession indicator briefings every morning at 8am ET.",
     "",
-    "Reply STOP to unsubscribe.",
+    "Your dashboard is live at:",
+    "recessionpulse.com/dashboard",
+    "",
+    "Reply STOP to unsubscribe from SMS.",
   ].join("\n");
 }
 
@@ -109,10 +178,11 @@ export function formatConfirmationSMS(plan: string): string {
     `${plan} plan activated!`,
     "",
     plan === "Pulse Pro"
-      ? "Daily recession indicators + stock screener alerts."
-      : "Daily recession indicator alerts.",
+      ? "You'll receive daily recession indicators AND stock screener alerts."
+      : "You'll receive daily recession indicator alerts.",
     "",
-    "First briefing tomorrow at 8am ET.",
+    "First briefing arrives tomorrow at 8am ET.",
+    "",
     "recessionpulse.com/dashboard",
   ].join("\n");
 }

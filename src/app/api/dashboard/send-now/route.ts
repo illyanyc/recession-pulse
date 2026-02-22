@@ -60,25 +60,8 @@ export async function POST() {
       .select("*")
       .eq("screened_at", today);
 
-    // SMS — recession alert
-    if (profile.phone && profile.sms_enabled) {
-      const recessionMessage = formatRecessionSMS(indicatorsWithTrends);
-      const result = await sendSMS(profile.phone, recessionMessage);
-      channels.push(result.success
-        ? { name: "SMS", status: "sent" }
-        : { name: "SMS", status: "failed", error: result.error });
-    } else {
-      channels.push({ name: "SMS", status: "skipped", error: !profile.phone ? "No phone number" : "SMS disabled" });
-    }
-
-    // SMS — stock alert (pro only)
-    if (plan === "pulse_pro" && profile.phone && profile.sms_enabled && stockSignals?.length) {
-      const stockMessage = formatStockAlertSMS((stockSignals as StockSignal[]) || []);
-      const result = await sendSMS(profile.phone, stockMessage);
-      channels.push(result.success
-        ? { name: "SMS (stocks)", status: "sent" }
-        : { name: "SMS (stocks)", status: "failed", error: result.error });
-    }
+    // SMS — coming soon (toll-free verification in progress)
+    channels.push({ name: "SMS", status: "skipped", error: "Coming soon" });
 
     // Email
     if (profile.email && profile.email_alerts_enabled) {

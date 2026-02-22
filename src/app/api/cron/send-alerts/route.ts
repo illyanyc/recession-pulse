@@ -76,29 +76,8 @@ export async function GET(request: Request) {
     for (const sub of subscribers) {
       const plan = sub.subscriptions?.[0]?.plan || "pulse";
 
-      // Recession alert (all plans)
-      if (sub.phone && sub.sms_enabled) {
-        messagesToInsert.push({
-          user_id: sub.id,
-          message_type: "recession_alert",
-          channel: "sms",
-          recipient: sub.phone,
-          content: recessionMessage,
-          scheduled_for: new Date().toISOString(),
-        });
-      }
-
-      // Stock alert (pro only)
-      if (plan === "pulse_pro" && sub.phone && sub.sms_enabled) {
-        messagesToInsert.push({
-          user_id: sub.id,
-          message_type: "stock_alert",
-          channel: "sms",
-          recipient: sub.phone,
-          content: stockMessage,
-          scheduled_for: new Date().toISOString(),
-        });
-      }
+      // SMS — disabled until toll-free verification completes
+      // TODO: re-enable SMS alerts once Twilio toll-free is verified
 
       // Email alerts (branded HTML with trend data)
       if (sub.email && sub.email_alerts_enabled) {

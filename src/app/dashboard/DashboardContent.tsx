@@ -61,15 +61,9 @@ export function DashboardContent({
   }, [router]);
 
   const handleSendNow = useCallback(async () => {
-    if (missingPhone && missingEmail) {
+    if (missingEmail) {
       setSendStatus("error");
-      setSendResult("Add a phone number or email in Settings first");
-      setTimeout(() => setSendStatus("idle"), 4000);
-      return;
-    }
-    if (missingPhone) {
-      setSendStatus("error");
-      setSendResult("Add a phone number in Settings to receive SMS alerts");
+      setSendResult("Add an email in Settings first");
       setTimeout(() => setSendStatus("idle"), 4000);
       return;
     }
