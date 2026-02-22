@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-pinpoint-sms-voice-v2": "^3.995.0",
+    "@aws-sdk/client-sns": "^3.995.0",
+    "@simpletext/client": "^1.0.8",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.0",
     "@upstash/redis": "^1.36.2",
