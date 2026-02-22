@@ -2,13 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
-
 @layer base {
   :root {
     --pulse-green: #00ff87;
     --pulse-red: #ff4757;
     --pulse-yellow: #ffa502;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
@@ -91,4 +93,13 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  .animate-bounce-x {
+    animation: bounce-x 1s ease-in-out infinite;
+  }
+}
+
+@keyframes bounce-x {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(6px); }
 }

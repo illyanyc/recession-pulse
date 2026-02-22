@@ -1,10 +1,16 @@
 "use client";
 
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { RefreshCw, Send, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { IndicatorGrid } from "@/components/dashboard/IndicatorGrid";
 import { StockScreener } from "@/components/dashboard/StockScreener";
 import { MessageHistory } from "@/components/dashboard/MessageHistory";
 import { SubscriptionStatus } from "@/components/dashboard/SubscriptionStatus";
+import { Button } from "@/components/ui/Button";
 import type { RecessionIndicator, StockSignal, Subscription, UserProfile, MessageQueueItem } from "@/types";
+
+type ActionStatus = "idle" | "loading" | "success" | "error";
 
 interface DashboardContentProps {
   profile: UserProfile;
@@ -21,21 +27,87 @@ export function DashboardContent({
   stockSignals,
   messages,
 }: DashboardContentProps) {
+  const router = useRouter();
   const isPro = profile?.subscription_tier === "pulse_pro";
+  const hasSubscription = profile?.subscription_tier !== "free";
 
-  // If no live data yet, show sample data
+  const [refreshStatus, setRefreshStatus] = useState<ActionStatus>("idle");
+  const [sendStatus, setSendStatus] = useState<ActionStatus>("idle");
+  const [refreshResult, setRefreshResult] = useState<string>("");
+  const [sendResult, setSendResult] = useState<string>("");
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshStatus("loading");
+    setRefreshResult("");
+    try {
+      const res = await fetch("/api/dashboard/refresh", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Refresh failed");
+      setRefreshStatus("success");
+      setRefreshResult(data.message || "Data refreshed");
+      router.refresh();
+    } catch (err) {
+      setRefreshStatus("error");
+      setRefreshResult(err instanceof Error ? err.message : "Refresh failed");
+    } finally {
+      setTimeout(() => setRefreshStatus("idle"), 4000);
+    }
+  }, [router]);
+
+  const handleSendNow = useCallback(async () => {
+    setSendStatus("loading");
+    setSendResult("");
+    try {
+      const res = await fetch("/api/dashboard/send-now", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Send failed");
+      setSendStatus("success");
+      const msg = data.stats
+        ? `Sent ${data.stats.sent}, queued ${data.stats.queued}, ${data.stats.failed} failed`
+        : "Alerts sent";
+      setSendResult(msg);
+      router.refresh();
+    } catch (err) {
+      setSendStatus("error");
+      setSendResult(err instanceof Error ? err.message : "Send failed");
+    } finally {
+      setTimeout(() => setSendStatus("idle"), 4000);
+    }
+  }, [router]);
+
   const displayIndicators = indicators.length > 0 ? indicators : SAMPLE_INDICATORS;
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">
-          Good {getTimeOfDay()}, {profile?.full_name?.split(" ")[0] || "there"}
-        </h1>
-        <p className="text-sm text-pulse-muted mt-1">
-          Here&apos;s your recession pulse for {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">
+            Good {getTimeOfDay()}, {profile?.full_name?.split(" ")[0] || "there"}
+          </h1>
+          <p className="text-sm text-pulse-muted mt-1">
+            Here&apos;s your recession pulse for {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <ActionButton
+            onClick={handleRefresh}
+            status={refreshStatus}
+            result={refreshResult}
+            idleIcon={<RefreshCw className="h-4 w-4" />}
+            idleLabel="Refresh Data"
+          />
+          {hasSubscription && (
+            <ActionButton
+              onClick={handleSendNow}
+              status={sendStatus}
+              result={sendResult}
+              idleIcon={<Send className="h-4 w-4" />}
+              idleLabel="Send Now"
+            />
+          )}
+        </div>
       </div>
 
       {/* Subscription */}
@@ -58,6 +130,52 @@ export function DashboardContent({
         <h2 className="text-lg font-bold text-white mb-4">Recent Alerts</h2>
         <MessageHistory messages={messages} />
       </section>
+    </div>
+  );
+}
+
+function ActionButton({
+  onClick,
+  status,
+  result,
+  idleIcon,
+  idleLabel,
+}: {
+  onClick: () => void;
+  status: ActionStatus;
+  result: string;
+  idleIcon: React.ReactNode;
+  idleLabel: string;
+}) {
+  return (
+    <div className="relative">
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={onClick}
+        disabled={status === "loading"}
+        className="gap-2"
+      >
+        {status === "loading" ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : status === "success" ? (
+          <CheckCircle className="h-4 w-4 text-pulse-green" />
+        ) : status === "error" ? (
+          <XCircle className="h-4 w-4 text-pulse-red" />
+        ) : (
+          idleIcon
+        )}
+        {status === "loading" ? "Working..." : status === "success" ? "Done" : status === "error" ? "Failed" : idleLabel}
+      </Button>
+      {result && status !== "idle" && (
+        <div className={`absolute top-full mt-2 right-0 text-xs px-3 py-1.5 rounded-lg whitespace-nowrap z-10 ${
+          status === "success" ? "bg-pulse-green/10 text-pulse-green border border-pulse-green/20" :
+          status === "error" ? "bg-pulse-red/10 text-pulse-red border border-pulse-red/20" :
+          "bg-pulse-card text-pulse-muted border border-pulse-border"
+        }`}>
+          {result}
+        </div>
+      )}
     </div>
   );
 }

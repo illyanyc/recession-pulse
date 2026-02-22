@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { Activity, Bell, Phone, Mail, Clock, Save, ArrowLeft } from "lucide-react";
+import { Activity, Bell, Phone, Mail, Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { UserProfile } from "@/types";
 
@@ -23,8 +23,6 @@ export function SettingsContent() {
   const [fullName, setFullName] = useState("");
   const [smsEnabled, setSmsEnabled] = useState(true);
   const [emailEnabled, setEmailEnabled] = useState(true);
-  const [alertTime, setAlertTime] = useState("08:00");
-  const [timezone, setTimezone] = useState("America/New_York");
 
   useEffect(() => {
     async function loadProfile() {
@@ -46,8 +44,6 @@ export function SettingsContent() {
         setFullName(data.full_name || "");
         setSmsEnabled(data.sms_enabled);
         setEmailEnabled(data.email_alerts_enabled);
-        setAlertTime(data.preferred_alert_time || "08:00");
-        setTimezone(data.timezone || "America/New_York");
       }
       setLoading(false);
     }
@@ -67,8 +63,6 @@ export function SettingsContent() {
         full_name: fullName,
         sms_enabled: smsEnabled,
         email_alerts_enabled: emailEnabled,
-        preferred_alert_time: alertTime,
-        timezone,
       })
       .eq("id", profile.id);
 
@@ -195,39 +189,11 @@ export function SettingsContent() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-pulse-text mb-1.5">
-                    <Clock className="h-4 w-4 inline mr-1" />
-                    Alert time
-                  </label>
-                  <select
-                    value={alertTime}
-                    onChange={(e) => setAlertTime(e.target.value)}
-                    className="input-field"
-                  >
-                    <option value="06:00">6:00 AM</option>
-                    <option value="07:00">7:00 AM</option>
-                    <option value="08:00">8:00 AM</option>
-                    <option value="09:00">9:00 AM</option>
-                    <option value="10:00">10:00 AM</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-pulse-text mb-1.5">
-                    Timezone
-                  </label>
-                  <select
-                    value={timezone}
-                    onChange={(e) => setTimezone(e.target.value)}
-                    className="input-field"
-                  >
-                    <option value="America/New_York">Eastern (ET)</option>
-                    <option value="America/Chicago">Central (CT)</option>
-                    <option value="America/Denver">Mountain (MT)</option>
-                    <option value="America/Los_Angeles">Pacific (PT)</option>
-                  </select>
-                </div>
+              <div className="p-3 rounded-lg bg-pulse-dark border border-pulse-border">
+                <p className="text-sm font-medium text-white">Daily schedule</p>
+                <p className="text-xs text-pulse-muted mt-1">
+                  Alerts are sent every day at <span className="text-pulse-green font-medium">8:00 AM ET</span>. Data is refreshed from FRED and financial APIs at 6:00 AM ET.
+                </p>
               </div>
             </div>
           </Card>

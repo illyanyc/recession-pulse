@@ -1,6 +1,7 @@
 "use client";
 
-import { Activity, BarChart3, Bell, Home, LogOut, Settings } from "lucide-react";
+import { BarChart3, Bell, Home, LogOut, Settings } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -30,7 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <header className="sticky top-0 z-50 bg-pulse-darker/80 backdrop-blur-xl border-b border-pulse-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <Activity className="h-6 w-6 text-pulse-green" />
+            <Image src="/logo.png" alt="RecessionPulse" width={28} height={28} className="rounded" />
             <span className="text-lg font-bold text-white">RecessionPulse</span>
           </Link>
 
@@ -85,6 +86,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-24 md:pb-8">
         {children}
       </main>
+
+      {/* Legal footer */}
+      <footer className="hidden md:block border-t border-pulse-border py-6 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+          <p className="text-xs text-pulse-muted">
+            &copy; {new Date().getFullYear()} RecessionPulse. For informational purposes only — not investment advice.
+          </p>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="text-xs text-pulse-muted hover:text-pulse-green transition-colors">Privacy</Link>
+            <Link href="/terms" className="text-xs text-pulse-muted hover:text-pulse-green transition-colors">Terms</Link>
+            <Link href="/disclaimer" className="text-xs text-pulse-muted hover:text-pulse-green transition-colors">Disclaimer</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

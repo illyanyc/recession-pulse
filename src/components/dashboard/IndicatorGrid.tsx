@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { IndicatorCard } from "./IndicatorCard";
+import { IndicatorModal } from "./IndicatorModal";
 import type { RecessionIndicator } from "@/types";
 
 interface IndicatorGridProps {
@@ -8,6 +10,8 @@ interface IndicatorGridProps {
 }
 
 export function IndicatorGrid({ indicators }: IndicatorGridProps) {
+  const [selected, setSelected] = useState<RecessionIndicator | null>(null);
+
   const dangerCount = indicators.filter((i) => i.status === "danger" || i.status === "warning").length;
   const watchCount = indicators.filter((i) => i.status === "watch").length;
   const safeCount = indicators.filter((i) => i.status === "safe").length;
@@ -44,9 +48,21 @@ export function IndicatorGrid({ indicators }: IndicatorGridProps) {
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {indicators.map((indicator) => (
-          <IndicatorCard key={indicator.slug} indicator={indicator} />
+          <IndicatorCard
+            key={indicator.slug}
+            indicator={indicator}
+            onClick={() => setSelected(indicator)}
+          />
         ))}
       </div>
+
+      {/* Modal */}
+      {selected && (
+        <IndicatorModal
+          indicator={selected}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </div>
   );
 }

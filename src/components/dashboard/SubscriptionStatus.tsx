@@ -14,6 +14,7 @@ interface SubscriptionStatusProps {
 
 export function SubscriptionStatus({ profile, subscription }: SubscriptionStatusProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const planInfo = profile.subscription_tier === "pulse_pro"
     ? PLANS.pulse_pro
@@ -23,26 +24,34 @@ export function SubscriptionStatus({ profile, subscription }: SubscriptionStatus
 
   async function handleManageBilling() {
     setLoading(true);
+    setError("");
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
+      if (!res.ok) throw new Error("Failed to open billing portal");
       const { url } = await res.json();
+      if (!url) throw new Error("No portal URL returned");
       window.location.href = url;
-    } catch {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not open billing portal. Please try again.");
       setLoading(false);
     }
   }
 
   async function handleCheckout(plan: "pulse" | "pulse_pro") {
     setLoading(true);
+    setError("");
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan }),
       });
+      if (!res.ok) throw new Error("Failed to start checkout");
       const { url } = await res.json();
+      if (!url) throw new Error("No checkout URL returned");
       window.location.href = url;
-    } catch {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not start checkout. Please try again.");
       setLoading(false);
     }
   }
@@ -68,6 +77,9 @@ export function SubscriptionStatus({ profile, subscription }: SubscriptionStatus
                 Pulse Pro — $14.99/mo
               </Button>
             </div>
+            {error && (
+              <p className="text-xs text-pulse-red mt-3">{error}</p>
+            )}
           </div>
         </div>
       </Card>
@@ -106,6 +118,9 @@ export function SubscriptionStatus({ profile, subscription }: SubscriptionStatus
           Manage billing
         </Button>
       </div>
+      {error && (
+        <p className="text-xs text-pulse-red mt-3">{error}</p>
+      )}
     </Card>
   );
 }

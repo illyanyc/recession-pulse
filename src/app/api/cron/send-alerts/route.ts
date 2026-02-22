@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { sendSMS } from "@/lib/twilio";
+import { sendSMS } from "@/lib/sms";
 import { sendEmail } from "@/lib/resend";
 import { formatRecessionSMS, formatStockAlertSMS } from "@/lib/message-formatter";
+import { buildDailyBriefingEmail } from "@/lib/email-templates";
 import type { RecessionIndicator, StockSignal } from "@/types";
 
 export async function GET(request: Request) {
@@ -94,14 +95,20 @@ export async function GET(request: Request) {
         });
       }
 
-      // Email alerts
+      // Email alerts (branded HTML)
       if (sub.email && sub.email_alerts_enabled) {
+        const emailPlan = plan === "pulse_pro" ? "pulse_pro" : "pulse";
+        const { html: emailHtml } = buildDailyBriefingEmail(
+          latestIndicators,
+          (stockSignals as StockSignal[]) || [],
+          emailPlan
+        );
         messagesToInsert.push({
           user_id: sub.id,
           message_type: "recession_alert",
           channel: "email",
           recipient: sub.email,
-          content: recessionMessage,
+          content: emailHtml,
           scheduled_for: new Date().toISOString(),
         });
       }
@@ -139,10 +146,14 @@ export async function GET(request: Request) {
             success = result.success;
             errorMsg = result.error || "";
           } else if (msg.channel === "email") {
+            const isHtml = msg.content.includes("<!DOCTYPE") || msg.content.includes("<html");
+            const subject = msg.message_type === "recession_alert"
+              ? `RecessionPulse Daily Briefing — ${new Date().toLocaleDateString()}`
+              : "RecessionPulse Alert";
             const result = await sendEmail({
               to: msg.recipient,
-              subject: `RecessionPulse Daily Briefing — ${new Date().toLocaleDateString()}`,
-              html: `<div style="font-family: monospace; white-space: pre-wrap; background: #0a0a0f; color: #e5e7eb; padding: 24px; border-radius: 12px;">${msg.content}</div>`,
+              subject,
+              html: isHtml ? msg.content : `<div style="font-family:monospace;white-space:pre-wrap;background:#0a0a0f;color:#e5e7eb;padding:24px;border-radius:12px;">${msg.content}</div>`,
             });
             success = result.success;
             errorMsg = result.error || "";

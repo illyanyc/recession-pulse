@@ -1,5 +1,18 @@
 import type { Metadata } from "next";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://recessionpulse.com"),
@@ -8,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | RecessionPulse",
   },
   description:
-    "Track 14 critical recession indicators daily: Sahm Rule, yield curves, Conference Board LEI, credit spreads, and more. Get daily SMS alerts with AI-analyzed economic signals. From $9.99/month.",
+    "Track 9 critical recession indicators daily: Sahm Rule, yield curves, Conference Board LEI, credit spreads, and more. Get daily SMS alerts with data-driven economic signals. From $9.99/month.",
   keywords: [
     "recession indicators",
     "recession tracker",
@@ -54,7 +67,7 @@ export const metadata: Metadata = {
     siteName: "RecessionPulse",
     title: "RecessionPulse — Know Before the Recession Hits",
     description:
-      "14 critical recession indicators analyzed daily. Sahm Rule, yield curves, LEI, credit spreads & more. Daily SMS alerts from $9.99/mo.",
+      "9 critical recession indicators analyzed daily. Sahm Rule, yield curves, LEI, credit spreads & more. Daily SMS alerts from $9.99/mo.",
     images: [
       {
         url: "/og-image.png",
@@ -68,7 +81,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "RecessionPulse — Real-time Recession Indicators",
     description:
-      "Track 14 recession indicators daily. Sahm Rule, yield curves, LEI & more. Daily SMS alerts.",
+      "Track 9 recession indicators daily. Sahm Rule, yield curves, LEI & more. Daily SMS alerts.",
     images: ["/og-image.png"],
   },
   alternates: {
@@ -84,7 +97,7 @@ const jsonLd = {
   applicationCategory: "FinanceApplication",
   operatingSystem: "Web",
   description:
-    "Real-time recession indicator tracking and daily SMS alerts. Monitors Sahm Rule, yield curves, Conference Board LEI, credit spreads, and 10+ more economic indicators.",
+    "Real-time recession indicator tracking and daily SMS alerts. Monitors Sahm Rule, yield curves, Conference Board LEI, credit spreads, and more.",
   url: "https://recessionpulse.com",
   offers: [
     {
@@ -92,7 +105,7 @@ const jsonLd = {
       name: "Pulse Plan",
       price: "9.99",
       priceCurrency: "USD",
-      description: "Daily recession indicator SMS alerts — 14 key indicators tracked",
+      description: "Daily recession indicator SMS alerts — 9 key indicators tracked",
       url: "https://recessionpulse.com/pricing",
     },
     {
@@ -105,11 +118,20 @@ const jsonLd = {
       url: "https://recessionpulse.com/pricing",
     },
   ],
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "4.8",
-    ratingCount: "127",
+};
+
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "RecessionPulse",
+  url: "https://recessionpulse.com",
+  logo: "https://recessionpulse.com/logo.png",
+  contactPoint: {
+    "@type": "ContactPoint",
+    email: "support@recessionpulse.com",
+    contactType: "customer support",
   },
+  sameAs: [],
 };
 
 const faqJsonLd = {
@@ -118,18 +140,10 @@ const faqJsonLd = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "What is the Sahm Rule and is it triggered in 2026?",
+      name: "What is the Sahm Rule?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "The Sahm Rule identifies recessions when the 3-month moving average of unemployment rises 0.50 percentage points above its 12-month low. As of January 2026, the Sahm Rule reading is 0.30 — below the 0.50 trigger and declining from its 0.57 peak in August 2024. RecessionPulse tracks this indicator daily.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Is a recession coming in 2026?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "As of February 2026, recession signals are mixed. The Conference Board LEI has triggered its recession signal since August 2025, but the Sahm Rule is NOT triggered. JPMorgan puts recession probability at 35%. GDP growth is slowing to 2.1% but still positive. RecessionPulse monitors 14 indicators daily to give you a clear picture.",
+        text: "The Sahm Rule identifies recessions when the 3-month moving average of the national unemployment rate rises 0.50 percentage points or more above its low from the previous 12 months. Created by economist Claudia Sahm, it has correctly signaled every recession since 1970 in real time. RecessionPulse tracks this indicator daily.",
       },
     },
     {
@@ -137,7 +151,7 @@ const faqJsonLd = {
       name: "What does yield curve inversion mean for recession?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yield curve inversion (when short-term rates exceed long-term rates) has preceded every recession since 1955 with only one false signal. The 2s10s yield curve un-inverted in mid-2024 and is now at +70 basis points. Historically, recessions follow 6-18 months after un-inversion. RecessionPulse tracks both the 2s10s and 2s30s spreads daily.",
+        text: "Yield curve inversion occurs when short-term interest rates exceed long-term rates. The 2-year/10-year Treasury spread inverting has preceded every US recession since 1955, with only one false signal. Historically, recessions follow 6-18 months after un-inversion. RecessionPulse tracks both the 2s10s and 2s30s spreads.",
       },
     },
     {
@@ -145,7 +159,23 @@ const faqJsonLd = {
       name: "What is the Conference Board LEI 3Ds Rule?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "The 3Ds Rule looks at three conditions in the Conference Board Leading Economic Index: Depth (6-month growth rate below -4.3%), Diffusion (more than half of components declining), and Duration (sustained decline). When all three trigger, recession probability is 85%+. This signal has been ACTIVE since August 2025.",
+        text: "The 3Ds Rule evaluates three conditions in the Conference Board Leading Economic Index: Depth (6-month growth rate below -4.3%), Diffusion (more than half of components declining), and Duration (sustained decline over multiple months). When all three trigger simultaneously, historical recession probability exceeds 85%.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What is the ON RRP Facility and why does it matter?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "The Overnight Reverse Repo (ON RRP) Facility is the Federal Reserve's mechanism for absorbing excess liquidity from the financial system. When ON RRP balances decline sharply, it signals that the liquidity buffer in the financial system is thinning. Near-zero levels mean banks and money-market funds have less margin of safety during market stress.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What indicators does RecessionPulse track?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "RecessionPulse monitors key recession indicators daily including: the Sahm Rule, Yield Curve spreads (2s10s and 2s30s), Conference Board LEI, ON RRP Facility levels, DXY Dollar Index, Emerging Market performance, JPMorgan recession probability, GDP growth forecasts, credit spreads, ISM Manufacturing PMI, bank unrealized losses, US interest expense, and M2 money supply.",
       },
     },
     {
@@ -153,7 +183,15 @@ const faqJsonLd = {
       name: "How much does RecessionPulse cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "RecessionPulse offers two plans: Pulse at $9.99/month (daily SMS alerts with 14 recession indicators) and Pulse Pro at $14.99/month (adds daily stock screener alerts for stocks below 200 EMA with RSI <30 and P/E <15). Cancel anytime.",
+        text: "RecessionPulse offers two plans: Pulse at $9.99/month (daily SMS and email alerts with all recession indicators) and Pulse Pro at $14.99/month (adds daily stock screener alerts for stocks below 200 EMA with RSI <30 and P/E <15). Cancel anytime. No contracts.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Is RecessionPulse investment advice?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. RecessionPulse is strictly an informational service. We aggregate publicly available economic data and present it in a clear format. Nothing we provide constitutes investment advice, financial advice, or a recommendation to buy or sell any security. Always consult a qualified financial advisor before making investment decisions.",
       },
     },
   ],
@@ -165,10 +203,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" href="/logo.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
         <meta name="theme-color" content="#0a0a0f" />
         <script
           type="application/ld+json"
@@ -176,10 +214,14 @@ export default function RootLayout({
         />
         <script
           type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
       </head>
-      <body className="min-h-screen bg-pulse-darker text-pulse-text antialiased">
+      <body className="min-h-screen bg-pulse-darker text-pulse-text antialiased font-sans">
         {children}
       </body>
     </html>

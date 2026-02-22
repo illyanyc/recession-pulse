@@ -5,11 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Activity, Mail, Phone } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 type AuthMode = "login" | "signup";
-type AuthMethod = "email" | "phone";
 
 interface AuthFormProps {
   mode: AuthMode;
@@ -21,20 +20,38 @@ export function AuthForm({ mode }: AuthFormProps) {
   const redirect = searchParams.get("redirect") || "/dashboard";
   const plan = searchParams.get("plan");
 
-  const [method, setMethod] = useState<AuthMethod>("email");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<"credentials" | "verify">("credentials");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [showReset, setShowReset] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
   const supabase = createClient();
 
-  async function handleEmailAuth() {
+  async function handleGoogleAuth() {
+    setGoogleLoading(true);
+    setError("");
+
+    const redirectTo = `${window.location.origin}/api/auth/callback?redirect=${redirect}${plan ? `&plan=${plan}` : ""}`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo },
+    });
+
+    if (error) {
+      setError(error.message);
+      setGoogleLoading(false);
+    }
+  }
+
+  async function handleEmailAuth(e: React.FormEvent) {
+    e.preventDefault();
     setLoading(true);
     setError("");
 
@@ -70,70 +87,89 @@ export function AuthForm({ mode }: AuthFormProps) {
     setLoading(false);
   }
 
-  async function handlePhoneAuth() {
-    setLoading(true);
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email) {
+      setError("Enter your email address first.");
+      return;
+    }
+    setResetLoading(true);
     setError("");
 
-    if (step === "credentials") {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          phone,
-          password,
-          options: { data: { full_name: fullName } },
-        });
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
 
-        if (error) {
-          setError(error.message);
-        } else {
-          setStep("verify");
-          setMessage("Enter the 6-digit code sent to your phone.");
-        }
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          phone,
-          password,
-        });
-
-        if (error) {
-          setError(error.message);
-        } else {
-          router.push(redirect);
-          router.refresh();
-        }
-      }
+    if (error) {
+      setError(error.message);
     } else {
-      const { error } = await supabase.auth.verifyOtp({
-        phone,
-        token: otp,
-        type: mode === "signup" ? "sms" : "sms",
-      });
-
-      if (error) {
-        setError(error.message);
-      } else {
-        router.push(redirect);
-        router.refresh();
-      }
+      setMessage("Check your email for a password reset link!");
     }
-
-    setLoading(false);
+    setResetLoading(false);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (method === "email") {
-      await handleEmailAuth();
-    } else {
-      await handlePhoneAuth();
-    }
+  if (showReset) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md flex-1 flex flex-col justify-center">
+          <Link href="/" className="flex items-center gap-2 justify-center mb-8">
+            <Image src="/logo.png" alt="RecessionPulse" width={32} height={32} className="rounded" />
+            <span className="text-2xl font-bold text-white">RecessionPulse</span>
+          </Link>
+
+          <div className="card">
+            <h2 className="text-xl font-bold text-white mb-1 text-center">Reset your password</h2>
+            <p className="text-sm text-pulse-muted text-center mb-6">
+              Enter your email and we&apos;ll send you a reset link.
+            </p>
+
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <Input
+                label="Email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+
+              {error && (
+                <div className="p-3 rounded-lg bg-pulse-red/10 border border-pulse-red/20">
+                  <p className="text-sm text-pulse-red">{error}</p>
+                </div>
+              )}
+
+              {message && (
+                <div className="p-3 rounded-lg bg-pulse-green/10 border border-pulse-green/20">
+                  <p className="text-sm text-pulse-green">{message}</p>
+                </div>
+              )}
+
+              <Button type="submit" loading={resetLoading} className="w-full" size="lg">
+                Send reset link
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => { setShowReset(false); setError(""); setMessage(""); }}
+                className="text-sm text-pulse-green hover:underline"
+              >
+                Back to sign in
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md flex-1 flex flex-col justify-center">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 justify-center mb-8">
-          <Activity className="h-8 w-8 text-pulse-green" />
+          <Image src="/logo.png" alt="RecessionPulse" width={32} height={32} className="rounded" />
           <span className="text-2xl font-bold text-white">RecessionPulse</span>
         </Link>
 
@@ -147,36 +183,80 @@ export function AuthForm({ mode }: AuthFormProps) {
               : "Start monitoring recession indicators today"}
           </p>
 
-          {/* Auth method toggle */}
-          <div className="flex rounded-lg bg-pulse-dark border border-pulse-border p-1 mb-6">
-            <button
-              type="button"
-              onClick={() => { setMethod("email"); setStep("credentials"); setError(""); }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${
-                method === "email"
-                  ? "bg-pulse-card text-white"
-                  : "text-pulse-muted hover:text-white"
-              }`}
-            >
-              <Mail className="h-4 w-4" />
-              Email
-            </button>
-            <button
-              type="button"
-              onClick={() => { setMethod("phone"); setStep("credentials"); setError(""); }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${
-                method === "phone"
-                  ? "bg-pulse-card text-white"
-                  : "text-pulse-muted hover:text-white"
-              }`}
-            >
-              <Phone className="h-4 w-4" />
-              Phone
-            </button>
+          {/* Terms agreement — shown first on signup */}
+          {mode === "signup" && (
+            <div className={`relative mb-6 p-4 rounded-xl border transition-colors ${
+              agreedToTerms
+                ? "border-pulse-green/30 bg-pulse-green/5"
+                : "border-pulse-yellow/30 bg-pulse-yellow/5"
+            }`}>
+              {!agreedToTerms && (
+                <span className="absolute -left-2 top-4 text-pulse-yellow animate-bounce-x text-lg" aria-hidden="true">
+                  👉
+                </span>
+              )}
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-pulse-border bg-pulse-card text-pulse-green focus:ring-pulse-green shrink-0 accent-emerald-500"
+                />
+                <span className="text-xs text-pulse-muted leading-relaxed group-hover:text-pulse-text transition-colors">
+                  I agree to the{" "}
+                  <Link href="/terms" target="_blank" className="text-pulse-green hover:underline">Terms of Service</Link>,{" "}
+                  <Link href="/privacy" target="_blank" className="text-pulse-green hover:underline">Privacy Policy</Link>, and{" "}
+                  <Link href="/disclaimer" target="_blank" className="text-pulse-green hover:underline">Investment Disclaimer</Link>.
+                  I understand this is not investment advice.
+                </span>
+              </label>
+            </div>
+          )}
+
+          {/* Google OAuth */}
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="w-full gap-3"
+            onClick={handleGoogleAuth}
+            loading={googleLoading}
+            disabled={mode === "signup" && !agreedToTerms}
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24">
+              <path
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                fill="#4285F4"
+              />
+              <path
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                fill="#34A853"
+              />
+              <path
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                fill="#FBBC05"
+              />
+              <path
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                fill="#EA4335"
+              />
+            </svg>
+            Continue with Google
+          </Button>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-pulse-border" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-pulse-card px-3 text-pulse-muted">or continue with email</span>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === "signup" && step === "credentials" && (
+          {/* Email form */}
+          <form onSubmit={handleEmailAuth} className="space-y-4">
+            {mode === "signup" && (
               <Input
                 label="Full name"
                 type="text"
@@ -186,29 +266,16 @@ export function AuthForm({ mode }: AuthFormProps) {
               />
             )}
 
-            {method === "email" && (
-              <Input
-                label="Email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            )}
+            <Input
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-            {method === "phone" && step === "credentials" && (
-              <Input
-                label="Phone number"
-                type="tel"
-                placeholder="+1 (555) 000-0000"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-              />
-            )}
-
-            {step === "credentials" && (
+            <div>
               <Input
                 label="Password"
                 type="password"
@@ -218,19 +285,16 @@ export function AuthForm({ mode }: AuthFormProps) {
                 required
                 minLength={6}
               />
-            )}
-
-            {step === "verify" && (
-              <Input
-                label="Verification code"
-                type="text"
-                placeholder="000000"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                maxLength={6}
-                required
-              />
-            )}
+              {mode === "login" && (
+                <button
+                  type="button"
+                  onClick={() => { setShowReset(true); setError(""); setMessage(""); }}
+                  className="mt-1.5 text-xs text-pulse-green hover:underline"
+                >
+                  Forgot password?
+                </button>
+              )}
+            </div>
 
             {error && (
               <div className="p-3 rounded-lg bg-pulse-red/10 border border-pulse-red/20">
@@ -244,8 +308,14 @@ export function AuthForm({ mode }: AuthFormProps) {
               </div>
             )}
 
-            <Button type="submit" loading={loading} className="w-full" size="lg">
-              {mode === "login" ? "Sign in" : step === "verify" ? "Verify" : "Create account"}
+            <Button
+              type="submit"
+              loading={loading}
+              className="w-full"
+              size="lg"
+              disabled={mode === "signup" && !agreedToTerms}
+            >
+              {mode === "login" ? "Sign in" : "Create account"}
             </Button>
           </form>
 
@@ -267,6 +337,15 @@ export function AuthForm({ mode }: AuthFormProps) {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="w-full max-w-md pt-8 pb-4 flex flex-col items-center gap-2">
+        <div className="flex items-center gap-4">
+          <Link href="/privacy" className="text-xs text-pulse-muted hover:text-pulse-green transition-colors">Privacy</Link>
+          <Link href="/terms" className="text-xs text-pulse-muted hover:text-pulse-green transition-colors">Terms</Link>
+          <Link href="/disclaimer" className="text-xs text-pulse-muted hover:text-pulse-green transition-colors">Disclaimer</Link>
+        </div>
+        <p className="text-xs text-pulse-muted text-center">Not investment advice.</p>
       </div>
     </div>
   );

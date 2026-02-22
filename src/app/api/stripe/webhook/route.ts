@@ -2,7 +2,7 @@ import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { sendSMS } from "@/lib/twilio";
+import { sendSMS } from "@/lib/sms";
 import { sendEmail, buildWelcomeEmail } from "@/lib/resend";
 import { formatConfirmationSMS, formatWelcomeSMS } from "@/lib/message-formatter";
 

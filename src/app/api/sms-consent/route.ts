@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { sendSMS } from "@/lib/twilio";
+import { sendSMS } from "@/lib/sms";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 

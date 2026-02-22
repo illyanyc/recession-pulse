@@ -1,6 +1,7 @@
 "use client";
 
-import { Activity, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -14,7 +15,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <Activity className="h-6 w-6 text-pulse-green" />
+            <Image src="/logo.png" alt="RecessionPulse" width={28} height={28} className="rounded" />
             <span className="text-lg font-bold text-white">RecessionPulse</span>
           </Link>
 
@@ -41,6 +42,8 @@ export function Navbar() {
           <button
             className="md:hidden text-pulse-text"
             onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>

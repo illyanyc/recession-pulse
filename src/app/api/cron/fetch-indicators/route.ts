@@ -242,8 +242,52 @@ export async function GET(request: Request) {
   const successCount = results.filter((r) => r.success).length;
   const failCount = results.filter((r) => !r.success).length;
 
+  // 3. Generate AI summaries for all indicators
+  let summariesGenerated = 0;
+  try {
+    const { generateIndicatorSummary } = await import("@/lib/ai");
+    const { setGlobalSummary } = await import("@/lib/redis");
+
+    const { data: todayReadings } = await supabase
+      .from("indicator_readings")
+      .select("*")
+      .eq("reading_date", today);
+
+    if (todayReadings) {
+      const bySlug = new Map<string, typeof todayReadings[0]>();
+      for (const r of todayReadings) {
+        if (!bySlug.has(r.slug)) bySlug.set(r.slug, r);
+      }
+
+      for (const [slug, ind] of bySlug) {
+        try {
+          const summary = await generateIndicatorSummary({
+            name: ind.name,
+            slug,
+            latestValue: ind.latest_value,
+            status: ind.status,
+            signal: ind.signal,
+            triggerLevel: ind.trigger_level || "",
+          });
+
+          await supabase.from("indicator_summaries").upsert(
+            { slug, summary, model: "gpt-4o-mini", reading_date: today },
+            { onConflict: "slug,reading_date" }
+          );
+
+          await setGlobalSummary(slug, summary).catch(() => {});
+          summariesGenerated++;
+        } catch (err) {
+          console.error(`Summary generation failed for ${slug}:`, err);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("AI summary generation error:", err);
+  }
+
   return NextResponse.json({
-    message: `Fetched ${successCount} indicators, ${failCount} failed`,
+    message: `Fetched ${successCount} indicators, ${failCount} failed, ${summariesGenerated} AI summaries generated`,
     results,
     date: today,
   });
