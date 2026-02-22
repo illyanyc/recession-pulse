@@ -1,0 +1,199 @@
+import { NextResponse } from "next/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { sendSMS } from "@/lib/twilio";
+import { sendEmail } from "@/lib/resend";
+import { formatRecessionSMS, formatStockAlertSMS } from "@/lib/message-formatter";
+import type { RecessionIndicator, StockSignal } from "@/types";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const secret = searchParams.get("secret");
+
+  if (secret !== process.env.CRON_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const supabase = createServiceClient();
+  const stats = { queued: 0, sent: 0, failed: 0, processed: 0 };
+
+  try {
+    // 1. Get latest indicators
+    const today = new Date().toISOString().split("T")[0];
+    const { data: indicators } = await supabase
+      .from("indicator_readings")
+      .select("*")
+      .eq("reading_date", today);
+
+    // Deduplicate
+    const latestIndicators: RecessionIndicator[] = indicators
+      ? Object.values(
+          indicators.reduce(
+            (acc: Record<string, RecessionIndicator>, ind: RecessionIndicator) => {
+              if (!acc[ind.slug]) acc[ind.slug] = ind;
+              return acc;
+            },
+            {}
+          )
+        )
+      : [];
+
+    // 2. Get latest stock signals
+    const { data: stockSignals } = await supabase
+      .from("stock_signals")
+      .select("*")
+      .eq("screened_at", today);
+
+    // 3. Get active subscribers
+    const { data: subscribers } = await supabase
+      .from("profiles")
+      .select("*, subscriptions!inner(plan, status)")
+      .eq("subscriptions.status", "active");
+
+    if (!subscribers || subscribers.length === 0) {
+      return NextResponse.json({ message: "No active subscribers", stats });
+    }
+
+    // 4. Format messages
+    const recessionMessage = formatRecessionSMS(latestIndicators);
+    const stockMessage = formatStockAlertSMS((stockSignals as StockSignal[]) || []);
+
+    // 5. Queue messages for each subscriber
+    const messagesToInsert: {
+      user_id: string;
+      message_type: string;
+      channel: string;
+      recipient: string;
+      content: string;
+      scheduled_for: string;
+    }[] = [];
+
+    for (const sub of subscribers) {
+      const plan = sub.subscriptions?.[0]?.plan || "pulse";
+
+      // Recession alert (all plans)
+      if (sub.phone && sub.sms_enabled) {
+        messagesToInsert.push({
+          user_id: sub.id,
+          message_type: "recession_alert",
+          channel: "sms",
+          recipient: sub.phone,
+          content: recessionMessage,
+          scheduled_for: new Date().toISOString(),
+        });
+      }
+
+      // Stock alert (pro only)
+      if (plan === "pulse_pro" && sub.phone && sub.sms_enabled) {
+        messagesToInsert.push({
+          user_id: sub.id,
+          message_type: "stock_alert",
+          channel: "sms",
+          recipient: sub.phone,
+          content: stockMessage,
+          scheduled_for: new Date().toISOString(),
+        });
+      }
+
+      // Email alerts
+      if (sub.email && sub.email_alerts_enabled) {
+        messagesToInsert.push({
+          user_id: sub.id,
+          message_type: "recession_alert",
+          channel: "email",
+          recipient: sub.email,
+          content: recessionMessage,
+          scheduled_for: new Date().toISOString(),
+        });
+      }
+    }
+
+    // Insert into queue
+    if (messagesToInsert.length > 0) {
+      await supabase.from("message_queue").insert(messagesToInsert);
+      stats.queued = messagesToInsert.length;
+    }
+
+    // 6. Process the queue
+    const { data: pendingMessages } = await supabase
+      .from("message_queue")
+      .select("*")
+      .eq("status", "pending")
+      .lte("scheduled_for", new Date().toISOString())
+      .order("created_at")
+      .limit(100);
+
+    if (pendingMessages) {
+      for (const msg of pendingMessages) {
+        // Mark as processing
+        await supabase
+          .from("message_queue")
+          .update({ status: "processing", attempts: msg.attempts + 1 })
+          .eq("id", msg.id);
+
+        let success = false;
+        let errorMsg = "";
+
+        try {
+          if (msg.channel === "sms") {
+            const result = await sendSMS(msg.recipient, msg.content);
+            success = result.success;
+            errorMsg = result.error || "";
+          } else if (msg.channel === "email") {
+            const result = await sendEmail({
+              to: msg.recipient,
+              subject: `RecessionPulse Daily Briefing — ${new Date().toLocaleDateString()}`,
+              html: `<div style="font-family: monospace; white-space: pre-wrap; background: #0a0a0f; color: #e5e7eb; padding: 24px; border-radius: 12px;">${msg.content}</div>`,
+            });
+            success = result.success;
+            errorMsg = result.error || "";
+          }
+        } catch (err) {
+          errorMsg = err instanceof Error ? err.message : "Send failed";
+        }
+
+        if (success) {
+          await supabase
+            .from("message_queue")
+            .update({ status: "sent", sent_at: new Date().toISOString() })
+            .eq("id", msg.id);
+
+          // Log to message history
+          await supabase.from("message_log").insert({
+            user_id: msg.user_id,
+            message_type: msg.message_type,
+            channel: msg.channel,
+            content: msg.content,
+            sent_at: new Date().toISOString(),
+          });
+
+          stats.sent++;
+        } else {
+          const newStatus = msg.attempts >= msg.max_attempts ? "failed" : "pending";
+          await supabase
+            .from("message_queue")
+            .update({ status: newStatus, error: errorMsg })
+            .eq("id", msg.id);
+          stats.failed++;
+        }
+
+        stats.processed++;
+
+        // Small delay between sends to avoid rate limiting
+        await new Promise((r) => setTimeout(r, 200));
+      }
+    }
+
+    return NextResponse.json({
+      message: `Alert cycle complete`,
+      stats,
+      subscribers: subscribers.length,
+      indicators: latestIndicators.length,
+    });
+  } catch (error) {
+    console.error("Send alerts error:", error);
+    return NextResponse.json(
+      { error: "Alert sending failed", details: error instanceof Error ? error.message : "Unknown" },
+      { status: 500 }
+    );
+  }
+}
