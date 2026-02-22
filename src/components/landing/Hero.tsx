@@ -66,13 +66,18 @@ export function Hero() {
         <div className="mt-20 max-w-4xl mx-auto">
           <div className="bg-pulse-card border border-pulse-border rounded-2xl p-1 shadow-2xl">
             <div className="bg-pulse-dark rounded-xl p-6 sm:p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-pulse-red/60" />
-                  <div className="w-3 h-3 rounded-full bg-pulse-yellow/60" />
-                  <div className="w-3 h-3 rounded-full bg-pulse-green/60" />
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-pulse-red/60" />
+                    <div className="w-3 h-3 rounded-full bg-pulse-yellow/60" />
+                    <div className="w-3 h-3 rounded-full bg-pulse-green/60" />
+                  </div>
+                  <span className="text-xs text-pulse-muted font-mono">recession-pulse — dashboard preview</span>
                 </div>
-                <span className="text-xs text-pulse-muted font-mono">recession-pulse — live dashboard</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-pulse-muted bg-pulse-card border border-pulse-border rounded-full px-2.5 py-1">
+                  Sample Data
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

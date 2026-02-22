@@ -40,8 +40,13 @@ export function SMSPreview() {
 
                 {/* SMS Content */}
                 <div className="px-4 pb-8 space-y-3">
-                  <div className="text-center text-xs text-gray-500 mb-4">
+                  <div className="text-center text-xs text-gray-500 mb-2">
                     Today 8:00 AM
+                  </div>
+                  <div className="text-center mb-3">
+                    <span className="text-[9px] font-semibold uppercase tracking-wider text-gray-500 bg-gray-800 border border-gray-700 rounded-full px-2 py-0.5">
+                      Sample
+                    </span>
                   </div>
 
                   <div className="bg-gray-800 rounded-2xl rounded-tl-sm p-4 max-w-[260px]">

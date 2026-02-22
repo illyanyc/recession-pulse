@@ -75,7 +75,7 @@ export async function Indicators() {
           <p className="text-pulse-muted text-lg max-w-2xl mx-auto">
             {isLive
               ? "Live data from FRED, Treasury, and financial APIs — updated daily."
-              : "Here\u2019s what subscribers see every morning. Real data, real signals, real edge."}
+              : "Sample data — here\u2019s what subscribers see every morning. Subscribe for live signals."}
           </p>
         </div>
 
