@@ -4,10 +4,6 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
-  // #region agent log
-  const mwKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  fetch('http://127.0.0.1:7244/ingest/7e11db6f-d41c-493a-83e3-c08fecaa79d6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'supabase/middleware.ts:updateSession',message:'Middleware client init',data:{hasUrl:!!process.env.NEXT_PUBLIC_SUPABASE_URL,hasKey:!!mwKey,keyPrefix:mwKey?.substring(0,16),path:request.nextUrl.pathname},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
-  // #endregion
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -29,11 +25,7 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/7e11db6f-d41c-493a-83e3-c08fecaa79d6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'supabase/middleware.ts:getUser',message:'Auth getUser result',data:{hasUser:!!user,userId:user?.id?.substring(0,8),authError:authError?.message||null,path:request.nextUrl.pathname},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
-  // #endregion
+  const { data: { user } } = await supabase.auth.getUser();
 
   // Protected routes
   const protectedPaths = ["/dashboard", "/settings"];
