@@ -46,6 +46,7 @@ export async function POST(request: Request) {
       customer: customerId,
       line_items: [{ price: planConfig.priceId, quantity: 1 }],
       mode: "subscription",
+      allow_promotion_codes: true,
       success_url: `${appUrl}/dashboard?checkout=success&plan=${plan}`,
       cancel_url: `${appUrl}/pricing?checkout=canceled`,
       subscription_data: {
