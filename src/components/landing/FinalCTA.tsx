@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { NewsletterSignup } from "@/components/shared/NewsletterSignup";
 import Link from "next/link";
 
 export function FinalCTA() {
@@ -29,9 +30,20 @@ export function FinalCTA() {
           </Link>
         </div>
 
-        <p className="text-xs text-pulse-muted">
+        <p className="text-xs text-pulse-muted mb-12">
           Cancel anytime. No contracts. Not investment advice.
         </p>
+
+        {/* Free newsletter signup */}
+        <div className="max-w-lg mx-auto bg-pulse-card border border-pulse-border rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-white mb-2">
+            Free Weekly Recession Report
+          </h3>
+          <p className="text-sm text-pulse-muted mb-4">
+            Not ready to subscribe? Get our free weekly analysis in your inbox.
+          </p>
+          <NewsletterSignup />
+        </div>
       </div>
     </section>
   );

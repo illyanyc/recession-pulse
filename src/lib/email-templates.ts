@@ -128,6 +128,91 @@ export function buildWelcomeEmail(name: string): { subject: string; html: string
   };
 }
 
+export function buildWeeklyRecapEmail(
+  aiRecap: string,
+  indicators: RecessionIndicator[],
+  weekLabel: string
+): { subject: string; html: string } {
+  const danger = indicators.filter((i) => i.status === "danger" || i.status === "warning");
+  const watch = indicators.filter((i) => i.status === "watch");
+  const safe = indicators.filter((i) => i.status === "safe");
+
+  let subjectMood: string;
+  if (danger.length >= 3) subjectMood = "High Alert";
+  else if (danger.length >= 1) subjectMood = "Caution";
+  else if (watch.length >= 3) subjectMood = "Mixed Signals";
+  else subjectMood = "All Clear";
+
+  const indicatorRows = indicators.map((ind) => `
+    <tr style="border-bottom:1px solid #1e1e2e;">
+      <td style="padding:10px 8px;font-size:13px;color:#e5e7eb;">${statusDot(ind.status)}${ind.name}</td>
+      <td style="padding:10px 8px;font-size:13px;font-family:monospace;color:#ffffff;text-align:right;">${ind.latest_value}</td>
+      <td style="padding:10px 8px;font-size:12px;color:#9ca3af;max-width:160px;">${ind.signal}</td>
+    </tr>
+  `).join("");
+
+  const recapHtml = aiRecap
+    .split("\n\n")
+    .map((p) => {
+      const trimmed = p.trim();
+      if (!trimmed) return "";
+      if (trimmed.startsWith("##")) return `<h3 style="margin:16px 0 8px;font-size:16px;color:#e5e7eb;">${trimmed.replace(/^#+\s*/, "")}</h3>`;
+      if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+        const items = trimmed.split("\n").map((li) => `<li style="margin:4px 0;font-size:14px;color:#9ca3af;line-height:1.6;">${li.replace(/^[-*]\s*/, "")}</li>`).join("");
+        return `<ul style="padding-left:20px;margin:8px 0;">${items}</ul>`;
+      }
+      return `<p style="margin:0 0 12px;font-size:14px;color:#9ca3af;line-height:1.6;">${trimmed}</p>`;
+    })
+    .join("");
+
+  return {
+    subject: `${subjectMood} — RecessionPulse Weekly Recap (${weekLabel})`,
+    html: wrapper(`
+      <h2 style="margin:0 0 4px;font-size:20px;color:#e5e7eb;">Weekly Recession Recap</h2>
+      <p style="margin:0 0 20px;font-size:13px;color:#6b7280;">Week of ${weekLabel} &middot; Friday Close</p>
+
+      <!-- Score bar -->
+      <div style="display:flex;gap:16px;margin-bottom:20px;">
+        <span style="font-size:13px;color:#e5e7eb;">${statusDot("safe")}<strong>${safe.length}</strong> Safe</span>
+        <span style="font-size:13px;color:#e5e7eb;">${statusDot("watch")}<strong>${watch.length}</strong> Watch</span>
+        <span style="font-size:13px;color:#e5e7eb;">${statusDot("warning")}<strong>${danger.length}</strong> Alert</span>
+      </div>
+
+      <!-- AI Recap -->
+      <div style="background:#12121a;border:1px solid #1e1e2e;border-radius:12px;padding:20px;margin-bottom:20px;">
+        <p style="margin:0 0 12px;color:#00ff87;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;">AI Weekly Analysis</p>
+        ${recapHtml}
+      </div>
+
+      <!-- Indicators table -->
+      <h3 style="margin:0 0 12px;font-size:16px;color:#e5e7eb;">Indicator Snapshot — Friday Close</h3>
+      <div style="background:#12121a;border:1px solid #1e1e2e;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <tr style="border-bottom:1px solid #1e1e2e;">
+            <th style="padding:10px 8px;font-size:11px;color:#6b7280;text-align:left;text-transform:uppercase;">Indicator</th>
+            <th style="padding:10px 8px;font-size:11px;color:#6b7280;text-align:right;text-transform:uppercase;">Value</th>
+            <th style="padding:10px 8px;font-size:11px;color:#6b7280;text-align:left;text-transform:uppercase;">Signal</th>
+          </tr>
+          ${indicatorRows}
+        </table>
+      </div>
+
+      <div style="text-align:center;margin-bottom:16px;">
+        ${btn("View All Indicators", `${APP_URL}/indicators`)}
+      </div>
+
+      <div style="text-align:center;">
+        ${btn("Read Full Report on Blog", `${APP_URL}/blog`)}
+      </div>
+
+      <p style="margin:24px 0 0;font-size:11px;color:#4b5563;text-align:center;">
+        You're receiving this because you signed up for our free weekly recap.<br/>
+        <a href="${APP_URL}/api/newsletter/unsubscribe?email={{email}}" style="color:#6b7280;text-decoration:underline;">Unsubscribe</a>
+      </p>
+    `),
+  };
+}
+
 export function buildDailyBriefingEmail(
   indicators: RecessionIndicator[],
   stockSignals?: StockSignal[],

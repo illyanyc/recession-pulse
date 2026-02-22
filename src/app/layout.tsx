@@ -131,7 +131,23 @@ const orgJsonLd = {
     email: "support@recessionpulse.com",
     contactType: "customer support",
   },
-  sameAs: [],
+  sameAs: [
+    "https://twitter.com/RecessionPulse",
+    "https://linkedin.com/company/recessionpulse",
+  ],
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "RecessionPulse",
+  url: "https://recessionpulse.com",
+  description: "Real-time recession indicator tracking and daily alerts.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://recessionpulse.com/indicators?q={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
 };
 
 const faqJsonLd = {
@@ -219,6 +235,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
       </head>
       <body className="min-h-screen bg-pulse-darker text-pulse-text antialiased font-sans">
