@@ -1,13 +1,29 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
+import { createClient } from "@/lib/supabase/client";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-pulse-darker/80 backdrop-blur-xl border-b border-pulse-border/50">
@@ -30,12 +46,23 @@ export function Navbar() {
             <Link href="/#pricing" className="text-sm text-pulse-muted hover:text-white transition-colors">
               Pricing
             </Link>
-            <Link href="/login">
-              <Button variant="ghost" size="sm">Log in</Button>
-            </Link>
-            <Link href="/signup">
-              <Button size="sm">Get started</Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard">
+                <Button size="sm">
+                  <LayoutDashboard className="h-4 w-4 mr-1.5" />
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">Log in</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button size="sm">Get started</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -62,12 +89,23 @@ export function Navbar() {
               Pricing
             </Link>
             <div className="flex gap-3 pt-2">
-              <Link href="/login" className="flex-1">
-                <Button variant="secondary" size="sm" className="w-full">Log in</Button>
-              </Link>
-              <Link href="/signup" className="flex-1">
-                <Button size="sm" className="w-full">Get started</Button>
-              </Link>
+              {isLoggedIn ? (
+                <Link href="/dashboard" className="flex-1" onClick={() => setIsOpen(false)}>
+                  <Button size="sm" className="w-full">
+                    <LayoutDashboard className="h-4 w-4 mr-1.5" />
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login" className="flex-1" onClick={() => setIsOpen(false)}>
+                    <Button variant="secondary" size="sm" className="w-full">Log in</Button>
+                  </Link>
+                  <Link href="/signup" className="flex-1" onClick={() => setIsOpen(false)}>
+                    <Button size="sm" className="w-full">Get started</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

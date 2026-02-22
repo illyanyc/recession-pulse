@@ -2,12 +2,13 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { RefreshCw, Send, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { RefreshCw, Send, Loader2, CheckCircle, XCircle, AlertTriangle, Phone, Mail, ArrowRight } from "lucide-react";
 import { IndicatorGrid } from "@/components/dashboard/IndicatorGrid";
 import { StockScreener } from "@/components/dashboard/StockScreener";
 import { MessageHistory } from "@/components/dashboard/MessageHistory";
 import { SubscriptionStatus } from "@/components/dashboard/SubscriptionStatus";
 import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 import type { RecessionIndicator, StockSignal, Subscription, UserProfile, MessageQueueItem } from "@/types";
 
 type ActionStatus = "idle" | "loading" | "success" | "error";
@@ -31,10 +32,15 @@ export function DashboardContent({
   const isPro = profile?.subscription_tier === "pulse_pro";
   const hasSubscription = profile?.subscription_tier !== "free";
 
+  const missingPhone = !profile?.phone;
+  const missingEmail = !profile?.email;
+  const profileIncomplete = missingPhone || missingEmail;
+
   const [refreshStatus, setRefreshStatus] = useState<ActionStatus>("idle");
   const [sendStatus, setSendStatus] = useState<ActionStatus>("idle");
   const [refreshResult, setRefreshResult] = useState<string>("");
   const [sendResult, setSendResult] = useState<string>("");
+  const [dismissedBanner, setDismissedBanner] = useState(false);
 
   const handleRefresh = useCallback(async () => {
     setRefreshStatus("loading");
@@ -55,6 +61,18 @@ export function DashboardContent({
   }, [router]);
 
   const handleSendNow = useCallback(async () => {
+    if (missingPhone && missingEmail) {
+      setSendStatus("error");
+      setSendResult("Add a phone number or email in Settings first");
+      setTimeout(() => setSendStatus("idle"), 4000);
+      return;
+    }
+    if (missingPhone) {
+      setSendStatus("error");
+      setSendResult("Add a phone number in Settings to receive SMS alerts");
+      setTimeout(() => setSendStatus("idle"), 4000);
+      return;
+    }
     setSendStatus("loading");
     setSendResult("");
     try {
@@ -73,7 +91,7 @@ export function DashboardContent({
     } finally {
       setTimeout(() => setSendStatus("idle"), 4000);
     }
-  }, [router]);
+  }, [router, missingPhone, missingEmail]);
 
   const displayIndicators = indicators.length > 0 ? indicators : SAMPLE_INDICATORS;
 
@@ -109,6 +127,44 @@ export function DashboardContent({
           )}
         </div>
       </div>
+
+      {/* Profile completeness banner */}
+      {profileIncomplete && !dismissedBanner && (
+        <div className="p-4 rounded-xl border border-pulse-yellow/30 bg-pulse-yellow/5">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-pulse-yellow shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white mb-1">Complete your profile to receive alerts</p>
+              <div className="flex flex-wrap gap-3 mb-3">
+                {missingPhone && (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-pulse-yellow">
+                    <Phone className="h-3.5 w-3.5" /> Phone number missing
+                  </span>
+                )}
+                {missingEmail && (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-pulse-yellow">
+                    <Mail className="h-3.5 w-3.5" /> Email missing
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <Link href="/settings">
+                  <Button size="sm" className="gap-1.5">
+                    Go to Settings
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </Link>
+                <button
+                  onClick={() => setDismissedBanner(true)}
+                  className="text-xs text-pulse-muted hover:text-white transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Subscription */}
       <SubscriptionStatus profile={profile} subscription={subscription} />

@@ -1,4 +1,14 @@
+function normalizePhone(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("1") && digits.length === 11) return `+${digits}`;
+  if (digits.length === 10) return `+1${digits}`;
+  return raw.startsWith("+") ? raw : `+${digits}`;
+}
+
 export async function sendSMS(to: string, body: string): Promise<{ success: boolean; sid?: string; error?: string }> {
+  const recipient = normalizePhone(to);
+  if (recipient.length < 10) return { success: false, error: "Invalid phone number" };
+
   try {
     const res = await fetch("https://api.brevo.com/v3/transactionalSMS/sms", {
       method: "POST",
@@ -9,7 +19,7 @@ export async function sendSMS(to: string, body: string): Promise<{ success: bool
       body: JSON.stringify({
         type: "transactional",
         sender: "RPulse",
-        recipient: to,
+        recipient: recipient,
         content: body,
       }),
     });
