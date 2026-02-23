@@ -125,7 +125,7 @@ const orgJsonLd = {
   "@type": "Organization",
   name: "RecessionPulse",
   url: "https://recessionpulse.com",
-  logo: "https://recessionpulse.com/logo.png",
+  logo: "https://recessionpulse.com/logo-transparent.png",
   contactPoint: {
     "@type": "ContactPoint",
     email: "support@recessionpulse.com",
@@ -221,8 +221,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <link rel="icon" type="image/png" href="/logo.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" href="/logo-transparent.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/logo-transparent.png" />
         <meta name="theme-color" content="#0a0a0f" />
         <script
           type="application/ld+json"

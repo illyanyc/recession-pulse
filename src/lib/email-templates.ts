@@ -18,7 +18,7 @@ function wrapper(content: string): string {
 <div style="max-width:600px;margin:0 auto;background:#080808;border:1px solid #2A2A2A;border-radius:0px;overflow:hidden;">
   <!-- Header -->
   <div style="background:linear-gradient(135deg,#080808 0%,#0D0D0D 100%);padding:32px 28px 24px;border-bottom:1px solid #2A2A2A;text-align:center;">
-    <img src="${APP_URL}/logo.png" alt="RecessionPulse" width="40" height="40" style="border-radius:0px;margin-bottom:12px;" />
+    <img src="${APP_URL}/logo-transparent.png" alt="RecessionPulse" width="40" height="40" style="border-radius:0px;margin-bottom:12px;" />
     <h1 style="margin:0;font-size:22px;color:#FF6600;font-weight:700;letter-spacing:-0.5px;">RecessionPulse</h1>
     <p style="margin:4px 0 0;font-size:12px;color:#808080;">Real-time recession intelligence</p>
   </div>

@@ -95,7 +95,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     publisher: {
       "@type": "Organization",
       name: "RecessionPulse",
-      logo: { "@type": "ImageObject", url: "https://recessionpulse.com/logo.png" },
+      logo: { "@type": "ImageObject", url: "https://recessionpulse.com/logo-transparent.png" },
     },
     datePublished: post.published_at,
     url: `https://recessionpulse.com/blog/${slug}`,
