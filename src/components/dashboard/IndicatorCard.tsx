@@ -88,12 +88,12 @@ function ChartView({
 }) {
   return (
     <>
-      <div className="flex items-center justify-between px-4 pt-3 pb-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xs font-semibold text-white truncate">{indicator.name}</span>
+      <div className="px-4 pt-3 pb-1 space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-white">{indicator.name}</span>
           <TrendIcon status={indicator.status} />
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2">
           <span className="text-sm font-bold font-mono text-white">{indicator.latest_value}</span>
           <Badge status={indicator.status} className="text-[10px] px-1.5 py-0.5">
             {indicator.status_text}
