@@ -4,9 +4,10 @@
 
 @layer base {
   :root {
-    --pulse-green: #00ff87;
-    --pulse-red: #ff4757;
-    --pulse-yellow: #ffa502;
+    --pulse-orange: #FF6600;
+    --pulse-safe: #00CC66;
+    --pulse-red: #FF3333;
+    --pulse-yellow: #FFCC00;
   }
 
   html {
@@ -24,21 +25,21 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-lg
+    @apply inline-flex items-center justify-center px-6 py-3
            bg-pulse-green text-pulse-darker font-semibold text-sm
            hover:bg-pulse-green/90 transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-pulse-green/50 focus:ring-offset-2 focus:ring-offset-pulse-dark;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-lg
+    @apply inline-flex items-center justify-center px-6 py-3
            border border-pulse-border text-pulse-text font-medium text-sm
            hover:bg-pulse-card hover:border-pulse-green/30 transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-pulse-green/50;
   }
 
   .card {
-    @apply bg-pulse-card border border-pulse-border rounded-xl p-6;
+    @apply bg-pulse-card border border-pulse-border p-6;
   }
 
   .card-hover {
@@ -46,14 +47,14 @@
   }
 
   .input-field {
-    @apply w-full px-4 py-3 bg-pulse-dark border border-pulse-border rounded-lg
+    @apply w-full px-4 py-3 bg-pulse-dark border border-pulse-border
            text-pulse-text placeholder-pulse-muted
            focus:outline-none focus:ring-2 focus:ring-pulse-green/50 focus:border-pulse-green/50
            transition-all duration-200;
   }
 
   .status-safe {
-    @apply text-pulse-green bg-pulse-green/10 border-pulse-green/20;
+    @apply text-pulse-safe bg-pulse-safe/10 border-pulse-safe/20;
   }
 
   .status-watch {
@@ -73,15 +74,15 @@
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-pulse-green via-emerald-400 to-teal-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-pulse-green via-amber-400 to-orange-400 bg-clip-text text-transparent;
   }
 
   .glow-green {
-    box-shadow: 0 0 20px rgba(0, 255, 135, 0.15), 0 0 60px rgba(0, 255, 135, 0.05);
+    box-shadow: 0 0 20px rgba(255, 102, 0, 0.15), 0 0 60px rgba(255, 102, 0, 0.05);
   }
 
   .glow-red {
-    box-shadow: 0 0 20px rgba(255, 71, 87, 0.15), 0 0 60px rgba(255, 71, 87, 0.05);
+    box-shadow: 0 0 20px rgba(255, 51, 51, 0.15), 0 0 60px rgba(255, 51, 51, 0.05);
   }
 }
 

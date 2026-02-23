@@ -43,33 +43,33 @@ export async function POST(request: Request) {
             : "Other";
 
     const html = `
-      <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #e5e7eb; padding: 32px 24px;">
-        <h1 style="color: #00ff87; font-size: 20px; margin-bottom: 4px;">RecessionPulse — Contact Form</h1>
-        <p style="color: #6b7280; font-size: 12px; margin-bottom: 24px;">New message received</p>
+      <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; background: #080808; color: #D4D4D4; padding: 32px 24px;">
+        <h1 style="color: #FF6600; font-size: 20px; margin-bottom: 4px;">RecessionPulse — Contact Form</h1>
+        <p style="color: #808080; font-size: 12px; margin-bottom: 24px;">New message received</p>
 
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
           <tr>
-            <td style="padding: 8px 12px; color: #6b7280; font-size: 13px; border-bottom: 1px solid #1e1e2e; width: 100px;">Type</td>
-            <td style="padding: 8px 12px; color: #e5e7eb; font-size: 13px; border-bottom: 1px solid #1e1e2e;">${typeLabel}</td>
+            <td style="padding: 8px 12px; color: #808080; font-size: 13px; border-bottom: 1px solid #2A2A2A; width: 100px;">Type</td>
+            <td style="padding: 8px 12px; color: #D4D4D4; font-size: 13px; border-bottom: 1px solid #2A2A2A;">${typeLabel}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 12px; color: #6b7280; font-size: 13px; border-bottom: 1px solid #1e1e2e;">Name</td>
-            <td style="padding: 8px 12px; color: #e5e7eb; font-size: 13px; border-bottom: 1px solid #1e1e2e;">${name || "Anonymous"}</td>
+            <td style="padding: 8px 12px; color: #808080; font-size: 13px; border-bottom: 1px solid #2A2A2A;">Name</td>
+            <td style="padding: 8px 12px; color: #D4D4D4; font-size: 13px; border-bottom: 1px solid #2A2A2A;">${name || "Anonymous"}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 12px; color: #6b7280; font-size: 13px; border-bottom: 1px solid #1e1e2e;">Email</td>
-            <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #1e1e2e;">
-              <a href="mailto:${email}" style="color: #00ff87;">${email}</a>
+            <td style="padding: 8px 12px; color: #808080; font-size: 13px; border-bottom: 1px solid #2A2A2A;">Email</td>
+            <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #2A2A2A;">
+              <a href="mailto:${email}" style="color: #FF6600;">${email}</a>
             </td>
           </tr>
         </table>
 
-        <div style="background: #12121a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-          <p style="color: #6b7280; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Message</p>
-          <p style="color: #e5e7eb; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+        <div style="background: #0D0D0D; border: 1px solid #2A2A2A; border-radius: 0px; padding: 16px; margin-bottom: 16px;">
+          <p style="color: #808080; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Message</p>
+          <p style="color: #D4D4D4; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
         </div>
 
-        <p style="color: #6b7280; font-size: 11px;">
+        <p style="color: #808080; font-size: 11px;">
           Sent from the RecessionPulse contact form · ${new Date().toISOString()}
         </p>
       </div>

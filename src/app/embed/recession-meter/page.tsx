@@ -43,12 +43,12 @@ export default async function RecessionMeterEmbed() {
     riskScore >= 60 ? "HIGH" : riskScore >= 35 ? "ELEVATED" : riskScore >= 15 ? "MODERATE" : "LOW";
   const riskColor =
     riskScore >= 60
-      ? "#ff4757"
+      ? "#FF3333"
       : riskScore >= 35
-        ? "#ffa502"
+        ? "#FFCC00"
         : riskScore >= 15
-          ? "#ffa502"
-          : "#00ff87";
+          ? "#FFCC00"
+          : "#00CC66";
 
   return (
     <html lang="en">
@@ -61,33 +61,32 @@ export default async function RecessionMeterEmbed() {
             __html: `
               * { margin: 0; padding: 0; box-sizing: border-box; }
               body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-                background: #0a0a0f;
-                color: #e5e7eb;
+                font-family: 'JetBrains Mono', 'Fira Code', monospace, system-ui, sans-serif;
+                background: #000000;
+                color: #D4D4D4;
                 padding: 16px;
               }
               .container {
                 max-width: 360px;
                 margin: 0 auto;
-                border: 1px solid #1e1e2e;
-                border-radius: 12px;
+                border: 1px solid #2A2A2A;
                 overflow: hidden;
-                background: #12121a;
+                background: #0D0D0D;
               }
               .header {
                 padding: 16px 20px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                border-bottom: 1px solid #1e1e2e;
+                border-bottom: 1px solid #2A2A2A;
               }
               .title { font-size: 13px; font-weight: 600; color: white; }
               .powered {
                 font-size: 10px;
-                color: #6b7280;
+                color: #808080;
                 text-decoration: none;
               }
-              .powered:hover { color: #00ff87; }
+              .powered:hover { color: #FF6600; }
               .body { padding: 20px; text-align: center; }
               .score {
                 font-size: 48px;
@@ -106,15 +105,13 @@ export default async function RecessionMeterEmbed() {
               .bar-track {
                 margin: 16px 0;
                 height: 6px;
-                background: #1e1e2e;
-                border-radius: 3px;
+                background: #2A2A2A;
                 overflow: hidden;
               }
               .bar-fill {
                 height: 100%;
                 width: ${riskScore}%;
                 background: ${riskColor};
-                border-radius: 3px;
                 transition: width 0.5s;
               }
               .stats {
@@ -130,30 +127,29 @@ export default async function RecessionMeterEmbed() {
                 font-family: monospace;
                 color: white;
               }
-              .stat-label { font-size: 10px; color: #6b7280; margin-top: 2px; }
-              .safe .stat-count { color: #00ff87; }
-              .watch .stat-count { color: #ffa502; }
-              .warning .stat-count { color: #ff4757; }
-              .danger .stat-count { color: #ff4757; }
+              .stat-label { font-size: 10px; color: #808080; margin-top: 2px; }
+              .safe .stat-count { color: #00CC66; }
+              .watch .stat-count { color: #FFCC00; }
+              .warning .stat-count { color: #FF3333; }
+              .danger .stat-count { color: #FF3333; }
               .footer {
                 padding: 12px 20px;
-                border-top: 1px solid #1e1e2e;
+                border-top: 1px solid #2A2A2A;
                 text-align: center;
               }
               .cta {
                 display: inline-block;
                 padding: 8px 20px;
-                background: #00ff87;
-                color: #0a0a0f;
+                background: #FF6600;
+                color: #000000;
                 font-size: 12px;
                 font-weight: 700;
-                border-radius: 6px;
                 text-decoration: none;
               }
               .cta:hover { opacity: 0.9; }
               .updated {
                 font-size: 10px;
-                color: #6b7280;
+                color: #808080;
                 margin-top: 8px;
               }
             `,

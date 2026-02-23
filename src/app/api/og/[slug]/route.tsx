@@ -5,17 +5,17 @@ import { createServiceClient } from "@/lib/supabase/server";
 export const runtime = "edge";
 
 const STATUS_COLORS: Record<string, string> = {
-  safe: "#00ff87",
-  watch: "#ffa502",
-  warning: "#ff4757",
-  danger: "#ff4757",
+  safe: "#00CC66",
+  watch: "#FFCC00",
+  warning: "#FF3333",
+  danger: "#FF3333",
 };
 
 const STATUS_BG: Record<string, string> = {
-  safe: "rgba(0,255,135,0.15)",
-  watch: "rgba(255,165,2,0.15)",
-  warning: "rgba(255,71,87,0.15)",
-  danger: "rgba(255,71,87,0.15)",
+  safe: "rgba(0,204,102,0.15)",
+  watch: "rgba(255,204,0,0.15)",
+  warning: "rgba(255,51,51,0.15)",
+  danger: "rgba(255,51,51,0.15)",
 };
 
 export async function GET(
@@ -63,7 +63,7 @@ export async function GET(
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "60px",
-          background: "linear-gradient(135deg, #060609 0%, #0a0a0f 50%, #12121a 100%)",
+          background: "linear-gradient(135deg, #000000 0%, #080808 50%, #0D0D0D 100%)",
           fontFamily: "system-ui, sans-serif",
         }}
       >
@@ -111,14 +111,14 @@ export async function GET(
               style={{
                 width: "32px",
                 height: "32px",
-                borderRadius: "6px",
-                background: "#00ff87",
+                borderRadius: "0px",
+                background: "#00CC66",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "18px",
                 fontWeight: 800,
-                color: "#060609",
+                color: "#000000",
               }}
             >
               R

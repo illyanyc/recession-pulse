@@ -27,7 +27,7 @@ export function IndicatorGrid({ indicators }: IndicatorGridProps) {
       <div className="flex items-center gap-4 sm:gap-6 mb-6 p-4 rounded-xl bg-pulse-card border border-pulse-border">
         <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-pulse-green" />
+            <div className="w-3 h-3 bg-pulse-safe" />
             <span className="text-sm text-pulse-text">
               <span className="font-bold text-white">{safeCount}</span> Safe
             </span>

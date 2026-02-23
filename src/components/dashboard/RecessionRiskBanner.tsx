@@ -7,11 +7,11 @@ interface RecessionRiskBannerProps {
 }
 
 const RISK_CONFIG = {
-  low:      { color: "#00ff87", bg: "from-pulse-green/5 to-transparent",  border: "border-pulse-green/20",  label: "LOW" },
-  moderate: { color: "#ffa502", bg: "from-pulse-yellow/5 to-transparent", border: "border-pulse-yellow/20", label: "MODERATE" },
-  elevated: { color: "#ff8c00", bg: "from-orange-500/5 to-transparent",   border: "border-orange-500/20",   label: "ELEVATED" },
-  high:     { color: "#ff4757", bg: "from-pulse-red/5 to-transparent",    border: "border-pulse-red/20",    label: "HIGH" },
-  critical: { color: "#ff0033", bg: "from-red-600/5 to-transparent",      border: "border-red-600/20",      label: "CRITICAL" },
+  low:      { color: "#00CC66", bg: "from-pulse-safe/5 to-transparent",   border: "border-pulse-safe/20",   label: "LOW" },
+  moderate: { color: "#FFCC00", bg: "from-pulse-yellow/5 to-transparent", border: "border-pulse-yellow/20", label: "MODERATE" },
+  elevated: { color: "#FF6600", bg: "from-pulse-green/5 to-transparent",  border: "border-pulse-green/20",  label: "ELEVATED" },
+  high:     { color: "#FF3333", bg: "from-pulse-red/5 to-transparent",    border: "border-pulse-red/20",    label: "HIGH" },
+  critical: { color: "#FF0000", bg: "from-red-600/5 to-transparent",      border: "border-red-600/20",      label: "CRITICAL" },
 } as const;
 
 function RiskGauge({ score, color }: { score: number; color: string }) {

@@ -147,7 +147,7 @@ export function StockModal({ signal, onClose }: StockModalProps) {
     }
   }
 
-  const chartColor = signal.rsi_14 < 30 ? "#ff4757" : "#ffa502";
+  const chartColor = signal.rsi_14 < 30 ? "#FF3333" : "#FFCC00";
 
   return (
     <div
@@ -247,7 +247,7 @@ export function StockModal({ signal, onClose }: StockModalProps) {
                       <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" />
                   <XAxis
                     dataKey="date"
                     tick={{ fontSize: 10, fill: "#6b7280" }}
@@ -265,11 +265,11 @@ export function StockModal({ signal, onClose }: StockModalProps) {
                   />
                   <Tooltip
                     contentStyle={{
-                      background: "#12121a",
-                      border: "1px solid #1e1e2e",
-                      borderRadius: "8px",
+                      background: "#0D0D0D",
+                      border: "1px solid #2A2A2A",
+                      borderRadius: "0px",
                       fontSize: "12px",
-                      color: "#e5e7eb",
+                      color: "#D4D4D4",
                     }}
                     labelFormatter={(d) => new Date(String(d)).toLocaleDateString()}
                     formatter={(value) => [`$${Number(value).toFixed(2)}`, "Price"]}

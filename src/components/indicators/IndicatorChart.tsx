@@ -12,10 +12,10 @@ import {
 import type { IndicatorStatus } from "@/types";
 
 const STATUS_COLOR: Record<IndicatorStatus, string> = {
-  safe: "#00ff87",
-  watch: "#ffa502",
-  warning: "#ff4757",
-  danger: "#ff4757",
+  safe: "#00CC66",
+  watch: "#FFCC00",
+  warning: "#FF3333",
+  danger: "#FF3333",
 };
 
 interface IndicatorChartProps {
@@ -37,7 +37,7 @@ export function IndicatorChart({ data, status, slug }: IndicatorChartProps) {
               <stop offset="95%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" vertical={false} />
           <XAxis
             dataKey="date"
             stroke="#6b7280"
@@ -56,12 +56,12 @@ export function IndicatorChart({ data, status, slug }: IndicatorChartProps) {
           />
           <Tooltip
             contentStyle={{
-              background: "#12121a",
-              border: "1px solid #1e1e2e",
-              borderRadius: "8px",
+              background: "#0D0D0D",
+              border: "1px solid #2A2A2A",
+              borderRadius: "0px",
               padding: "8px 12px",
               fontSize: "12px",
-              color: "#e5e7eb",
+              color: "#D4D4D4",
             }}
             labelFormatter={(d) =>
               new Date(String(d) + "T00:00:00").toLocaleDateString("en-US", {

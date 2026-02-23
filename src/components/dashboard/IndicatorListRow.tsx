@@ -10,14 +10,14 @@ interface IndicatorListRowProps {
 }
 
 const STATUS_DOT: Record<IndicatorStatus, string> = {
-  safe: "bg-pulse-green",
+  safe: "bg-pulse-safe",
   watch: "bg-pulse-yellow",
   warning: "bg-pulse-red",
   danger: "bg-red-500",
 };
 
 function TrendIcon({ status }: { status: IndicatorStatus }) {
-  if (status === "safe") return <TrendingUp className="h-3.5 w-3.5 text-pulse-green" />;
+  if (status === "safe") return <TrendingUp className="h-3.5 w-3.5 text-pulse-safe" />;
   if (status === "danger" || status === "warning") return <TrendingDown className="h-3.5 w-3.5 text-pulse-red" />;
   return <Minus className="h-3.5 w-3.5 text-pulse-yellow" />;
 }

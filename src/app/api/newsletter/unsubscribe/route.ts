@@ -44,11 +44,11 @@ function unsubPage(emailOrError: string, success: boolean): string {
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${success ? "Unsubscribed" : "Error"} — RecessionPulse</title>
 <style>
-  body { margin:0; padding:40px 20px; background:#0a0a0f; color:#e5e7eb; font-family:system-ui,sans-serif; text-align:center; }
-  .card { max-width:400px; margin:60px auto; background:#12121a; border:1px solid #1e1e2e; border-radius:16px; padding:40px; }
+  body { margin:0; padding:40px 20px; background:#080808; color:#D4D4D4; font-family:system-ui,sans-serif; text-align:center; }
+  .card { max-width:400px; margin:60px auto; background:#0D0D0D; border:1px solid #2A2A2A; border-radius:0px; padding:40px; }
   h1 { font-size:24px; margin:0 0 12px; color:white; }
   p { font-size:14px; color:#9ca3af; line-height:1.6; margin:0 0 20px; }
-  a { color:#00ff87; text-decoration:none; }
+  a { color:#FF6600; text-decoration:none; }
   a:hover { text-decoration:underline; }
   .check { font-size:48px; margin-bottom:16px; }
 </style></head>

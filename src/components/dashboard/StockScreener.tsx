@@ -123,7 +123,7 @@ function StockCard({ signal, onClick }: { signal: StockSignal; onClick: () => vo
       .finally(() => setChartLoading(false));
   }, [signal.ticker]);
 
-  const chartColor = signal.rsi_14 < 30 ? "#ff4757" : "#ffa502";
+  const chartColor = signal.rsi_14 < 30 ? "#FF3333" : "#FFCC00";
 
   return (
     <div
@@ -202,17 +202,17 @@ function StockCard({ signal, onClick }: { signal: StockSignal; onClick: () => vo
                     <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" vertical={false} />
                 <XAxis dataKey="date" hide />
                 <YAxis hide domain={["auto", "auto"]} />
                 <Tooltip
                   contentStyle={{
-                    background: "#12121a",
-                    border: "1px solid #1e1e2e",
-                    borderRadius: "6px",
+                    background: "#0D0D0D",
+                    border: "1px solid #2A2A2A",
+                    borderRadius: "0px",
                     padding: "4px 8px",
                     fontSize: "11px",
-                    color: "#e5e7eb",
+                    color: "#D4D4D4",
                   }}
                   labelFormatter={(d) => new Date(String(d) + "T00:00:00").toLocaleDateString()}
                   formatter={(value) => [`$${Number(value).toFixed(2)}`, "Price"]}

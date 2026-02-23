@@ -25,21 +25,21 @@ interface HistoryPoint {
 }
 
 const STATUS_BORDER: Record<IndicatorStatus, string> = {
-  safe: "hover:border-pulse-green/40 hover:shadow-[0_0_20px_rgba(0,255,135,0.06)]",
-  watch: "hover:border-pulse-yellow/40 hover:shadow-[0_0_20px_rgba(255,165,2,0.06)]",
-  warning: "hover:border-pulse-red/40 hover:shadow-[0_0_20px_rgba(255,71,87,0.06)]",
-  danger: "hover:border-red-500/40 hover:shadow-[0_0_20px_rgba(255,71,87,0.08)]",
+  safe: "hover:border-pulse-safe/40 hover:shadow-[0_0_20px_rgba(0,204,102,0.06)]",
+  watch: "hover:border-pulse-yellow/40 hover:shadow-[0_0_20px_rgba(255,204,0,0.06)]",
+  warning: "hover:border-pulse-red/40 hover:shadow-[0_0_20px_rgba(255,51,51,0.06)]",
+  danger: "hover:border-red-500/40 hover:shadow-[0_0_20px_rgba(255,51,51,0.08)]",
 };
 
 const STATUS_CHART_COLOR: Record<IndicatorStatus, string> = {
-  safe: "#00ff87",
-  watch: "#ffa502",
-  warning: "#ff4757",
-  danger: "#ff4757",
+  safe: "#00CC66",
+  watch: "#FFCC00",
+  warning: "#FF3333",
+  danger: "#FF3333",
 };
 
 function TrendIcon({ status }: { status: IndicatorStatus }) {
-  if (status === "safe") return <TrendingUp className="h-3.5 w-3.5 text-pulse-green" />;
+  if (status === "safe") return <TrendingUp className="h-3.5 w-3.5 text-pulse-safe" />;
   if (status === "danger" || status === "warning") return <TrendingDown className="h-3.5 w-3.5 text-pulse-red" />;
   return <Minus className="h-3.5 w-3.5 text-pulse-yellow" />;
 }
@@ -67,11 +67,10 @@ export function IndicatorCard({ indicator, onClick }: IndicatorCardProps) {
 
   return (
     <div
-      className={`group relative bg-pulse-card border border-pulse-border rounded-xl cursor-pointer transition-all duration-300 overflow-hidden ${STATUS_BORDER[indicator.status]}`}
+      className={`group relative bg-pulse-card border border-pulse-border cursor-pointer transition-all duration-300 overflow-hidden ${STATUS_BORDER[indicator.status]}`}
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
     >
-      {/* ---- DEFAULT STATE ---- */}
       <div className="p-5 transition-all duration-300 group-hover:opacity-0 group-hover:pointer-events-none">
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -107,9 +106,7 @@ export function IndicatorCard({ indicator, onClick }: IndicatorCardProps) {
         </div>
       </div>
 
-      {/* ---- HOVER STATE: metrics top + mini chart ---- */}
       <div className="absolute inset-0 flex flex-col opacity-0 group-hover:opacity-100 transition-all duration-300 bg-pulse-card">
-        {/* Compressed metrics row */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs font-semibold text-white truncate">{indicator.name}</span>
@@ -123,7 +120,6 @@ export function IndicatorCard({ indicator, onClick }: IndicatorCardProps) {
           </div>
         </div>
 
-        {/* Mini chart area */}
         <div className="flex-1 px-2 pb-1">
           {chartLoading ? (
             <div className="h-full flex items-center justify-center">
@@ -138,17 +134,17 @@ export function IndicatorCard({ indicator, onClick }: IndicatorCardProps) {
                     <stop offset="95%" stopColor={color} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" vertical={false} />
                 <XAxis dataKey="date" hide />
                 <YAxis hide domain={["auto", "auto"]} />
                 <Tooltip
                   contentStyle={{
-                    background: "#12121a",
-                    border: "1px solid #1e1e2e",
-                    borderRadius: "6px",
+                    background: "#0D0D0D",
+                    border: "1px solid #2A2A2A",
+                    borderRadius: "0px",
                     padding: "4px 8px",
                     fontSize: "11px",
-                    color: "#e5e7eb",
+                    color: "#D4D4D4",
                   }}
                   labelFormatter={(d) => new Date(String(d) + "T00:00:00").toLocaleDateString()}
                   formatter={(value) => [Number(value).toLocaleString(), "Value"]}
@@ -171,7 +167,6 @@ export function IndicatorCard({ indicator, onClick }: IndicatorCardProps) {
           )}
         </div>
 
-        {/* Bottom row: trigger + CTA */}
         <div className="flex items-center justify-between px-4 pb-3 pt-1 border-t border-pulse-border/50">
           <span className="text-[10px] text-pulse-muted truncate">
             Trigger: {indicator.trigger_level}
