@@ -58,6 +58,21 @@ export async function fetchAllIndicators(): Promise<
     "ICSA",
     "UMCSENT",
     "FEDFUNDS",
+    "PERMIT",
+    "W875RX1",
+    "INDPRO",
+    "JTSQUR",
+    "NFCI",
+    "TEMPHELPS",
+    "CP",
+    "PSAVERT",
+    "DRCCLACBS",
+    "HOUST",
+    "TSIFRGHTC",
+    "ISRATIO",
+    "TDSP",
+    "T10Y3M",
+    "VIXCLS",
   ];
 
   const promises = series.map(async (seriesId) => {

@@ -216,7 +216,12 @@ export default async function IndicatorPage({ params }: PageProps) {
                 </div>
                 <div className="text-left sm:text-right">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">{latest.signal_emoji}</span>
+                    <span className={`w-3 h-3 rounded-full shrink-0 ${
+                      latest.signal_emoji === "DANGER" ? "bg-pulse-red" :
+                      latest.signal_emoji === "WARNING" ? "bg-pulse-yellow" :
+                      latest.signal_emoji === "WATCH" ? "bg-pulse-yellow" :
+                      "bg-pulse-green"
+                    }`} />
                     <span className="text-sm font-medium text-white">{latest.signal}</span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-pulse-muted">

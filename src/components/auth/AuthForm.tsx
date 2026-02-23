@@ -192,7 +192,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             }`}>
               {!agreedToTerms && (
                 <span className="absolute -left-2 top-4 text-pulse-yellow animate-bounce-x text-lg" aria-hidden="true">
-                  👉
+                  &rarr;
                 </span>
               )}
               <label className="flex items-start gap-3 cursor-pointer group">

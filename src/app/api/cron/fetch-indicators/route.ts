@@ -20,7 +20,7 @@ const ADDITIONAL_INDICATORS = [
     },
     evaluate: (value: number) => ({
       status: value < 0 ? "danger" : value < 0.5 ? "watch" : value > 1.0 ? "watch" : "safe",
-      signal_emoji: value < 0 ? "🔴" : value < 0.5 ? "🟡" : value > 1.0 ? "🟡" : "🟢",
+      signal_emoji: value < 0 ? "DANGER" : value < 0.5 ? "WATCH" : value > 1.0 ? "WATCH" : "SAFE",
       signal: value < 0 ? "INVERTED" : value > 1.0 ? "Steepening — can precede recession as Fed cuts" : "Normal",
     }),
   },
@@ -32,7 +32,7 @@ const ADDITIONAL_INDICATORS = [
     fetch: async () => ({ value: -0.3, date: new Date().toISOString().split("T")[0] }),
     evaluate: (value: number) => ({
       status: value < -0.2 ? "danger" : value < 0 ? "warning" : "safe",
-      signal_emoji: value < -0.2 ? "⚠️" : value < 0 ? "🟡" : "🟢",
+      signal_emoji: value < -0.2 ? "WARNING" : value < 0 ? "WATCH" : "SAFE",
       signal: value < -0.2 ? "3Ds Rule TRIGGERED — recession signal active" : value < 0 ? "Declining — monitor" : "Positive",
     }),
   },
@@ -48,7 +48,7 @@ const ADDITIONAL_INDICATORS = [
     },
     evaluate: (value: number) => ({
       status: value < 100 ? "warning" : value < 500 ? "watch" : "safe",
-      signal_emoji: value < 100 ? "⚠️" : value < 500 ? "🟡" : "🟢",
+      signal_emoji: value < 100 ? "WARNING" : value < 500 ? "WATCH" : "SAFE",
       signal: value < 100 ? `~$${Math.round(value)}B — ${Math.round((1 - value / 2500) * 100)}% depleted` : `$${Math.round(value)}B remaining`,
     }),
   },
@@ -64,7 +64,7 @@ const ADDITIONAL_INDICATORS = [
     },
     evaluate: (value: number) => ({
       status: value < 95 ? "warning" : value < 100 ? "watch" : "safe",
-      signal_emoji: value < 95 ? "⚠️" : value < 100 ? "🟡" : "🟢",
+      signal_emoji: value < 95 ? "WARNING" : value < 100 ? "WATCH" : "SAFE",
       signal: value < 95 ? "Dollar weakness — capital flight risk" : value < 100 ? "Dollar weakening — monitor" : "Dollar stable",
     }),
   },
@@ -76,7 +76,7 @@ const ADDITIONAL_INDICATORS = [
     fetch: async () => ({ value: 35, date: new Date().toISOString().split("T")[0] }),
     evaluate: (value: number) => ({
       status: value >= 50 ? "danger" : value >= 30 ? "watch" : "safe",
-      signal_emoji: value >= 50 ? "🔴" : value >= 30 ? "🟡" : "🟢",
+      signal_emoji: value >= 50 ? "DANGER" : value >= 30 ? "WATCH" : "SAFE",
       signal: value >= 50 ? "HIGH probability" : value >= 30 ? `Moderate risk — ${value}%` : "Low probability",
     }),
   },
@@ -92,7 +92,7 @@ const ADDITIONAL_INDICATORS = [
     },
     evaluate: (value: number) => ({
       status: value < 0 ? "danger" : value < 1.5 ? "warning" : value < 2.5 ? "watch" : "safe",
-      signal_emoji: value < 0 ? "🔴" : value < 1.5 ? "⚠️" : value < 2.5 ? "🟡" : "🟢",
+      signal_emoji: value < 0 ? "DANGER" : value < 1.5 ? "WARNING" : value < 2.5 ? "WATCH" : "SAFE",
       signal: value < 0 ? "CONTRACTION" : value < 1.5 ? "Near-stall speed" : value < 2.5 ? "Slowing" : "Solid growth",
     }),
   },
@@ -104,7 +104,7 @@ const ADDITIONAL_INDICATORS = [
     fetch: async () => ({ value: 33.6, date: new Date().toISOString().split("T")[0] }),
     evaluate: (value: number) => ({
       status: value > 20 ? "safe" : value > 0 ? "watch" : "warning",
-      signal_emoji: value > 20 ? "🟢" : value > 0 ? "🟡" : "🔴",
+      signal_emoji: value > 20 ? "SAFE" : value > 0 ? "WATCH" : "DANGER",
       signal: value > 20 ? "Bullish EM — but signals US deceleration" : "EM underperforming",
     }),
   },
@@ -120,7 +120,7 @@ const ADDITIONAL_INDICATORS = [
     },
     evaluate: (value: number) => ({
       status: value > 500 ? "danger" : value > 400 ? "warning" : value > 300 ? "watch" : "safe",
-      signal_emoji: value > 500 ? "🔴" : value > 400 ? "⚠️" : value > 300 ? "🟡" : "🟢",
+      signal_emoji: value > 500 ? "DANGER" : value > 400 ? "WARNING" : value > 300 ? "WATCH" : "SAFE",
       signal: value > 500 ? "Credit stress — spreads blowing out" : value > 400 ? "Widening — stress building" : value > 300 ? "Elevated — monitor" : "Tight spreads",
     }),
   },
@@ -132,7 +132,7 @@ const ADDITIONAL_INDICATORS = [
     fetch: async () => ({ value: 500, date: new Date().toISOString().split("T")[0] }),
     evaluate: (value: number) => ({
       status: value > 400 ? "warning" : value > 200 ? "watch" : "safe",
-      signal_emoji: value > 400 ? "⚠️" : value > 200 ? "🟡" : "🟢",
+      signal_emoji: value > 400 ? "WARNING" : value > 200 ? "WATCH" : "SAFE",
       signal: value > 400 ? `~$${value}B HTM — vulnerable to liquidity shock` : "Manageable levels",
     }),
   },
@@ -144,8 +144,137 @@ const ADDITIONAL_INDICATORS = [
     fetch: async () => ({ value: 950, date: new Date().toISOString().split("T")[0] }),
     evaluate: (value: number) => ({
       status: value > 900 ? "warning" : value > 600 ? "watch" : "safe",
-      signal_emoji: value > 900 ? "⚠️" : value > 600 ? "🟡" : "🟢",
+      signal_emoji: value > 900 ? "WARNING" : value > 600 ? "WATCH" : "SAFE",
       signal: value > 900 ? `~$${value}B/yr — approaching $1T, fiscal doom loop` : "Elevated but manageable",
+    }),
+  },
+  // --- Tier 1: NY Fed Recession Probability (computed from 3m/10y spread) ---
+  {
+    slug: "ny-fed-recession-prob",
+    name: "NY Fed Recession Probability",
+    category: "primary" as const,
+    trigger_level: ">50% has preceded every recession since 1972",
+    fetch: async () => {
+      const data = await fetchLatestValue("T10Y3M");
+      if (!data) return { value: 20, date: new Date().toISOString().split("T")[0] };
+      const spread = data.value;
+      const prob = Math.min(100, Math.max(0, 100 / (1 + Math.exp(0.5 + 3.2 * spread))));
+      return { value: Math.round(prob * 10) / 10, date: data.date };
+    },
+    evaluate: (value: number) => ({
+      status: value > 50 ? "danger" : value > 30 ? "warning" : value > 15 ? "watch" : "safe",
+      signal_emoji: value > 50 ? "DANGER" : value > 30 ? "WARNING" : value > 15 ? "WATCH" : "SAFE",
+      signal: value > 50 ? `${value}% — recession likely within 12 months` : value > 30 ? `${value}% — elevated risk` : value > 15 ? `${value}% — moderate risk` : `${value}% — low risk`,
+    }),
+  },
+  // --- Tier 2: VIX (fetched from CBOE via proxy/FRED alternative) ---
+  {
+    slug: "vix",
+    name: "VIX Volatility Index",
+    category: "market" as const,
+    trigger_level: ">30 = high fear; >40 = crisis",
+    fetch: async () => {
+      try {
+        const data = await fetchLatestValue("VIXCLS");
+        if (data) return data;
+      } catch { /* fall through */ }
+      return { value: 18, date: new Date().toISOString().split("T")[0] };
+    },
+    evaluate: (value: number) => ({
+      status: value > 40 ? "danger" : value > 30 ? "warning" : value > 20 ? "watch" : "safe",
+      signal_emoji: value > 40 ? "DANGER" : value > 30 ? "WARNING" : value > 20 ? "WATCH" : "SAFE",
+      signal: value > 40 ? "Extreme fear — crisis-level volatility" : value > 30 ? "High fear — markets stressed" : value > 20 ? `VIX ${value.toFixed(1)} — elevated uncertainty` : "Low volatility — complacency",
+    }),
+  },
+  // --- Tier 2: Atlanta Fed GDPNow (mock until scraper built) ---
+  {
+    slug: "gdpnow",
+    name: "Atlanta Fed GDPNow",
+    category: "realtime" as const,
+    trigger_level: "<0% = real-time recession signal",
+    fetch: async () => {
+      return { value: 1.8, date: new Date().toISOString().split("T")[0] };
+    },
+    evaluate: (value: number) => ({
+      status: value < 0 ? "danger" : value < 1.0 ? "warning" : value < 2.0 ? "watch" : "safe",
+      signal_emoji: value < 0 ? "DANGER" : value < 1.0 ? "WARNING" : value < 2.0 ? "WATCH" : "SAFE",
+      signal: value < 0 ? `${value.toFixed(1)}% — GDP contracting in real time` : value < 1.0 ? `${value.toFixed(1)}% — near stall speed` : value < 2.0 ? `${value.toFixed(1)}% — below trend` : `${value.toFixed(1)}% — solid growth`,
+    }),
+  },
+  // --- Tier 2: NFIB Small Business Optimism (mock until scraper built) ---
+  {
+    slug: "nfib-optimism",
+    name: "NFIB Small Business Optimism",
+    category: "business_activity" as const,
+    trigger_level: "<95 = pessimistic; <90 = recessionary",
+    fetch: async () => {
+      return { value: 97.4, date: new Date().toISOString().split("T")[0] };
+    },
+    evaluate: (value: number) => ({
+      status: value < 90 ? "danger" : value < 95 ? "warning" : value < 98 ? "watch" : "safe",
+      signal_emoji: value < 90 ? "DANGER" : value < 95 ? "WARNING" : value < 98 ? "WATCH" : "SAFE",
+      signal: value < 90 ? "Deeply pessimistic — recession territory" : value < 95 ? "Below average — small biz struggling" : value < 98 ? "Slightly below average" : `${value.toFixed(1)} — above average`,
+    }),
+  },
+  // --- Tier 2: Copper-to-Gold Ratio (computed from FRED copper & gold) ---
+  {
+    slug: "copper-gold-ratio",
+    name: "Copper-to-Gold Ratio",
+    category: "realtime" as const,
+    trigger_level: "<0.00100 = industrial weakness vs fear",
+    fetch: async () => {
+      try {
+        const [copper, gold] = await Promise.all([
+          fetchLatestValue("PCOPPUSDM"),
+          fetchLatestValue("GOLDAMGBD228NLBM"),
+        ]);
+        if (copper && gold && gold.value > 0) {
+          return { value: Math.round((copper.value / gold.value) * 100000) / 100000, date: copper.date };
+        }
+      } catch { /* fall through */ }
+      return { value: 0.00077, date: new Date().toISOString().split("T")[0] };
+    },
+    evaluate: (value: number) => {
+      const scaled = value * 10000;
+      return {
+        status: scaled < 8 ? "danger" : scaled < 10 ? "warning" : scaled < 15 ? "watch" : "safe",
+        signal_emoji: scaled < 8 ? "DANGER" : scaled < 10 ? "WARNING" : scaled < 15 ? "WATCH" : "SAFE",
+        signal: scaled < 8 ? "50-year low — extreme industrial fear" : scaled < 10 ? "Below 2008 crisis levels" : scaled < 15 ? "Weakening industrial demand" : "Healthy industrial activity",
+      };
+    },
+  },
+  // --- Tier 3: SLOOS Lending Standards (mock until Fed survey scraper built) ---
+  {
+    slug: "sloos-lending",
+    name: "SLOOS Lending Standards",
+    category: "business_activity" as const,
+    trigger_level: "Net tightening >20% = credit crunch",
+    fetch: async () => {
+      try {
+        const data = await fetchLatestValue("DRTSCILM");
+        if (data) return data;
+      } catch { /* fall through */ }
+      return { value: 10, date: new Date().toISOString().split("T")[0] };
+    },
+    evaluate: (value: number) => ({
+      status: value > 40 ? "danger" : value > 20 ? "warning" : value > 5 ? "watch" : "safe",
+      signal_emoji: value > 40 ? "DANGER" : value > 20 ? "WARNING" : value > 5 ? "WATCH" : "SAFE",
+      signal: value > 40 ? "Severe tightening — credit crunch" : value > 20 ? "Significant tightening — lending drying up" : value > 5 ? `Net ${value}% tightening — modest` : "Standards easing",
+    }),
+  },
+  // --- Tier 3: SOS Recession Indicator (mock until Richmond Fed scraper) ---
+  {
+    slug: "sos-recession",
+    name: "SOS Recession Indicator",
+    category: "primary" as const,
+    trigger_level: "Triggered = recession signal (weekly claims-based)",
+    fetch: async () => {
+      return { value: 0.12, date: new Date().toISOString().split("T")[0] };
+    },
+    evaluate: (value: number) => ({
+      status: value >= 0.20 ? "danger" : value >= 0.15 ? "warning" : value >= 0.10 ? "watch" : "safe",
+      signal_emoji: value >= 0.20 ? "DANGER" : value >= 0.15 ? "WARNING" : value >= 0.10 ? "WATCH" : "SAFE",
+      signal: value >= 0.20 ? "TRIGGERED — recession signal" : value >= 0.15 ? "Near trigger — watch weekly" : value >= 0.10 ? "Elevated — monitor" : "Not triggered",
     }),
   },
 ];

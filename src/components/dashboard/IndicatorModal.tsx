@@ -166,7 +166,12 @@ export function IndicatorModal({ indicator, onClose }: IndicatorModalProps) {
             <TrendIcon className="h-5 w-5 mb-1" style={{ color }} />
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-lg">{indicator.signal_emoji}</span>
+            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+              indicator.signal_emoji === "DANGER" ? "bg-pulse-red" :
+              indicator.signal_emoji === "WARNING" ? "bg-pulse-yellow" :
+              indicator.signal_emoji === "WATCH" ? "bg-pulse-yellow" :
+              "bg-pulse-green"
+            }`} />
             <span className="text-sm text-pulse-muted">{indicator.signal}</span>
           </div>
           <p className="text-xs text-pulse-muted mt-1">

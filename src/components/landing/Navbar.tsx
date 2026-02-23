@@ -59,7 +59,7 @@ export function Navbar() {
                   <Button variant="ghost" size="sm">Log in</Button>
                 </Link>
                 <Link href="/signup">
-                  <Button size="sm">Get started</Button>
+                  <Button size="sm">Start free</Button>
                 </Link>
               </>
             )}
@@ -102,7 +102,7 @@ export function Navbar() {
                     <Button variant="secondary" size="sm" className="w-full">Log in</Button>
                   </Link>
                   <Link href="/signup" className="flex-1" onClick={() => setIsOpen(false)}>
-                    <Button size="sm" className="w-full">Get started</Button>
+                    <Button size="sm" className="w-full">Start free</Button>
                   </Link>
                 </>
               )}

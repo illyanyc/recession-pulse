@@ -56,6 +56,10 @@ export default async function DashboardPage() {
     .order("screened_at", { ascending: false })
     .limit(20);
 
+  // #region agent log
+  const fs = await import("fs"); fs.appendFileSync("/Users/illya/dev/recession-tracker/.cursor/debug.log", JSON.stringify({id:"log_page_stocks",timestamp:Date.now(),location:"dashboard/page.tsx:57",message:"Server: stock signals fetched",data:{count:stockSignals?.length||0,tickers:stockSignals?.map((s: {ticker:string})=>s.ticker)||[]},hypothesisId:"H3"})+"\n");
+  // #endregion
+
   // Fetch recent messages
   const { data: messages } = await supabase
     .from("message_queue")

@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { TrendingDown, TrendingUp, Minus, ArrowRight, Activity, Lock } from "lucide-react";
-import type { IndicatorStatus } from "@/types";
+import type { IndicatorStatus, IndicatorCategory } from "@/types";
+import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/types";
 
 const FREE_INDICATOR_SLUGS = new Set([
   "sahm-rule",
@@ -19,7 +20,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Recession Indicators — Live Economic Dashboard",
   description:
-    "Track 15+ recession indicators in real time: Sahm Rule, yield curve, credit spreads, ISM PMI, consumer sentiment, and more. Updated daily with AI analysis.",
+    "Track 38+ recession indicators in real time: Sahm Rule, yield curve, credit spreads, ISM PMI, JOLTS, building permits, consumer stress, and more. Updated daily with AI analysis.",
   keywords: [
     "recession indicators",
     "recession tracker",
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Live Recession Indicators Dashboard — RecessionPulse",
     description:
-      "15+ recession indicators tracked daily. Sahm Rule, yield curve, credit spreads, PMI, and more.",
+      "38+ recession indicators tracked daily. Sahm Rule, yield curve, JOLTS, building permits, credit spreads, PMI, and more.",
     url: "https://recessionpulse.com/indicators",
   },
   alternates: { canonical: "https://recessionpulse.com/indicators" },
@@ -56,6 +57,47 @@ interface IndicatorRow {
   reading_date: string;
 }
 
+const SLUG_CATEGORY_MAP: Record<string, IndicatorCategory> = {
+  "sahm-rule": "primary",
+  "yield-curve-2s10s": "primary",
+  "yield-curve-2s30s": "primary",
+  "conference-board-lei": "primary",
+  "ism-manufacturing": "primary",
+  "unemployment-rate": "primary",
+  "real-personal-income": "primary",
+  "industrial-production": "primary",
+  "jolts-quits-rate": "primary",
+  "temp-help-services": "primary",
+  "ny-fed-recession-prob": "primary",
+  "sos-recession": "primary",
+  "initial-claims": "secondary",
+  "consumer-sentiment": "secondary",
+  "fed-funds-rate": "secondary",
+  "gdp-growth": "secondary",
+  "jpm-recession-probability": "secondary",
+  "building-permits": "housing",
+  "housing-starts": "housing",
+  "corporate-profits": "business_activity",
+  "nfib-optimism": "business_activity",
+  "inventory-sales-ratio": "business_activity",
+  "sloos-lending": "business_activity",
+  "personal-savings-rate": "credit_stress",
+  "credit-card-delinquency": "credit_stress",
+  "debt-service-ratio": "credit_stress",
+  "nfci": "market",
+  "credit-spreads": "market",
+  "vix": "market",
+  "dxy-dollar-index": "market",
+  "emerging-markets": "market",
+  "m2-money-supply": "liquidity",
+  "on-rrp-facility": "liquidity",
+  "bank-unrealized-losses": "liquidity",
+  "us-interest-expense": "liquidity",
+  "gdpnow": "realtime",
+  "copper-gold-ratio": "realtime",
+  "freight-index": "realtime",
+};
+
 export default async function IndicatorsIndexPage() {
   const supabase = createServiceClient();
   const authClient = await createClient();
@@ -74,12 +116,10 @@ export default async function IndicatorsIndexPage() {
     }
   }
 
-  const categories = [
-    { key: "primary", label: "Primary Indicators" },
-    { key: "secondary", label: "Secondary Indicators" },
-    { key: "liquidity", label: "Liquidity Indicators" },
-    { key: "market", label: "Market Indicators" },
-  ];
+  const categories = CATEGORY_ORDER.map((key) => ({
+    key,
+    label: CATEGORY_LABELS[key],
+  }));
 
   const statusCounts = { safe: 0, watch: 0, warning: 0, danger: 0 };
   for (const row of latestBySlug.values()) {
@@ -150,38 +190,8 @@ export default async function IndicatorsIndexPage() {
             const items = ALL_INDICATOR_SLUGS
               .filter((slug) => {
                 const row = latestBySlug.get(slug);
-                const seo = INDICATORS_SEO[slug];
                 if (row) return row.category === cat.key;
-                if (!seo) return false;
-                if (cat.key === "primary")
-                  return [
-                    "sahm-rule",
-                    "yield-curve-2s10s",
-                    "yield-curve-2s30s",
-                    "conference-board-lei",
-                    "ism-manufacturing",
-                    "unemployment-rate",
-                  ].includes(slug);
-                if (cat.key === "secondary")
-                  return [
-                    "initial-claims",
-                    "consumer-sentiment",
-                    "fed-funds-rate",
-                    "gdp-growth",
-                    "jpm-recession-probability",
-                  ].includes(slug);
-                if (cat.key === "liquidity")
-                  return [
-                    "m2-money-supply",
-                    "on-rrp-facility",
-                    "bank-unrealized-losses",
-                    "us-interest-expense",
-                  ].includes(slug);
-                return [
-                  "dxy-dollar-index",
-                  "credit-spreads",
-                  "emerging-markets",
-                ].includes(slug);
+                return SLUG_CATEGORY_MAP[slug] === cat.key;
               })
               .map((slug) => ({ slug, seo: INDICATORS_SEO[slug], row: latestBySlug.get(slug) }))
               .filter((i) => i.seo);

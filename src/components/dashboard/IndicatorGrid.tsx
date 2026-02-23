@@ -5,12 +5,25 @@ import { LayoutGrid, List, BarChart2, CreditCard } from "lucide-react";
 import { IndicatorCard } from "./IndicatorCard";
 import { IndicatorListRow } from "./IndicatorListRow";
 import { IndicatorModal } from "./IndicatorModal";
-import type { RecessionIndicator, ViewMode, CardDisplayMode } from "@/types";
+import type { RecessionIndicator, ViewMode, CardDisplayMode, IndicatorCategory } from "@/types";
+import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/types";
 
 interface IndicatorGridProps {
   indicators: RecessionIndicator[];
   initialViewMode?: ViewMode;
   initialCardDisplayMode?: CardDisplayMode;
+}
+
+function groupByCategory(indicators: RecessionIndicator[]): [string, RecessionIndicator[]][] {
+  const grouped = new Map<string, RecessionIndicator[]>();
+  for (const ind of indicators) {
+    const cat = ind.category;
+    if (!grouped.has(cat)) grouped.set(cat, []);
+    grouped.get(cat)!.push(ind);
+  }
+  return CATEGORY_ORDER
+    .filter((cat) => grouped.has(cat))
+    .map((cat) => [cat, grouped.get(cat)!] as [string, RecessionIndicator[]]);
 }
 
 function savePref(key: string, value: string) {
@@ -133,29 +146,47 @@ export function IndicatorGrid({
         </div>
       </div>
 
-      {/* Grid view */}
+      {/* Grid view — grouped by category */}
       {viewMode === "grid" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {indicators.map((indicator) => (
-            <IndicatorCard
-              key={indicator.slug}
-              indicator={indicator}
-              displayMode={cardDisplayMode}
-              onClick={() => setSelected(indicator)}
-            />
+        <div className="space-y-8">
+          {groupByCategory(indicators).map(([category, items]) => (
+            <div key={category}>
+              <h3 className="text-sm font-semibold text-pulse-muted uppercase tracking-wider mb-3">
+                {CATEGORY_LABELS[category as IndicatorCategory] ?? category}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {items.map((indicator) => (
+                  <IndicatorCard
+                    key={indicator.slug}
+                    indicator={indicator}
+                    displayMode={cardDisplayMode}
+                    onClick={() => setSelected(indicator)}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
 
-      {/* List view */}
+      {/* List view — grouped by category */}
       {viewMode === "list" && (
-        <div className="space-y-2">
-          {indicators.map((indicator) => (
-            <IndicatorListRow
-              key={indicator.slug}
-              indicator={indicator}
-              onClick={() => setSelected(indicator)}
-            />
+        <div className="space-y-6">
+          {groupByCategory(indicators).map(([category, items]) => (
+            <div key={category}>
+              <h3 className="text-sm font-semibold text-pulse-muted uppercase tracking-wider mb-2">
+                {CATEGORY_LABELS[category as IndicatorCategory] ?? category}
+              </h3>
+              <div className="space-y-2">
+                {items.map((indicator) => (
+                  <IndicatorListRow
+                    key={indicator.slug}
+                    indicator={indicator}
+                    onClick={() => setSelected(indicator)}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}

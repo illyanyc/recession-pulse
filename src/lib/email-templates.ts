@@ -160,10 +160,10 @@ export function buildWelcomeEmail(name: string): { subject: string; html: string
       <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-radius:0px;padding:20px;margin-bottom:20px;">
         <p style="margin:0 0 12px;color:#FF6600;font-weight:600;font-size:14px;">What to expect:</p>
         <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="padding:6px 0;color:#D4D4D4;font-size:13px;">📊</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">9 recession indicators tracked daily</td></tr>
-          <tr><td style="padding:6px 0;color:#D4D4D4;font-size:13px;">🔔</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Morning briefing at 8:00 AM ET</td></tr>
-          <tr><td style="padding:6px 0;color:#D4D4D4;font-size:13px;">📈</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Real-time dashboard with AI analysis</td></tr>
-          <tr><td style="padding:6px 0;color:#D4D4D4;font-size:13px;">⚡</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Instant alerts if critical thresholds breach</td></tr>
+          <tr><td style="padding:6px 0;color:#FF6600;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">28 recession indicators tracked daily</td></tr>
+          <tr><td style="padding:6px 0;color:#FF6600;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Morning briefing at 8:00 AM ET</td></tr>
+          <tr><td style="padding:6px 0;color:#FF6600;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Real-time dashboard with AI analysis</td></tr>
+          <tr><td style="padding:6px 0;color:#FF6600;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Instant alerts if critical thresholds breach</td></tr>
         </table>
       </div>
       ${btn("Open Dashboard", `${APP_URL}/dashboard`)}
@@ -274,10 +274,10 @@ export function buildDailyBriefingEmail(
   const hasTrends = indicators.length > 0 && "trend" in indicators[0];
 
   let subjectPrefix: string;
-  if (danger.length >= 3) subjectPrefix = "🔴 HIGH ALERT";
-  else if (danger.length >= 1) subjectPrefix = "⚠️ CAUTION";
-  else if (watch.length >= 3) subjectPrefix = "🟡 WATCHFUL";
-  else subjectPrefix = "🟢 ALL CLEAR";
+  if (danger.length >= 3) subjectPrefix = "[HIGH ALERT]";
+  else if (danger.length >= 1) subjectPrefix = "[CAUTION]";
+  else if (watch.length >= 3) subjectPrefix = "[WATCHFUL]";
+  else subjectPrefix = "[ALL CLEAR]";
 
   // Build subject suffix for status changes
   let subjectSuffix = "";
@@ -325,7 +325,7 @@ export function buildDailyBriefingEmail(
 
       changesSection = `
         <div style="background:#1a1520;border:1px solid #2d1f3d;border-radius:0px;padding:16px 20px;margin-bottom:20px;">
-          <p style="margin:0 0 8px;color:#FFCC00;font-weight:600;font-size:13px;">🔄 Signal Changes</p>
+          <p style="margin:0 0 8px;color:#FFCC00;font-weight:600;font-size:13px;">Signal Changes</p>
           <ul style="margin:0;padding-left:16px;">${changeRows}</ul>
         </div>`;
     }
@@ -344,7 +344,7 @@ export function buildDailyBriefingEmail(
 
     stockSection = `
       <div style="margin-top:24px;">
-        <h3 style="margin:0 0 12px;font-size:16px;color:#D4D4D4;">📈 Stock Screener Picks</h3>
+        <h3 style="margin:0 0 12px;font-size:16px;color:#D4D4D4;">Stock Screener Picks</h3>
         <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-radius:0px;overflow:hidden;">
           <table style="width:100%;border-collapse:collapse;">
             <tr style="border-bottom:1px solid #2A2A2A;">

@@ -14,23 +14,37 @@ export async function POST() {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const secret = process.env.CRON_SECRET;
 
-    const res = await fetch(`${appUrl}/api/cron/fetch-indicators?secret=${secret}`);
+    // #region agent log
+    const fs = await import("fs"); fs.appendFileSync("/Users/illya/dev/recession-tracker/.cursor/debug.log", JSON.stringify({id:"log_refresh_1",timestamp:Date.now(),location:"api/dashboard/refresh/route.ts:17",message:"Refresh route called - fetching indicators + stocks",data:{appUrl,hasSecret:!!secret},hypothesisId:"H1"})+"\n");
+    // #endregion
 
-    let data;
+    const [indicatorRes, stockRes] = await Promise.all([
+      fetch(`${appUrl}/api/cron/fetch-indicators?secret=${secret}`),
+      fetch(`${appUrl}/api/cron/screen-stocks?secret=${secret}`),
+    ]);
+
+    let indicatorData;
     try {
-      data = await res.json();
+      indicatorData = await indicatorRes.json();
     } catch {
-      return NextResponse.json({ error: "Failed to parse response from data fetch" }, { status: 502 });
+      return NextResponse.json({ error: "Failed to parse indicator response" }, { status: 502 });
     }
 
-    if (!res.ok) {
+    if (!indicatorRes.ok) {
       return NextResponse.json(
-        { error: data?.error || "Data fetch failed", details: data },
-        { status: res.status }
+        { error: indicatorData?.error || "Indicator fetch failed", details: indicatorData },
+        { status: indicatorRes.status }
       );
     }
 
-    // Cache the fresh data per-user in Redis
+    let stockData;
+    try {
+      stockData = await stockRes.json();
+    } catch {
+      stockData = { message: "Stock screening response parse failed" };
+    }
+
+    // Cache the fresh indicator data per-user in Redis
     try {
       const { createServiceClient } = await import("@/lib/supabase/server");
       const service = createServiceClient();
@@ -52,7 +66,15 @@ export async function POST() {
       console.warn("Redis cache failed (non-critical):", cacheErr instanceof Error ? cacheErr.message : cacheErr);
     }
 
-    return NextResponse.json(data);
+    // #region agent log
+    const fs2 = await import("fs"); fs2.appendFileSync("/Users/illya/dev/recession-tracker/.cursor/debug.log", JSON.stringify({id:"log_refresh_2",timestamp:Date.now(),location:"api/dashboard/refresh/route.ts:end",message:"Refresh completed - indicators + stocks",data:{indicatorOk:indicatorRes.ok,stockOk:stockRes.ok,indicatorMsg:indicatorData?.message,stockMsg:stockData?.message},hypothesisId:"H1"})+"\n");
+    // #endregion
+
+    return NextResponse.json({
+      message: `${indicatorData.message || "Indicators refreshed"}. ${stockData.message || "Stocks screened"}.`,
+      indicators: indicatorData,
+      stocks: stockData,
+    });
   } catch (err) {
     console.error("Refresh route error:", err);
     return NextResponse.json(

@@ -6,6 +6,16 @@ import { cn } from "@/lib/utils";
 
 const faqs = [
   {
+    question: "What indicators does RecessionPulse track?",
+    answer:
+      "RecessionPulse monitors 28 recession and macro indicators across 8 categories: Primary (Sahm Rule, unemployment, industrial production, JOLTS quits, temp help, SOS indicator), Secondary (ISM PMI, consumer sentiment, fed funds rate), Housing (building permits, housing starts), Business Activity (corporate profits, NFIB, inventory-to-sales), Credit Stress (savings rate, credit card delinquency, SLOOS, debt service ratio), Market (yield curves, VIX, NFCI, copper-gold ratio, NY Fed & JPM recession probability), Liquidity (M2 money supply), and Real-Time (freight index, GDPNow).",
+  },
+  {
+    question: "Is RecessionPulse really free?",
+    answer:
+      "Yes. The full dashboard with all 28 indicators, signals, trends, and historical context is completely free — no credit card required. The Pulse plan ($6.99/mo) adds daily email and SMS alerts. Pulse Pro ($9.99/mo) adds stock screener alerts, value picks, and AI recession risk assessment.",
+  },
+  {
     question: "What is the Sahm Rule?",
     answer:
       "The Sahm Rule identifies recessions when the 3-month moving average of the national unemployment rate rises 0.50 percentage points or more above its low from the previous 12 months. Created by economist Claudia Sahm, it has correctly signaled every recession since 1970 in real time. RecessionPulse tracks this indicator daily.",
@@ -13,7 +23,7 @@ const faqs = [
   {
     question: "What does yield curve inversion mean for recession?",
     answer:
-      "Yield curve inversion occurs when short-term interest rates exceed long-term rates. The 2-year/10-year Treasury spread inverting has preceded every US recession since 1955, with only one false signal. Historically, recessions follow 6–18 months after un-inversion (when the curve steepens back to normal). RecessionPulse tracks both the 2s10s and 2s30s spreads.",
+      "Yield curve inversion occurs when short-term interest rates exceed long-term rates. The 2-year/10-year Treasury spread inverting has preceded every US recession since 1955, with only one false signal. Historically, recessions follow 6–18 months after un-inversion (when the curve steepens back to normal). RecessionPulse tracks both the 2s10s and 3m10y spreads.",
   },
   {
     question: "What is the Conference Board LEI 3Ds Rule?",
@@ -21,19 +31,14 @@ const faqs = [
       "The 3Ds Rule evaluates three conditions in the Conference Board Leading Economic Index: Depth (6-month growth rate below -4.3%), Diffusion (more than half of components declining), and Duration (sustained decline over multiple months). When all three trigger simultaneously, historical recession probability exceeds 85%.",
   },
   {
-    question: "What is the ON RRP Facility and why does it matter?",
+    question: "What are the new Tier 1, 2, and 3 indicators?",
     answer:
-      "The Overnight Reverse Repo (ON RRP) Facility is the Federal Reserve's mechanism for absorbing excess liquidity from the financial system. When ON RRP balances decline sharply, it signals that the liquidity buffer in the financial system is thinning. Near-zero levels mean banks and money-market funds have less margin of safety during market stress.",
-  },
-  {
-    question: "What indicators does RecessionPulse track?",
-    answer:
-      "RecessionPulse monitors key recession indicators daily including: the Sahm Rule, Yield Curve spreads (2s10s and 2s30s), Conference Board LEI, ON RRP Facility levels, DXY Dollar Index, Emerging Market performance, JPMorgan recession probability, GDP growth forecasts, credit spreads, ISM Manufacturing PMI, bank unrealized losses, US interest expense, and M2 money supply.",
+      "Tier 1 (NBER Core & Leading): Building permits, real personal income, industrial production, JOLTS quits rate, NFCI, NY Fed recession probability, and temp help services. Tier 2 (Business & Consumer): Corporate profits, savings rate, VIX, GDPNow, credit card delinquency, NFIB small business optimism, and copper-gold ratio. Tier 3 (Confirming & High-Frequency): Freight index, housing starts, inventory-to-sales ratio, SLOOS lending standards, SOS recession indicator, and debt service ratio.",
   },
   {
     question: "How much does RecessionPulse cost?",
     answer:
-      "RecessionPulse offers two plans: Pulse at $6.99/month (daily SMS and email alerts with all recession indicators) and Pulse Pro at $9.99/month (adds daily stock screener alerts for stocks below 200 EMA with RSI <30 and P/E <15). Cancel anytime. No contracts.",
+      "RecessionPulse has three tiers: Free (full dashboard with all 28 indicators), Pulse at $6.99/month (adds daily email and SMS alerts with threshold notifications), and Pulse Pro at $9.99/month (adds stock screener alerts, value picks, sector rotation signals, and AI risk assessment). Cancel anytime. No contracts.",
   },
   {
     question: "Is RecessionPulse investment advice?",

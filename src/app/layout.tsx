@@ -17,11 +17,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://recessionpulse.com"),
   title: {
-    default: "RecessionPulse — Real-time Recession Indicators & Daily SMS Alerts",
+    default: "RecessionPulse — 28 Recession Indicators Tracked in Real Time | Free Dashboard",
     template: "%s | RecessionPulse",
   },
   description:
-    "Track 9 critical recession indicators daily: Sahm Rule, yield curves, Conference Board LEI, credit spreads, and more. Get daily SMS alerts with data-driven economic signals. From $6.99/month.",
+    "Track 28 recession & macro indicators free: Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI, and more. The quant's edge for every investor. SMS alerts from $6.99/mo.",
   keywords: [
     "recession indicators",
     "recession tracker",
@@ -39,12 +39,22 @@ export const metadata: Metadata = {
     "is a recession coming",
     "recession risk",
     "yield curve 2s10s",
-    "ON RRP facility",
-    "credit spreads",
+    "VIX recession",
+    "JOLTS quits rate",
+    "building permits recession",
+    "GDPNow",
+    "NFCI financial conditions",
+    "copper gold ratio",
+    "NFIB small business",
+    "credit card delinquency",
+    "SLOOS lending standards",
+    "SOS recession indicator",
+    "NY Fed recession probability",
     "ISM manufacturing PMI",
     "stock screener recession",
     "recession proof portfolio",
-    "economic downturn alert",
+    "free recession dashboard",
+    "quant recession indicators",
   ],
   authors: [{ name: "RecessionPulse" }],
   creator: "RecessionPulse",
@@ -65,23 +75,23 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://recessionpulse.com",
     siteName: "RecessionPulse",
-    title: "RecessionPulse — Know Before the Recession Hits",
+    title: "RecessionPulse — Think Like a Quant. Prepare for What's Next.",
     description:
-      "9 critical recession indicators analyzed daily. Sahm Rule, yield curves, LEI, credit spreads & more. Daily SMS alerts from $6.99/mo.",
+      "28 recession & macro indicators tracked free. Sahm Rule, yield curves, VIX, JOLTS, GDPNow & more. SMS alerts from $6.99/mo.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "RecessionPulse — Real-time Recession Indicators Dashboard",
+        alt: "RecessionPulse — 28 Recession Indicators Dashboard",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "RecessionPulse — Real-time Recession Indicators",
+    title: "RecessionPulse — 28 Recession Indicators, Free Dashboard",
     description:
-      "Track 9 recession indicators daily. Sahm Rule, yield curves, LEI & more. Daily SMS alerts.",
+      "Track 28 recession indicators free. Sahm Rule, yield curves, VIX, JOLTS, building permits & more. SMS alerts from $6.99/mo.",
     images: ["/og-image.png"],
   },
   alternates: {
@@ -97,15 +107,23 @@ const jsonLd = {
   applicationCategory: "FinanceApplication",
   operatingSystem: "Web",
   description:
-    "Real-time recession indicator tracking and daily SMS alerts. Monitors Sahm Rule, yield curves, Conference Board LEI, credit spreads, and more.",
+    "Track 28 recession & macro indicators in real time. Free dashboard with Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI, and more. SMS alerts from $6.99/mo.",
   url: "https://recessionpulse.com",
   offers: [
+    {
+      "@type": "Offer",
+      name: "Free Plan",
+      price: "0",
+      priceCurrency: "USD",
+      description: "Free dashboard with all 28 recession and macro indicators tracked in real time",
+      url: "https://recessionpulse.com/signup",
+    },
     {
       "@type": "Offer",
       name: "Pulse Plan",
       price: "6.99",
       priceCurrency: "USD",
-      description: "Daily recession indicator SMS alerts — 9 key indicators tracked",
+      description: "Daily email and SMS recession alerts — 28 indicators tracked with threshold notifications",
       url: "https://recessionpulse.com/pricing",
     },
     {
@@ -114,7 +132,7 @@ const jsonLd = {
       price: "9.99",
       priceCurrency: "USD",
       description:
-        "Daily recession alerts + stock screener. Stocks below 200 EMA, RSI <30, P/E <15.",
+        "Full quant toolkit — 28 indicators + stock screener alerts. Stocks below 200 EMA, RSI <30, P/E <15.",
       url: "https://recessionpulse.com/pricing",
     },
   ],
@@ -156,10 +174,26 @@ const faqJsonLd = {
   mainEntity: [
     {
       "@type": "Question",
+      name: "What indicators does RecessionPulse track?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "RecessionPulse monitors 28 recession and macro indicators across 8 categories: Primary (Sahm Rule, unemployment, industrial production, JOLTS quits, temp help, SOS indicator), Housing (building permits, housing starts), Business Activity (corporate profits, NFIB, inventory-to-sales), Credit Stress (savings rate, credit card delinquency, SLOOS, debt service ratio), Market (yield curves, VIX, NFCI, copper-gold ratio, NY Fed & JPM recession probability), Liquidity (M2), and Real-Time (freight index, GDPNow).",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Is RecessionPulse really free?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. The full dashboard with all 28 indicators, signals, trends, and historical context is completely free with no credit card required. The Pulse plan ($6.99/mo) adds daily email and SMS alerts. Pulse Pro ($9.99/mo) adds stock screener alerts, value picks, and AI recession risk assessment.",
+      },
+    },
+    {
+      "@type": "Question",
       name: "What is the Sahm Rule?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "The Sahm Rule identifies recessions when the 3-month moving average of the national unemployment rate rises 0.50 percentage points or more above its low from the previous 12 months. Created by economist Claudia Sahm, it has correctly signaled every recession since 1970 in real time. RecessionPulse tracks this indicator daily.",
+        text: "The Sahm Rule identifies recessions when the 3-month moving average of the national unemployment rate rises 0.50 percentage points or more above its low from the previous 12 months. Created by economist Claudia Sahm, it has correctly signaled every recession since 1970 in real time.",
       },
     },
     {
@@ -167,31 +201,7 @@ const faqJsonLd = {
       name: "What does yield curve inversion mean for recession?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yield curve inversion occurs when short-term interest rates exceed long-term rates. The 2-year/10-year Treasury spread inverting has preceded every US recession since 1955, with only one false signal. Historically, recessions follow 6-18 months after un-inversion. RecessionPulse tracks both the 2s10s and 2s30s spreads.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What is the Conference Board LEI 3Ds Rule?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "The 3Ds Rule evaluates three conditions in the Conference Board Leading Economic Index: Depth (6-month growth rate below -4.3%), Diffusion (more than half of components declining), and Duration (sustained decline over multiple months). When all three trigger simultaneously, historical recession probability exceeds 85%.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What is the ON RRP Facility and why does it matter?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "The Overnight Reverse Repo (ON RRP) Facility is the Federal Reserve's mechanism for absorbing excess liquidity from the financial system. When ON RRP balances decline sharply, it signals that the liquidity buffer in the financial system is thinning. Near-zero levels mean banks and money-market funds have less margin of safety during market stress.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What indicators does RecessionPulse track?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "RecessionPulse monitors key recession indicators daily including: the Sahm Rule, Yield Curve spreads (2s10s and 2s30s), Conference Board LEI, ON RRP Facility levels, DXY Dollar Index, Emerging Market performance, JPMorgan recession probability, GDP growth forecasts, credit spreads, ISM Manufacturing PMI, bank unrealized losses, US interest expense, and M2 money supply.",
+        text: "Yield curve inversion occurs when short-term interest rates exceed long-term rates. The 2-year/10-year Treasury spread inverting has preceded every US recession since 1955, with only one false signal. Historically, recessions follow 6-18 months after un-inversion.",
       },
     },
     {
@@ -199,7 +209,7 @@ const faqJsonLd = {
       name: "How much does RecessionPulse cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "RecessionPulse offers two plans: Pulse at $6.99/month (daily SMS and email alerts with all recession indicators) and Pulse Pro at $9.99/month (adds daily stock screener alerts for stocks below 200 EMA with RSI <30 and P/E <15). Cancel anytime. No contracts.",
+        text: "RecessionPulse has three tiers: Free (full dashboard with all 28 indicators), Pulse at $6.99/month (adds daily email and SMS alerts with threshold notifications), and Pulse Pro at $9.99/month (adds stock screener alerts, value picks, sector rotation signals, and AI risk assessment). Cancel anytime. No contracts.",
       },
     },
     {

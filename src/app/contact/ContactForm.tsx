@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Send, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 const TYPES = [
-  { value: "bug", label: "Bug Report", icon: "🐛" },
-  { value: "suggestion", label: "Feature Suggestion", icon: "💡" },
-  { value: "question", label: "Question", icon: "❓" },
-  { value: "other", label: "Other", icon: "📩" },
+  { value: "bug", label: "Bug Report", icon: "" },
+  { value: "suggestion", label: "Feature Suggestion", icon: "" },
+  { value: "question", label: "Question", icon: "" },
+  { value: "other", label: "Other", icon: "" },
 ] as const;
 
 export function ContactForm() {
@@ -83,8 +83,7 @@ export function ContactForm() {
                   : "bg-pulse-dark border-pulse-border text-pulse-muted hover:border-pulse-green/20"
               }`}
             >
-              <span className="block text-base mb-0.5">{t.icon}</span>
-              <span className="text-xs">{t.label}</span>
+              <span className="text-xs font-medium">{t.label}</span>
             </button>
           ))}
         </div>

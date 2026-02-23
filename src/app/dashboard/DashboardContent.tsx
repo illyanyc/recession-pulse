@@ -53,6 +53,9 @@ export function DashboardContent({
       if (!res.ok) throw new Error(data.error || "Refresh failed");
       setRefreshStatus("success");
       setRefreshResult(data.message || "Data refreshed");
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/7e11db6f-d41c-493a-83e3-c08fecaa79d6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DashboardContent.tsx:56',message:'Refresh success - calling router.refresh()',data:{responseData:data},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+      // #endregion
       router.refresh();
     } catch (err) {
       setRefreshStatus("error");
@@ -78,9 +81,9 @@ export function DashboardContent({
       setSendStatus("success");
       if (data.channels) {
         const lines = (data.channels as { name: string; status: string; error?: string }[]).map((ch) => {
-          if (ch.status === "sent") return `✓ ${ch.name}`;
-          if (ch.status === "skipped") return `– ${ch.name}: ${ch.error}`;
-          return `✗ ${ch.name}: ${ch.error}`;
+          if (ch.status === "sent") return `[OK] ${ch.name}`;
+          if (ch.status === "skipped") return `[SKIP] ${ch.name}: ${ch.error}`;
+          return `[FAIL] ${ch.name}: ${ch.error}`;
         });
         const hasFail = data.channels.some((ch: { status: string }) => ch.status === "failed");
         if (hasFail) setSendStatus("error");
@@ -254,102 +257,50 @@ function getTimeOfDay(): string {
 }
 
 const SAMPLE_INDICATORS: RecessionIndicator[] = [
-  {
-    id: "1", slug: "sahm-rule", name: "Sahm Rule",
-    latest_value: "0.30", trigger_level: ">=0.50 triggers",
-    status: "safe", status_text: "NOT triggered",
-    signal: "Declining from 0.57 peak (Aug 2024)", signal_emoji: "🟢",
-    category: "primary", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "2", slug: "yield-curve-2s10s", name: "Yield Curve (2s10s)",
-    latest_value: "+70 bps", trigger_level: "Inversion (<0)",
-    status: "watch", status_text: "Un-inverted",
-    signal: "Steepest since 2021 — 6-18mo lag typical", signal_emoji: "🟡",
-    category: "primary", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "3", slug: "yield-curve-2s30s", name: "Yield Curve (2s30s)",
-    latest_value: "+139 bps", trigger_level: "Inversion (<0)",
-    status: "watch", status_text: "Steepening",
-    signal: "Steepest since Nov 2021", signal_emoji: "🟡",
-    category: "primary", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "4", slug: "conference-board-lei", name: "Conference Board LEI",
-    latest_value: "-0.3% (Dec 2025)", trigger_level: "3Ds Rule: diffusion <50 & growth <-4.3%",
-    status: "danger", status_text: "TRIGGERED",
-    signal: "Recession signal active since Aug 2025", signal_emoji: "⚠️",
-    category: "primary", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "5", slug: "on-rrp-facility", name: "ON RRP Facility",
-    latest_value: "~$80B", trigger_level: "Near zero = no buffer",
-    status: "warning", status_text: "97% depleted",
-    signal: "Systemic safety valve gone — from $2.5T peak", signal_emoji: "⚠️",
-    category: "liquidity", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "6", slug: "dxy-dollar-index", name: "DXY (Dollar Index)",
-    latest_value: "~96-97", trigger_level: "Rapid decline = capital flight",
-    status: "warning", status_text: "5-year lows",
-    signal: "14-year record bear positioning", signal_emoji: "⚠️",
-    category: "market", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "7", slug: "emerging-markets", name: "Emerging Markets",
-    latest_value: "+33.6% (2025)", trigger_level: "EM outperformance = late-cycle rotation",
-    status: "safe", status_text: "Bullish EM",
-    signal: "Best year vs DM since 2017 — IEMG +44% YoY", signal_emoji: "🟢",
-    category: "market", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "8", slug: "jpm-recession-prob", name: "JPM Recession Probability",
-    latest_value: "35%", trigger_level: ">50% = high probability",
-    status: "watch", status_text: "Moderate",
-    signal: "Risen from ~25% mid-2025", signal_emoji: "🟡",
-    category: "primary", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "9", slug: "gdp-growth-forecast", name: "GDP Growth Forecast",
-    latest_value: "2.1%", trigger_level: "<0% = recession",
-    status: "watch", status_text: "Slowing",
-    signal: "Down from 2.8% in 2024", signal_emoji: "🟡",
-    category: "primary", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "10", slug: "credit-spreads-hy", name: "Credit Spreads (HY OAS)",
-    latest_value: "~320 bps", trigger_level: ">500 bps = stress",
-    status: "watch", status_text: "Elevated",
-    signal: "Widening — monitor for rapid expansion", signal_emoji: "🟡",
-    category: "liquidity", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "11", slug: "ism-manufacturing-pmi", name: "ISM Manufacturing PMI",
-    latest_value: "49.3", trigger_level: "<50 = contraction",
-    status: "warning", status_text: "Contraction",
-    signal: "Below 50 — manufacturing contracting", signal_emoji: "⚠️",
-    category: "primary", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "12", slug: "bank-unrealized-losses", name: "Bank Unrealized Losses",
-    latest_value: "~$500B HTM", trigger_level: "Forced selling risk",
-    status: "warning", status_text: "Exposed",
-    signal: "With ON RRP depleted, banks vulnerable to liquidity shock", signal_emoji: "⚠️",
-    category: "liquidity", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "13", slug: "us-interest-expense", name: "US Interest Expense",
-    latest_value: "~$950B/yr", trigger_level: "Fiscal doom loop",
-    status: "warning", status_text: "Approaching $1T",
-    signal: "Fastest-growing budget item — higher rates = more debt", signal_emoji: "⚠️",
-    category: "market", updated_at: new Date().toISOString(),
-  },
-  {
-    id: "14", slug: "m2-money-supply", name: "M2 Money Supply",
-    latest_value: "Stagnant", trigger_level: "Declining = deflationary",
-    status: "watch", status_text: "Stagnant",
-    signal: "Liquidity absorbed by Treasury issuance", signal_emoji: "🟡",
-    category: "liquidity", updated_at: new Date().toISOString(),
-  },
+  // Primary
+  { id: "1", slug: "sahm-rule", name: "Sahm Rule", latest_value: "0.30", trigger_level: ">=0.50 triggers", status: "safe", status_text: "NOT triggered", signal: "Declining from 0.57 peak (Aug 2024)", signal_emoji: "SAFE", category: "primary", updated_at: new Date().toISOString() },
+  { id: "2", slug: "yield-curve-2s10s", name: "Yield Curve (2s10s)", latest_value: "+70 bps", trigger_level: "Inversion (<0)", status: "watch", status_text: "Un-inverted", signal: "Steepest since 2021 — 6-18mo lag typical", signal_emoji: "WATCH", category: "primary", updated_at: new Date().toISOString() },
+  { id: "3", slug: "yield-curve-2s30s", name: "Yield Curve (2s30s)", latest_value: "+139 bps", trigger_level: "Inversion (<0)", status: "watch", status_text: "Steepening", signal: "Steepest since Nov 2021", signal_emoji: "WATCH", category: "primary", updated_at: new Date().toISOString() },
+  { id: "4", slug: "conference-board-lei", name: "Conference Board LEI", latest_value: "-0.3%", trigger_level: "3Ds Rule", status: "danger", status_text: "TRIGGERED", signal: "Recession signal active since Aug 2025", signal_emoji: "WARNING", category: "primary", updated_at: new Date().toISOString() },
+  { id: "5", slug: "ism-manufacturing", name: "ISM Manufacturing PMI", latest_value: "49.3", trigger_level: "<50 = contraction", status: "warning", status_text: "Contraction", signal: "Below 50 — manufacturing contracting", signal_emoji: "WARNING", category: "primary", updated_at: new Date().toISOString() },
+  { id: "6", slug: "unemployment-rate", name: "Unemployment Rate", latest_value: "4.1%", trigger_level: "Rising >0.5% from cycle low", status: "watch", status_text: "Ticking up", signal: "Approaching Sahm Rule trigger", signal_emoji: "WATCH", category: "primary", updated_at: new Date().toISOString() },
+  { id: "7", slug: "real-personal-income", name: "Real Personal Income (ex Transfers)", latest_value: "$15.8T", trigger_level: "Declining = organic income contraction", status: "watch", status_text: "Monitor trend", signal: "Organic income stagnating", signal_emoji: "WATCH", category: "primary", updated_at: new Date().toISOString() },
+  { id: "8", slug: "industrial-production", name: "Industrial Production Index", latest_value: "102.1", trigger_level: "Declining = weakness", status: "watch", status_text: "Stagnant", signal: "Flat output — no growth", signal_emoji: "WATCH", category: "primary", updated_at: new Date().toISOString() },
+  { id: "9", slug: "jolts-quits-rate", name: "JOLTS Quits Rate", latest_value: "2.0%", trigger_level: "<2.0% = workers afraid", status: "warning", status_text: "Below pre-pandemic", signal: "Workers frozen — at pre-pandemic floor", signal_emoji: "WARNING", category: "primary", updated_at: new Date().toISOString() },
+  { id: "10", slug: "temp-help-services", name: "Temporary Help Services", latest_value: "2,750K", trigger_level: "Declining = earliest labor signal", status: "warning", status_text: "Declining", signal: "Temp jobs falling — employers cutting flex labor", signal_emoji: "WARNING", category: "primary", updated_at: new Date().toISOString() },
+  { id: "11", slug: "ny-fed-recession-prob", name: "NY Fed Recession Probability", latest_value: "18.8%", trigger_level: ">50% preceded every recession", status: "watch", status_text: "Moderate", signal: "Below trigger but rising", signal_emoji: "WATCH", category: "primary", updated_at: new Date().toISOString() },
+  { id: "12", slug: "sos-recession", name: "SOS Recession Indicator", latest_value: "0.12", trigger_level: "Triggered = recession signal", status: "watch", status_text: "Elevated", signal: "Near trigger — watch weekly claims", signal_emoji: "WATCH", category: "primary", updated_at: new Date().toISOString() },
+  // Secondary
+  { id: "13", slug: "initial-claims", name: "Initial Jobless Claims", latest_value: "230K", trigger_level: ">300K sustained", status: "safe", status_text: "Healthy", signal: "Claims stable", signal_emoji: "SAFE", category: "secondary", updated_at: new Date().toISOString() },
+  { id: "14", slug: "consumer-sentiment", name: "Consumer Sentiment (UMich)", latest_value: "64.7", trigger_level: "<60 = recessionary", status: "warning", status_text: "Weak", signal: "Below average — consumers pessimistic", signal_emoji: "WARNING", category: "secondary", updated_at: new Date().toISOString() },
+  { id: "15", slug: "fed-funds-rate", name: "Fed Funds Rate", latest_value: "4.50%", trigger_level: "Cuts after hikes = late cycle", status: "watch", status_text: "Elevated", signal: "Restrictive — monitoring", signal_emoji: "WATCH", category: "secondary", updated_at: new Date().toISOString() },
+  { id: "16", slug: "gdp-growth", name: "GDP Growth Forecast", latest_value: "2.1%", trigger_level: "<0% = recession", status: "watch", status_text: "Slowing", signal: "Down from 2.8% in 2024", signal_emoji: "WATCH", category: "secondary", updated_at: new Date().toISOString() },
+  { id: "17", slug: "jpm-recession-probability", name: "JPM Recession Probability", latest_value: "35%", trigger_level: ">50% = high probability", status: "watch", status_text: "Moderate", signal: "Risen from ~25% mid-2025", signal_emoji: "WATCH", category: "secondary", updated_at: new Date().toISOString() },
+  // Housing
+  { id: "18", slug: "building-permits", name: "Building Permits", latest_value: "1,483K", trigger_level: "Declining = housing-led slowdown", status: "warning", status_text: "Below trend", signal: "At lowest since pandemic shutdowns", signal_emoji: "WARNING", category: "housing", updated_at: new Date().toISOString() },
+  { id: "19", slug: "housing-starts", name: "Housing Starts", latest_value: "1,366K", trigger_level: "Declining leads cycle 3-5 quarters", status: "watch", status_text: "Moderate", signal: "Down 9.8% from prior month", signal_emoji: "WATCH", category: "housing", updated_at: new Date().toISOString() },
+  // Business
+  { id: "20", slug: "corporate-profits", name: "Corporate Profits (After Tax)", latest_value: "$3.1T", trigger_level: "Declining preceded 81% of recessions", status: "watch", status_text: "Monitor", signal: "Profits flattening — watch trend", signal_emoji: "WATCH", category: "business_activity", updated_at: new Date().toISOString() },
+  { id: "21", slug: "nfib-optimism", name: "NFIB Small Business Optimism", latest_value: "97.4", trigger_level: "<95 = pessimistic", status: "watch", status_text: "Near average", signal: "Job openings at lowest since COVID", signal_emoji: "WATCH", category: "business_activity", updated_at: new Date().toISOString() },
+  { id: "22", slug: "inventory-sales-ratio", name: "Inventory-to-Sales Ratio", latest_value: "1.37", trigger_level: "Rising = goods piling up", status: "watch", status_text: "Slightly elevated", signal: "Above pre-pandemic trend", signal_emoji: "WATCH", category: "business_activity", updated_at: new Date().toISOString() },
+  { id: "23", slug: "sloos-lending", name: "SLOOS Lending Standards", latest_value: "Net 10% tightening", trigger_level: ">20% = credit crunch", status: "watch", status_text: "Tightening", signal: "Standards at tightest since 2005", signal_emoji: "WATCH", category: "business_activity", updated_at: new Date().toISOString() },
+  // Credit Stress
+  { id: "24", slug: "personal-savings-rate", name: "Personal Savings Rate", latest_value: "3.9%", trigger_level: "<4% = no buffer", status: "warning", status_text: "Very low", signal: "Consumers tapped out — no cushion", signal_emoji: "WARNING", category: "credit_stress", updated_at: new Date().toISOString() },
+  { id: "25", slug: "credit-card-delinquency", name: "Credit Card Delinquency Rate", latest_value: "4.1%", trigger_level: ">4% = GFC-level stress", status: "warning", status_text: "GFC territory", signal: "Highest since 2008 — broad-based", signal_emoji: "WARNING", category: "credit_stress", updated_at: new Date().toISOString() },
+  { id: "26", slug: "debt-service-ratio", name: "Household Debt Service Ratio", latest_value: "11.4%", trigger_level: ">13% = crowding out spending", status: "watch", status_text: "Rising", signal: "Climbing from pandemic lows", signal_emoji: "WATCH", category: "credit_stress", updated_at: new Date().toISOString() },
+  // Market
+  { id: "27", slug: "nfci", name: "Chicago Fed NFCI", latest_value: "-0.32", trigger_level: ">0 = tighter conditions", status: "safe", status_text: "Loose", signal: "Financial conditions still accommodative", signal_emoji: "SAFE", category: "market", updated_at: new Date().toISOString() },
+  { id: "28", slug: "credit-spreads", name: "Credit Spreads (HY OAS)", latest_value: "~320 bps", trigger_level: ">500 bps = stress", status: "watch", status_text: "Elevated", signal: "Widening — monitor for expansion", signal_emoji: "WATCH", category: "market", updated_at: new Date().toISOString() },
+  { id: "29", slug: "vix", name: "VIX Volatility Index", latest_value: "18.2", trigger_level: ">30 = high fear", status: "safe", status_text: "Normal", signal: "Low volatility — complacency", signal_emoji: "SAFE", category: "market", updated_at: new Date().toISOString() },
+  { id: "30", slug: "dxy-dollar-index", name: "DXY (Dollar Index)", latest_value: "~96-97", trigger_level: "Rapid decline = capital flight", status: "warning", status_text: "5-year lows", signal: "14-year record bear positioning", signal_emoji: "WARNING", category: "market", updated_at: new Date().toISOString() },
+  { id: "31", slug: "emerging-markets", name: "Emerging Markets", latest_value: "+33.6%", trigger_level: "EM outperformance = late-cycle", status: "safe", status_text: "Bullish EM", signal: "Best year vs DM since 2017", signal_emoji: "SAFE", category: "market", updated_at: new Date().toISOString() },
+  // Liquidity
+  { id: "32", slug: "m2-money-supply", name: "M2 Money Supply", latest_value: "Stagnant", trigger_level: "Declining = deflationary", status: "watch", status_text: "Stagnant", signal: "Liquidity absorbed by Treasury issuance", signal_emoji: "WATCH", category: "liquidity", updated_at: new Date().toISOString() },
+  { id: "33", slug: "on-rrp-facility", name: "ON RRP Facility", latest_value: "~$80B", trigger_level: "Near zero = no buffer", status: "warning", status_text: "97% depleted", signal: "Systemic safety valve gone", signal_emoji: "WARNING", category: "liquidity", updated_at: new Date().toISOString() },
+  { id: "34", slug: "bank-unrealized-losses", name: "Bank Unrealized Losses", latest_value: "~$500B", trigger_level: "Forced selling risk", status: "warning", status_text: "Exposed", signal: "Vulnerable to liquidity shock", signal_emoji: "WARNING", category: "liquidity", updated_at: new Date().toISOString() },
+  { id: "35", slug: "us-interest-expense", name: "US Interest Expense", latest_value: "~$950B/yr", trigger_level: "Fiscal doom loop", status: "warning", status_text: "Approaching $1T", signal: "Fastest-growing budget item", signal_emoji: "WARNING", category: "liquidity", updated_at: new Date().toISOString() },
+  // Real-Time
+  { id: "36", slug: "gdpnow", name: "Atlanta Fed GDPNow", latest_value: "1.8%", trigger_level: "<0% = real-time recession", status: "watch", status_text: "Below trend", signal: "Tracking below consensus", signal_emoji: "WATCH", category: "realtime", updated_at: new Date().toISOString() },
+  { id: "37", slug: "copper-gold-ratio", name: "Copper-to-Gold Ratio", latest_value: "0.00077", trigger_level: "<0.00100 = industrial weakness", status: "danger", status_text: "50-year low", signal: "Below 2008 crisis levels", signal_emoji: "DANGER", category: "realtime", updated_at: new Date().toISOString() },
+  { id: "38", slug: "freight-index", name: "Freight Transportation Index", latest_value: "118.2", trigger_level: "Declining = slowing activity", status: "watch", status_text: "Moderate", signal: "Freight below peak — goods slowing", signal_emoji: "WATCH", category: "realtime", updated_at: new Date().toISOString() },
 ];

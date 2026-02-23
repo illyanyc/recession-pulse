@@ -166,7 +166,7 @@ export function StockModal({ signal, onClose }: StockModalProps) {
               <Badge
                 status={signal.signal_type === "value_dividend" ? "watch" : "warning"}
               >
-                {signal.signal_type === "value_dividend" ? "💰 Value" : "📉 Oversold"}
+                {signal.signal_type === "value_dividend" ? "Value" : "Oversold"}
               </Badge>
             </div>
             <p className="text-sm text-pulse-muted">{signal.company_name}</p>

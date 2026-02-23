@@ -1,5 +1,37 @@
 export type IndicatorStatus = "safe" | "watch" | "warning" | "danger";
 
+export type IndicatorCategory =
+  | "primary"
+  | "secondary"
+  | "liquidity"
+  | "market"
+  | "housing"
+  | "credit_stress"
+  | "business_activity"
+  | "realtime";
+
+export const CATEGORY_LABELS: Record<IndicatorCategory, string> = {
+  primary: "Primary Indicators",
+  secondary: "Secondary Indicators",
+  liquidity: "Liquidity",
+  market: "Market Signals",
+  housing: "Housing & Construction",
+  credit_stress: "Consumer Credit Stress",
+  business_activity: "Business Activity",
+  realtime: "Real-Time / High-Frequency",
+};
+
+export const CATEGORY_ORDER: IndicatorCategory[] = [
+  "primary",
+  "secondary",
+  "housing",
+  "business_activity",
+  "credit_stress",
+  "market",
+  "liquidity",
+  "realtime",
+];
+
 export interface RecessionIndicator {
   id: string;
   name: string;
@@ -12,7 +44,7 @@ export interface RecessionIndicator {
   signal: string;
   signal_emoji: string;
   source_url?: string;
-  category: "primary" | "secondary" | "liquidity" | "market";
+  category: IndicatorCategory;
   reading_date?: string;
   updated_at: string;
 }
@@ -97,7 +129,7 @@ export interface Subscription {
   user_id: string;
   stripe_subscription_id: string;
   stripe_price_id: string;
-  plan: "pulse" | "pulse_pro";
+  plan: "free" | "pulse" | "pulse_pro";
   status: "active" | "canceled" | "past_due" | "trialing";
   current_period_start: string;
   current_period_end: string;
@@ -118,30 +150,42 @@ export interface RecessionRiskAssessment {
 }
 
 export const PLANS = {
+  free: {
+    name: "Free",
+    price: 0,
+    description: "Real-time recession dashboard — no credit card required",
+    features: [
+      "28 recession & macro indicators tracked",
+      "Real-time dashboard access",
+      "Indicator status, signals & trends",
+      "Historical context for every reading",
+      "Weekly recession risk score",
+    ],
+  },
   pulse: {
     name: "Pulse",
     price: 6.99,
-    description: "Daily recession indicator alerts via SMS",
+    description: "Email & SMS recession alerts delivered daily",
     features: [
-      "9 key recession indicators tracked daily",
-      "Morning SMS briefing with signal status",
-      "Real-time dashboard access",
-      "Yield curve & Sahm Rule monitoring",
-      "Conference Board LEI tracking",
-      "Liquidity & dollar index alerts",
+      "Everything in Free",
+      "Daily email recession briefing",
+      "Morning SMS with signal status",
+      "Threshold breach notifications",
+      "Customizable alert preferences",
+      "Priority alert delivery",
     ],
   },
   pulse_pro: {
     name: "Pulse Pro",
     price: 9.99,
-    description: "Everything in Pulse + daily stock screener alerts",
+    description: "Full quant toolkit — indicators + stock screener",
     features: [
-      "Everything in Pulse plan",
+      "Everything in Pulse",
       "Daily stock screener alerts",
       "Stocks below 200 EMA + RSI <30 + P/E <15",
       "Value dividend picks (P/E <12, near 200 EMA)",
-      "Market cap & volume filtered",
       "Sector rotation signals",
+      "AI recession risk assessment",
       "Portfolio defense positioning",
     ],
   },

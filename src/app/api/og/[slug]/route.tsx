@@ -100,7 +100,7 @@ export async function GET(
               {latestValue}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <div style={{ fontSize: "24px" }}>{signalEmoji}</div>
+              <div style={{ fontSize: "14px", fontWeight: 700, color, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>{signalEmoji}</div>
               <div style={{ fontSize: "16px", color: "#9ca3af", maxWidth: "400px" }}>
                 {signal}
               </div>

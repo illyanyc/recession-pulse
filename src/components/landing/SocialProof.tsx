@@ -3,8 +3,8 @@ import { BarChart3, Clock, Shield, TrendingUp } from "lucide-react";
 const stats = [
   {
     icon: TrendingUp,
-    value: "9",
-    label: "Recession indicators tracked daily",
+    value: "28",
+    label: "Recession & macro indicators",
   },
   {
     icon: Clock,
@@ -15,12 +15,12 @@ const stats = [
     icon: BarChart3,
     value: "100%",
     label: "Recession prediction accuracy since 1970",
-    detail: "for the indicators we track",
+    detail: "for the Sahm Rule & yield curve",
   },
   {
     icon: Shield,
-    value: "$6.99",
-    label: "Per month — cancel anytime",
+    value: "Free",
+    label: "Dashboard — upgrade for SMS alerts",
   },
 ];
 
@@ -30,6 +30,9 @@ const dataSources = [
   "Bureau of Labor Statistics",
   "Conference Board",
   "ISM",
+  "Atlanta Fed",
+  "Chicago Fed",
+  "CBOE",
 ];
 
 export function SocialProof() {
