@@ -62,6 +62,14 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false })
     .limit(10);
 
+  // Fetch latest recession risk assessment
+  const { data: riskAssessment } = await supabase
+    .from("recession_risk_assessments")
+    .select("*")
+    .order("assessment_date", { ascending: false })
+    .limit(1)
+    .single();
+
   return (
     <DashboardContent
       profile={profile}
@@ -69,6 +77,7 @@ export default async function DashboardPage() {
       subscription={subscription}
       stockSignals={stockSignals || []}
       messages={messages || []}
+      riskAssessment={riskAssessment}
     />
   );
 }

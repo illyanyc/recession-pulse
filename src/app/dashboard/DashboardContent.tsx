@@ -9,7 +9,8 @@ import { MessageHistory } from "@/components/dashboard/MessageHistory";
 import { SubscriptionStatus } from "@/components/dashboard/SubscriptionStatus";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import type { RecessionIndicator, StockSignal, Subscription, UserProfile, MessageQueueItem } from "@/types";
+import { RecessionRiskBanner } from "@/components/dashboard/RecessionRiskBanner";
+import type { RecessionIndicator, RecessionRiskAssessment, StockSignal, Subscription, UserProfile, MessageQueueItem } from "@/types";
 
 type ActionStatus = "idle" | "loading" | "success" | "error";
 
@@ -19,6 +20,7 @@ interface DashboardContentProps {
   subscription: Subscription | null;
   stockSignals: StockSignal[];
   messages: MessageQueueItem[];
+  riskAssessment: RecessionRiskAssessment | null;
 }
 
 export function DashboardContent({
@@ -27,6 +29,7 @@ export function DashboardContent({
   subscription,
   stockSignals,
   messages,
+  riskAssessment,
 }: DashboardContentProps) {
   const router = useRouter();
   const isPro = profile?.subscription_tier === "pulse_pro";
@@ -167,6 +170,11 @@ export function DashboardContent({
           </div>
         </div>
       )}
+
+      {/* Overall Recession Risk */}
+      <section>
+        <RecessionRiskBanner assessment={riskAssessment} />
+      </section>
 
       {/* Subscription */}
       <SubscriptionStatus profile={profile} subscription={subscription} />

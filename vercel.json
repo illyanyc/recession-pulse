@@ -5,6 +5,10 @@
       "schedule": "0 11 * * *"
     },
     {
+      "path": "/api/cron/analyze-risk?secret=${CRON_SECRET}",
+      "schedule": "30 11 * * *"
+    },
+    {
       "path": "/api/cron/screen-stocks?secret=${CRON_SECRET}",
       "schedule": "0 12 * * 1-5"
     },
@@ -17,8 +21,24 @@
       "schedule": "0 14 * * *"
     },
     {
+      "path": "/api/cron/post-market-open?secret=${CRON_SECRET}",
+      "schedule": "30 14 * * 1-5"
+    },
+    {
+      "path": "/api/cron/post-educational?secret=${CRON_SECRET}",
+      "schedule": "0 17 * * *"
+    },
+    {
+      "path": "/api/cron/post-engagement?secret=${CRON_SECRET}",
+      "schedule": "0 20 * * *"
+    },
+    {
       "path": "/api/cron/send-newsletter?secret=${CRON_SECRET}",
       "schedule": "15 21 * * 5"
+    },
+    {
+      "path": "/api/cron/post-cta?secret=${CRON_SECRET}",
+      "schedule": "0 23 * * *"
     },
     {
       "path": "/api/cron/generate-content?secret=${CRON_SECRET}",

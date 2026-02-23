@@ -100,6 +100,18 @@ export interface Subscription {
   created_at: string;
 }
 
+export interface RecessionRiskAssessment {
+  id: string;
+  score: number;
+  risk_level: "low" | "moderate" | "elevated" | "high" | "critical";
+  summary: string;
+  key_factors: string[];
+  outlook: string | null;
+  model: string;
+  assessment_date: string;
+  created_at: string;
+}
+
 export const PLANS = {
   pulse: {
     name: "Pulse",

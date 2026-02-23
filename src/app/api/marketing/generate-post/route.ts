@@ -32,46 +32,56 @@ export async function GET(request: Request) {
       .map((i) => `${i.signal_emoji} ${i.name}: ${i.latest_value} (${i.status})`)
       .join("\n");
 
+    const authorContext = `Written by Illya Nayshevsky, Ph.D. (@wallstphd on X).
+Illya is a data scientist and quant trader with a PhD from CUNY. He runs Alpha Inertia Capital (quantitative trading firm) and built RecessionPulse as a tool for his own trading, then opened it up to other investors.
+Tech stack: Next.js, Supabase, FRED API, OpenAI, Twilio, Vercel crons.
+Write in first person as Illya.`;
+
     const prompts: Record<string, string> = {
-      hackernews: `Write a Hacker News "Show HN" post for RecessionPulse (recessionpulse.com).
-RecessionPulse tracks 15+ recession indicators daily and sends SMS/email alerts.
-It's built with Next.js, Supabase, and uses the FRED API.
+      hackernews: `Write a Hacker News "Show HN" post from Illya about RecessionPulse (recessionpulse.com).
+${authorContext}
+
+RecessionPulse tracks 9+ recession indicators daily and sends SMS/email alerts.
 
 Current indicators:
 ${indicatorBlock}
 
-Write a compelling HN post that focuses on the technical angle (data pipeline, API integration, indicator analysis).
+Focus on the technical angle: data pipeline from FRED API, cron-based indicator analysis, how signals are computed.
 Format: Title line, then blank line, then body. Keep it concise and technical — HN audience.`,
 
-      reddit: `Write a Reddit post for r/economics or r/finance about a weekly recession indicator update.
+      reddit: `Write a Reddit post for r/economics or r/finance from Illya about his weekly recession indicator analysis.
+${authorContext}
+
 Be genuinely informative and value-first. NOT promotional.
 
 Current indicators:
 ${indicatorBlock}
 
-Write a self-post that provides real analysis. Mention recessionpulse.com naturally at the end as the source.
+Write a self-post with real analysis. Mention "I built recessionpulse.com to track these" naturally at the end.
 Format: Title line, then blank line, then body.`,
 
-      producthunt: `Write a Product Hunt launch description for RecessionPulse.
-RecessionPulse tracks 15+ recession indicators daily and sends SMS/email alerts ($6.99/mo).
-Built with Next.js, Supabase, FRED API, OpenAI for AI summaries.
+      producthunt: `Write a Product Hunt launch description for RecessionPulse, launched by Illya Nayshevsky.
+${authorContext}
 
 Features:
-- 15+ recession indicators tracked daily (Sahm Rule, yield curve, LEI, credit spreads, etc.)
+- 9+ recession indicators tracked daily (Sahm Rule, yield curve, LEI, credit spreads, etc.)
 - Daily SMS + email briefings at 8 AM ET
 - Stock screener: stocks below 200 EMA, RSI <30, P/E <15
 - AI-generated indicator summaries
 - Real-time dashboard
+- $6.99/mo (Pulse) or $9.99/mo (Pulse Pro with stock screener)
 
-Write: tagline (short), description (2-3 sentences), and 3 maker comments for launch day.`,
+Write: tagline (short), description (2-3 sentences from Illya's perspective), and 3 maker comments for launch day.`,
 
-      indiehackers: `Write an Indie Hackers post about building RecessionPulse as a solo project.
-Focus on the journey, technical decisions, and business model.
+      indiehackers: `Write an Indie Hackers post from Illya about building RecessionPulse.
+${authorContext}
+
+Focus on: why he built it (needed it for his own quant trading), technical decisions, business model, growth.
 
 Current indicators being tracked:
 ${indicatorBlock}
 
-Format as a "Show IH" post. Be authentic and share real details about building it.`,
+Format as a "Show IH" post. Be authentic — he's a PhD/quant who built a SaaS, not a marketer.`,
     };
 
     const prompt = prompts[platform] || prompts.hackernews;
@@ -83,7 +93,7 @@ Format as a "Show IH" post. Be authentic and share real details about building i
       messages: [
         {
           role: "system",
-          content: "You write compelling, platform-appropriate marketing copy. Be authentic, not salesy.",
+          content: "You ghostwrite platform-appropriate content for a technical founder. Sound authentic, smart, and builder-minded. Never salesy.",
         },
         { role: "user", content: prompt },
       ],
