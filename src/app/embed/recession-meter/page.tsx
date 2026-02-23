@@ -43,11 +43,11 @@ export default async function RecessionMeterEmbed() {
     riskScore >= 60 ? "HIGH" : riskScore >= 35 ? "ELEVATED" : riskScore >= 15 ? "MODERATE" : "LOW";
   const riskColor =
     riskScore >= 60
-      ? "#FF3333"
+      ? "#EB5757"
       : riskScore >= 35
-        ? "#FFCC00"
+        ? "#F2C94C"
         : riskScore >= 15
-          ? "#FFCC00"
+          ? "#F2C94C"
           : "#00CC66";
 
   return (
@@ -86,7 +86,7 @@ export default async function RecessionMeterEmbed() {
                 color: #808080;
                 text-decoration: none;
               }
-              .powered:hover { color: #FF6600; }
+              .powered:hover { color: #F0913A; }
               .body { padding: 20px; text-align: center; }
               .score {
                 font-size: 48px;
@@ -129,9 +129,9 @@ export default async function RecessionMeterEmbed() {
               }
               .stat-label { font-size: 10px; color: #808080; margin-top: 2px; }
               .safe .stat-count { color: #00CC66; }
-              .watch .stat-count { color: #FFCC00; }
-              .warning .stat-count { color: #FF3333; }
-              .danger .stat-count { color: #FF3333; }
+              .watch .stat-count { color: #F2C94C; }
+              .warning .stat-count { color: #EB5757; }
+              .danger .stat-count { color: #EB5757; }
               .footer {
                 padding: 12px 20px;
                 border-top: 1px solid #2A2A2A;
@@ -140,7 +140,7 @@ export default async function RecessionMeterEmbed() {
               .cta {
                 display: inline-block;
                 padding: 8px 20px;
-                background: #FF6600;
+                background: #F0913A;
                 color: #000000;
                 font-size: 12px;
                 font-weight: 700;

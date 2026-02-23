@@ -1,0 +1,56 @@
+{"location":"refresh/route.ts:start","message":"Refresh: returning immediately, work scheduled via after()","data":{"userId":"5d11c2e7-4838-4e1a-aa6b-659ea75ad5bc","appUrl":"http://localhost:3000"},"timestamp":1771816713211}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816715514}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816717315}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816719311}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816721316}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816723301}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816725329}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816727408}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816729308}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816731376}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816733302}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816735314}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816737302}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816739295}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816741309}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816743306}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816745375}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816747311}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816749312}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816751826}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816753305}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816755302}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816757317}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816759311}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"indicators"},"timestamp":1771816761363}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"stocks"},"timestamp":1771816763857}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"stocks"},"timestamp":1771816765396}
+{"location":"stock-screener.ts:phase3-start","message":"Phase 3: RSI backfill starting","data":{"totalSignals":5,"withZeroRSI":4,"tickers":["ARCC","FNF","UNM","HMC"]},"timestamp":1771816766748}
+{"location":"stock-screener.ts:phase3-done","message":"Phase 3: RSI backfill done","data":{"signals":[{"ticker":"ARCC","rsi":41.79692071592648,"type":"value_dividend"},{"ticker":"FNF","rsi":36.1632641193446,"type":"value_dividend"},{"ticker":"UNM","rsi":43.32095181681831,"type":"value_dividend"},{"ticker":"HMC","rsi":45.9245834572193,"type":"value_dividend"},{"ticker":"FOX","rsi":24.426960397382658,"type":"oversold_growth"}]},"timestamp":1771816766855}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816767360}
+{"location":"risk-assessment-agent.ts:start","message":"Agentic risk assessment starting","data":{"indicatorCount":29,"historyCount":47,"stockCount":5},"timestamp":1771816767386,"hypothesisId":"risk-agent"}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816769320}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816771305}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816773309}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816775315}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816777308}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816779335}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816781328}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816783314}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816785318}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816787315}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"processing","step":"risk"},"timestamp":1771816789309}
+{"location":"risk-assessment-agent.ts:response","message":"OpenAI response received","data":{"textLength":2569,"sourceCount":0,"rawPreview":"{\n  \"score\": 46,\n  \"risk_level\": \"elevated\",\n  \"summary\": \"Over the next 90 days (through ~May 24, 2026), recession risk is elevated but not high: labor-market deterioration signals are building, yet key real-time triggers have not fired. The Sahm Rule is at 0.30 as of Jan 2026 (below the 0.50 reces"},"timestamp":1771816789980,"hypothesisId":"risk-agent"}
+{"location":"risk-assessment-agent.ts:done","message":"Risk assessment complete","data":{"score":46,"risk_level":"elevated","factorsCount":6,"sourcesCount":0,"summary":"Over the next 90 days (through ~May 24, 2026), recession risk is elevated but not high: labor-market deterioration signals are building, yet key real-"},"timestamp":1771816789980,"hypothesisId":"risk-agent"}
+{"location":"refresh/route.ts:done","message":"Refresh: background work complete","data":{"successCount":42,"failCount":0,"signalCount":5,"riskResult":{"score":46,"risk_level":"elevated"},"elapsed":76871},"timestamp":1771816790053}
+{"location":"refresh/status/route.ts","message":"Status poll","data":{"status":"success"},"timestamp":1771816791313}
+{"location":"stock-screener.ts:phase3-start","message":"Phase 3: RSI backfill starting","data":{"totalSignals":5,"withZeroRSI":4,"tickers":["ARCC","FNF","UNM","HMC"]},"timestamp":1771817084139}
+{"location":"stock-screener.ts:phase3-done","message":"Phase 3: RSI backfill done","data":{"signals":[{"ticker":"ARCC","rsi":41.79692071592648,"type":"value_dividend"},{"ticker":"FNF","rsi":36.1632641193446,"type":"value_dividend"},{"ticker":"UNM","rsi":43.32095181681831,"type":"value_dividend"},{"ticker":"HMC","rsi":45.9245834572193,"type":"value_dividend"},{"ticker":"FOX","rsi":24.426960397382658,"type":"oversold_growth"}]},"timestamp":1771817084237}
+{"location":"risk-assessment-agent.ts:start","message":"Agentic risk assessment starting","data":{"indicatorCount":29,"historyCount":47,"stockCount":0},"timestamp":1771817093115,"hypothesisId":"risk-agent"}
+{"location":"risk-assessment-agent.ts:response","message":"OpenAI response received","data":{"textLength":2645,"sourceCount":0,"rawPreview":"{\n  \"score\": 44,\n  \"risk_level\": \"elevated\",\n  \"summary\": \"US recession risk over the next 90 days is ELEVATED but not high: the labor market is still not signaling an imminent contraction, while forward-looking growth and confidence signals are. The Sahm Rule remains below a trigger (your reading ~"},"timestamp":1771817118628,"hypothesisId":"risk-agent"}
+{"location":"risk-assessment-agent.ts:done","message":"Risk assessment complete","data":{"score":44,"risk_level":"elevated","factorsCount":6,"sourcesCount":0,"summary":"US recession risk over the next 90 days is ELEVATED but not high: the labor market is still not signaling an imminent contraction, while forward-looki"},"timestamp":1771817118630,"hypothesisId":"risk-agent"}
+{"location":"stock-screener.ts:phase3-start","message":"Phase 3: RSI backfill starting","data":{"totalSignals":5,"withZeroRSI":4,"tickers":["ARCC","FNF","UNM","HMC"]},"timestamp":1771817464323}
+{"location":"stock-screener.ts:phase3-done","message":"Phase 3: RSI backfill done","data":{"signals":[{"ticker":"ARCC","rsi":41.79692071592648,"type":"value_dividend"},{"ticker":"FNF","rsi":36.1632641193446,"type":"value_dividend"},{"ticker":"UNM","rsi":43.32095181681831,"type":"value_dividend"},{"ticker":"HMC","rsi":45.9245834572193,"type":"value_dividend"},{"ticker":"FOX","rsi":24.426960397382658,"type":"oversold_growth"}]},"timestamp":1771817464444}
+{"location":"risk-assessment-agent.ts:start","message":"Agentic risk assessment starting","data":{"indicatorCount":41,"historyCount":59,"stockCount":0},"timestamp":1771817473097,"hypothesisId":"risk-agent"}
+{"location":"risk-assessment-agent.ts:response","message":"OpenAI response received","data":{"textLength":2288,"sourceCount":0,"rawPreview":"{\n  \"score\": 46,\n  \"risk_level\": \"elevated\",\n  \"summary\": \"US recession risk over the next 90 days is ELEVATED but not high: the labor market is still holding (initial claims fell to 206k for the week ending Feb 14, 2026), and credit stress is not flashing (high-yield spreads remain tight). The most"},"timestamp":1771817492409,"hypothesisId":"risk-agent"}
+{"location":"risk-assessment-agent.ts:done","message":"Risk assessment complete","data":{"score":46,"risk_level":"elevated","factorsCount":6,"sourcesCount":0,"summary":"US recession risk over the next 90 days is ELEVATED but not high: the labor market is still holding (initial claims fell to 206k for the week ending F"},"timestamp":1771817492410,"hypothesisId":"risk-agent"}

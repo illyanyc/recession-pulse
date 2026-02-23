@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
     const html = `
       <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; background: #080808; color: #D4D4D4; padding: 32px 24px;">
-        <h1 style="color: #FF6600; font-size: 20px; margin-bottom: 4px;">RecessionPulse — Contact Form</h1>
+        <h1 style="color: #F0913A; font-size: 20px; margin-bottom: 4px;">RecessionPulse — Contact Form</h1>
         <p style="color: #808080; font-size: 12px; margin-bottom: 24px;">New message received</p>
 
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
           <tr>
             <td style="padding: 8px 12px; color: #808080; font-size: 13px; border-bottom: 1px solid #2A2A2A;">Email</td>
             <td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #2A2A2A;">
-              <a href="mailto:${email}" style="color: #FF6600;">${email}</a>
+              <a href="mailto:${email}" style="color: #F0913A;">${email}</a>
             </td>
           </tr>
         </table>

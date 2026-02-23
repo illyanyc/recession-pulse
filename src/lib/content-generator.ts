@@ -162,7 +162,7 @@ Produce the recession risk assessment JSON.`,
   };
 }
 
-async function generateRiskBlogPost(
+export async function generateRiskBlogPost(
   indicators: IndicatorSnapshot[],
   assessment: { score: number; risk_level: string; summary: string; key_factors: string[]; outlook: string },
   dateLabel: string

@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { DashboardContent } from "./DashboardContent";
-import { getRiskAssessment } from "@/lib/redis";
-import type { RecessionRiskAssessment } from "@/types";
+import { getRiskAssessment, getUserStockSignals } from "@/lib/redis";
+import type { RecessionRiskAssessment, StockSignal } from "@/types";
 
 export const metadata = {
   title: "Dashboard — RecessionPulse",
@@ -21,12 +21,12 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
-  // Fetch latest indicators
+  // Fetch latest indicators (need enough rows to cover all slugs with history)
   const { data: indicators } = await supabase
     .from("indicator_readings")
     .select("*")
     .order("reading_date", { ascending: false })
-    .limit(20);
+    .limit(200);
 
   // Deduplicate by slug (get latest per indicator)
   const latestIndicators = indicators
@@ -49,12 +49,31 @@ export default async function DashboardPage() {
     .eq("status", "active")
     .single();
 
-  // Fetch stock signals (today)
-  const { data: stockSignals } = await supabase
-    .from("stock_signals")
-    .select("*")
-    .order("screened_at", { ascending: false })
-    .limit(20);
+  // Fetch stock signals: Redis (user's latest refresh) first, fall back to Supabase
+  let stockSignals: StockSignal[] = [];
+  try {
+    const cached = await getUserStockSignals(user.id);
+    if (cached && cached.length > 0) {
+      stockSignals = cached as StockSignal[];
+    }
+  } catch { /* Redis miss */ }
+
+  if (stockSignals.length === 0) {
+    const { data: rawStockSignals } = await supabase
+      .from("stock_signals")
+      .select("*")
+      .order("screened_at", { ascending: false })
+      .limit(50);
+
+    if (rawStockSignals) {
+      const seen = new Set<string>();
+      stockSignals = rawStockSignals.filter((sig) => {
+        if (seen.has(sig.ticker)) return false;
+        seen.add(sig.ticker);
+        return true;
+      });
+    }
+  }
 
 
   // Fetch recent messages

@@ -65,15 +65,18 @@ export const INDICATOR_DEFINITIONS = [
   },
   {
     slug: "ism-manufacturing",
-    name: "ISM Manufacturing PMI",
+    name: "Manufacturing Employment",
     fred_series: "MANEMP",
     category: "primary" as const,
-    trigger_description: "Sub-50 = contraction",
-    evaluate: (value: number) => ({
-      status: value < 45 ? "danger" : value < 50 ? "warning" : value < 52 ? "watch" : "safe",
-      signal_emoji: value < 45 ? "DANGER" : value < 50 ? "WARNING" : value < 52 ? "WATCH" : "SAFE",
-      signal: value < 45 ? "Deep contraction" : value < 50 ? "Contraction territory" : value < 52 ? "Barely expanding" : "Expansion",
-    }),
+    trigger_description: "Declining employment = manufacturing weakness",
+    evaluate: (value: number) => {
+      const m = value / 1000;
+      return {
+        status: m < 12.0 ? "danger" : m < 12.4 ? "warning" : m < 12.7 ? "watch" : "safe",
+        signal_emoji: m < 12.0 ? "DANGER" : m < 12.4 ? "WARNING" : m < 12.7 ? "WATCH" : "SAFE",
+        signal: m < 12.0 ? "Significant job losses" : m < 12.4 ? "Declining — weakness" : m < 12.7 ? "Below trend — monitor" : `${m.toFixed(1)}M — healthy`,
+      };
+    },
   },
   {
     slug: "initial-claims",
@@ -405,45 +408,16 @@ export const INDICATOR_DEFINITIONS = [
 export const TOTAL_INDICATORS = INDICATOR_DEFINITIONS.length;
 
 export const STOCK_SCREENER_CONFIG = {
-  // Value dividend criteria
   value_dividend: {
     max_pe: 12,
     min_dividend_yield: 2.5,
-    min_market_cap: 10_000_000_000, // $10B
+    min_market_cap: 10_000_000_000,
     min_avg_volume: 1_000_000,
   },
-  // Oversold growth criteria
   oversold_growth: {
     max_pe: 15,
     max_rsi: 30,
-    min_market_cap: 5_000_000_000, // $5B
+    min_market_cap: 5_000_000_000,
     min_avg_volume: 500_000,
   },
-  // Universe of tickers to screen
-  watchlist: [
-    // Large cap value/dividend
-    "VZ", "BMY", "T", "PFE", "MO", "INTC", "CVX", "PM", "GILD", "KHC",
-    "WBA", "PARA", "LUMN", "MPW", "OKE", "EPD", "ET",
-    // Mega cap tech
-    "MSFT", "AAPL", "GOOGL", "AMZN", "META", "NVDA", "TSM", "NFLX",
-    // Growth tech
-    "NOW", "UBER", "CRM", "ADBE", "PYPL", "SQ", "SHOP", "SNOW",
-    "NET", "DDOG", "CRWD", "ZS", "PANW",
-    // Defensive/utilities
-    "DUK", "NEE", "SO", "D", "AEP", "XEL", "WEC",
-    // Consumer staples
-    "PG", "KO", "PEP", "MDLZ", "CLX", "GIS", "SJM", "CPB",
-    // Financials
-    "JPM", "BAC", "WFC", "GS", "MS", "BLK",
-    // Gold/miners
-    "GLD", "GDX", "NEM", "GOLD", "AEM",
-    // Crypto-related
-    "MSTR", "COIN", "MARA", "RIOT",
-    // Healthcare
-    "JNJ", "ABBV", "MRK", "LLY", "UNH",
-    // REITs
-    "O", "VICI", "SPG", "AMT",
-    // ETFs
-    "SPY", "QQQ", "IWM", "EEM", "TLT", "HYG",
-  ],
 };

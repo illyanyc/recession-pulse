@@ -48,7 +48,7 @@ function unsubPage(emailOrError: string, success: boolean): string {
   .card { max-width:400px; margin:60px auto; background:#0D0D0D; border:1px solid #2A2A2A; border-radius:0px; padding:40px; }
   h1 { font-size:24px; margin:0 0 12px; color:white; }
   p { font-size:14px; color:#9ca3af; line-height:1.6; margin:0 0 20px; }
-  a { color:#FF6600; text-decoration:none; }
+  a { color:#F0913A; text-decoration:none; }
   a:hover { text-decoration:underline; }
   .check { font-size:48px; margin-bottom:16px; }
 </style></head>

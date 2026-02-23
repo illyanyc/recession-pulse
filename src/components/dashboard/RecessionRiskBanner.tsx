@@ -9,9 +9,9 @@ interface RecessionRiskBannerProps {
 
 const RISK_CONFIG = {
   low:      { color: "#00CC66", bg: "from-pulse-safe/5 to-transparent",   border: "border-pulse-safe/20",   label: "LOW" },
-  moderate: { color: "#FFCC00", bg: "from-pulse-yellow/5 to-transparent", border: "border-pulse-yellow/20", label: "MODERATE" },
-  elevated: { color: "#FF6600", bg: "from-pulse-green/5 to-transparent",  border: "border-pulse-green/20",  label: "ELEVATED" },
-  high:     { color: "#FF3333", bg: "from-pulse-red/5 to-transparent",    border: "border-pulse-red/20",    label: "HIGH" },
+  moderate: { color: "#F2C94C", bg: "from-pulse-yellow/5 to-transparent", border: "border-pulse-yellow/20", label: "MODERATE" },
+  elevated: { color: "#F0913A", bg: "from-pulse-green/5 to-transparent",  border: "border-pulse-green/20",  label: "ELEVATED" },
+  high:     { color: "#EB5757", bg: "from-pulse-red/5 to-transparent",    border: "border-pulse-red/20",    label: "HIGH" },
   critical: { color: "#FF0000", bg: "from-red-600/5 to-transparent",      border: "border-red-600/20",      label: "CRITICAL" },
 } as const;
 
@@ -56,46 +56,9 @@ function RiskGauge({ score, color }: { score: number; color: string }) {
 }
 
 export function RecessionRiskBanner({ assessment: initialAssessment }: RecessionRiskBannerProps) {
-  const [assessment, setAssessment] = useState(initialAssessment);
-  const [retryDone, setRetryDone] = useState(!!initialAssessment);
+  const [assessment] = useState(initialAssessment);
 
-  useEffect(() => {
-    if (assessment || retryDone) return;
-
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch("/api/dashboard/risk-assessment");
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.score != null) {
-            setAssessment(data);
-            return;
-          }
-        }
-      } catch { /* silent */ }
-      setRetryDone(true);
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [assessment, retryDone]);
-
-  if (!assessment && retryDone) return null;
-
-  if (!assessment) {
-    return (
-      <div className="p-6 bg-pulse-card border border-pulse-border">
-        <div className="flex items-center gap-4">
-          <div className="w-[132px] h-[132px] bg-pulse-dark animate-pulse flex-shrink-0" />
-          <div className="flex-1 space-y-3">
-            <div className="h-5 w-48 bg-pulse-dark animate-pulse" />
-            <div className="h-4 w-full bg-pulse-dark animate-pulse" />
-            <div className="h-4 w-3/4 bg-pulse-dark animate-pulse" />
-            <p className="text-xs text-pulse-muted mt-2">Loading risk assessment...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (!assessment) return null;
 
   const config = RISK_CONFIG[assessment.risk_level];
 
@@ -147,7 +110,7 @@ export function RecessionRiskBanner({ assessment: initialAssessment }: Recession
 
           <div className="mt-3 pt-3 border-t border-pulse-border/50 flex items-center gap-2">
             <span className="text-[10px] text-pulse-muted">
-              Powered by {assessment.model.toUpperCase()} analysis
+              AI-powered macro analysis
             </span>
           </div>
         </div>

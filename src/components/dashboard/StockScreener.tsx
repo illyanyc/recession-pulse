@@ -45,10 +45,11 @@ export function StockScreener({ signals, isPro }: StockScreenerProps) {
     return (
       <Card className="text-center py-12">
         <Lock className="h-12 w-12 text-pulse-muted mx-auto mb-4" />
-        <h3 className="text-lg font-bold text-white mb-2">Stock Screener — Pro Only</h3>
+        <h3 className="text-lg font-bold text-white mb-2">Long-Term Buy Candidates — Pro Only</h3>
         <p className="text-sm text-pulse-muted max-w-md mx-auto mb-6">
-          Get daily stock picks filtered for recession defense. Stocks below 200 EMA, RSI &lt;30,
-          P/E &lt;15. Value dividend plays and oversold growth opportunities.
+          Get daily stock picks optimized for long-term investing during uncertain markets.
+          We screen for undervalued large-caps trading below their 200-day EMA with low P/E, strong dividends,
+          and oversold growth stocks with RSI &lt; 30.
         </p>
         <Link href="/pricing">
           <Button>Upgrade to Pulse Pro — $9.99/mo</Button>
@@ -72,33 +73,35 @@ export function StockScreener({ signals, isPro }: StockScreenerProps) {
   return (
     <>
       <div>
-        {/* Summary bar + toggles (matching IndicatorGrid) */}
+        {/* Summary bar + toggles */}
         <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6 p-4 bg-pulse-card border border-pulse-border">
-          <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-pulse-green" />
-              <span className="text-sm text-pulse-text">
-                <span className="font-bold text-white">{valuePicks.length}</span> Value
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-pulse-yellow" />
-              <span className="text-sm text-pulse-text">
-                <span className="font-bold text-white">{oversoldPicks.length}</span> Oversold
-              </span>
-            </div>
-            {defensivePicks.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 flex-1 min-w-0">
+            <div className="flex items-center gap-4 sm:gap-6">
+              <div className="flex items-center gap-2" title="P/E ≤ 12 · Div Yield ≥ 2.5% · Mkt Cap ≥ $10B · Below 200 EMA">
+                <span className="w-2.5 h-2.5 rounded-full bg-pulse-yellow" />
                 <span className="text-sm text-pulse-text">
-                  <span className="font-bold text-white">{defensivePicks.length}</span> Defensive
+                  <span className="font-bold text-white">{valuePicks.length}</span> Value &amp; Dividend
                 </span>
               </div>
-            )}
-            <div className="ml-auto hidden sm:block">
-              <span className="text-xs text-pulse-muted">
-                {signals.length} stocks · {signals.length > 0 && `Screened ${new Date(signals[0].screened_at).toLocaleDateString()}`}
-              </span>
+              <div className="flex items-center gap-2" title="P/E ≤ 15 · RSI < 30 · Mkt Cap ≥ $5B · Below 200 EMA">
+                <span className="w-2.5 h-2.5 rounded-full bg-pulse-red" />
+                <span className="text-sm text-pulse-text">
+                  <span className="font-bold text-white">{oversoldPicks.length}</span> Oversold Growth
+                </span>
+              </div>
+              {defensivePicks.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+                  <span className="text-sm text-pulse-text">
+                    <span className="font-bold text-white">{defensivePicks.length}</span> Defensive
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-3 text-[11px] text-pulse-muted">
+              <span>All below 200-day EMA</span>
+              <span className="hidden sm:inline">·</span>
+              <span className="hidden sm:inline">{signals.length} stocks · {signals.length > 0 && `Screened ${new Date(signals[0].screened_at).toLocaleDateString()}`}</span>
             </div>
           </div>
 
@@ -159,6 +162,22 @@ export function StockScreener({ signals, isPro }: StockScreenerProps) {
           </div>
         </div>
 
+        {/* Strategy explainer */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <div className="px-4 py-3 rounded-lg bg-pulse-yellow/5 border border-pulse-yellow/15">
+            <h4 className="text-xs font-semibold text-pulse-yellow mb-1">Value &amp; Dividend</h4>
+            <p className="text-[11px] text-pulse-muted leading-relaxed">
+              Large-cap stocks (≥$10B) with P/E ≤ 12, dividend yield ≥ 2.5%, and price below 200-day EMA. Cheap, income-generating, recession-resilient.
+            </p>
+          </div>
+          <div className="px-4 py-3 rounded-lg bg-pulse-red/5 border border-pulse-red/15">
+            <h4 className="text-xs font-semibold text-pulse-red mb-1">Oversold Growth</h4>
+            <p className="text-[11px] text-pulse-muted leading-relaxed">
+              Mid-to-large cap stocks (≥$5B) with P/E ≤ 15, RSI below 30 (oversold), and price below 200-day EMA. Beaten-down growth at discount prices.
+            </p>
+          </div>
+        </div>
+
         {/* Grid view */}
         {viewMode === "grid" && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -206,8 +225,8 @@ interface HistoryPoint {
 }
 
 const SIGNAL_BORDER: Record<string, string> = {
-  value_dividend: "hover:border-pulse-yellow/40 hover:shadow-[0_0_20px_rgba(255,204,0,0.06)]",
-  oversold_growth: "hover:border-pulse-red/40 hover:shadow-[0_0_20px_rgba(255,51,51,0.06)]",
+  value_dividend: "hover:border-pulse-yellow/40 hover:shadow-[0_0_20px_rgba(242,201,76,0.06)]",
+  oversold_growth: "hover:border-pulse-red/40 hover:shadow-[0_0_20px_rgba(235,87,87,0.06)]",
   defensive: "hover:border-pulse-safe/40 hover:shadow-[0_0_20px_rgba(0,204,102,0.06)]",
 };
 
@@ -225,7 +244,7 @@ function StockCardDetails({ signal }: { signal: StockSignal }) {
           <p className="text-xs text-pulse-muted mt-0.5">{signal.sector}</p>
         </div>
         <Badge status={signal.signal_type === "value_dividend" ? "watch" : "warning"}>
-          {signal.signal_type === "value_dividend" ? "Value" : "Oversold"}
+          {signal.signal_type === "value_dividend" ? "Value Buy" : "Oversold Buy"}
         </Badge>
       </div>
 
@@ -249,9 +268,11 @@ function StockCardDetails({ signal }: { signal: StockSignal }) {
         </div>
       </div>
 
-      <div className="mt-3 pt-3 border-t border-pulse-border flex items-center justify-between">
+      <div className="mt-3 pt-3 border-t border-pulse-border">
         <span className="text-xs text-pulse-muted">
-          RSI {signal.rsi_14.toFixed(0)} · {signal.notes}
+          {signal.signal_type === "value_dividend"
+            ? `P/E ${formatNumber(signal.forward_pe, 1)} · Yield ${formatNumber(signal.dividend_yield, 1)}% · RSI ${signal.rsi_14.toFixed(0)}`
+            : `RSI ${signal.rsi_14.toFixed(0)} · P/E ${formatNumber(signal.forward_pe, 1)} · Below 200 DMA`}
         </span>
       </div>
     </>
@@ -367,7 +388,7 @@ function StockCard({
   const [chartLoading, setChartLoading] = useState(false);
   const fetchedRef = useRef(false);
 
-  const chartColor = signal.rsi_14 < 30 ? "#FF3333" : "#FFCC00";
+  const chartColor = signal.rsi_14 < 30 ? "#EB5757" : "#F2C94C";
   const isChartDefault = displayMode === "chart";
   const borderClass = SIGNAL_BORDER[signal.signal_type] || SIGNAL_BORDER.oversold_growth;
 

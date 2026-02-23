@@ -27,16 +27,16 @@ interface HistoryPoint {
 
 const STATUS_BORDER: Record<IndicatorStatus, string> = {
   safe: "hover:border-pulse-safe/40 hover:shadow-[0_0_20px_rgba(0,204,102,0.06)]",
-  watch: "hover:border-pulse-yellow/40 hover:shadow-[0_0_20px_rgba(255,204,0,0.06)]",
-  warning: "hover:border-pulse-red/40 hover:shadow-[0_0_20px_rgba(255,51,51,0.06)]",
-  danger: "hover:border-red-500/40 hover:shadow-[0_0_20px_rgba(255,51,51,0.08)]",
+  watch: "hover:border-pulse-yellow/40 hover:shadow-[0_0_20px_rgba(242,201,76,0.06)]",
+  warning: "hover:border-pulse-red/40 hover:shadow-[0_0_20px_rgba(235,87,87,0.06)]",
+  danger: "hover:border-red-500/40 hover:shadow-[0_0_20px_rgba(235,87,87,0.08)]",
 };
 
 const STATUS_CHART_COLOR: Record<IndicatorStatus, string> = {
   safe: "#00CC66",
-  watch: "#FFCC00",
-  warning: "#FF3333",
-  danger: "#FF3333",
+  watch: "#F2C94C",
+  warning: "#EB5757",
+  danger: "#EB5757",
 };
 
 function TrendIcon({ status }: { status: IndicatorStatus }) {
@@ -68,7 +68,9 @@ function CardDetails({ indicator }: { indicator: RecessionIndicator }) {
       </div>
       <div className="mt-3 pt-3 border-t border-pulse-border">
         <span className="text-xs text-pulse-muted">
-          Updated {new Date(indicator.updated_at).toLocaleDateString()}
+          Updated {indicator.reading_date
+            ? new Date(indicator.reading_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+            : "N/A"}
         </span>
       </div>
     </>

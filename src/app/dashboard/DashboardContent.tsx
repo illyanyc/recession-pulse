@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { RefreshCw, Send, Loader2, CheckCircle, XCircle, AlertTriangle, Phone, Mail, ArrowRight } from "lucide-react";
+import { RefreshCw, Send, Loader2, CheckCircle, XCircle, AlertTriangle, Phone, Mail, ArrowRight, Settings } from "lucide-react";
 import { IndicatorGrid } from "@/components/dashboard/IndicatorGrid";
 import { StockScreener } from "@/components/dashboard/StockScreener";
 import { MessageHistory } from "@/components/dashboard/MessageHistory";
@@ -12,6 +12,16 @@ import { RecessionRiskBanner } from "@/components/dashboard/RecessionRiskBanner"
 import type { RecessionIndicator, RecessionRiskAssessment, StockSignal, Subscription, UserProfile, MessageQueueItem } from "@/types";
 
 type ActionStatus = "idle" | "loading" | "success" | "error";
+
+interface RefreshStatusPayload {
+  status: "idle" | "processing" | "success" | "failed";
+  step?: string;
+  message?: string;
+  indicators?: { success: number; failed: number };
+  stocks?: { found: number; tickers: string[] };
+  risk?: { score: number; risk_level: string };
+  error?: string;
+}
 
 interface DashboardContentProps {
   profile: UserProfile;
@@ -43,24 +53,69 @@ export function DashboardContent({
   const [refreshResult, setRefreshResult] = useState<string>("");
   const [sendResult, setSendResult] = useState<string>("");
   const [dismissedBanner, setDismissedBanner] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  const stepLabels: Record<string, string> = {
+    indicators: "Fetching indicators...",
+    stocks: "Screening stocks...",
+    risk: "AI analyzing recession risk...",
+    caching: "Caching results...",
+    summaries: "Generating summaries...",
+  };
+
+  const pollStatus = useCallback(() => {
+    if (pollRef.current) clearInterval(pollRef.current);
+
+    pollRef.current = setInterval(async () => {
+      try {
+        const res = await fetch("/api/dashboard/refresh/status");
+        if (!res.ok) return;
+        const data: RefreshStatusPayload = await res.json();
+
+        if (data.status === "processing") {
+          setRefreshResult(data.step ? stepLabels[data.step] || data.message || "Processing..." : "Processing...");
+        } else if (data.status === "success") {
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
+          setRefreshStatus("success");
+          setRefreshResult(data.message || "Data refreshed");
+          router.refresh();
+          setTimeout(() => { setRefreshStatus("idle"); setRefreshResult(""); }, 5000);
+        } else if (data.status === "failed") {
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
+          setRefreshStatus("error");
+          setRefreshResult(data.error || data.message || "Refresh failed");
+          setTimeout(() => { setRefreshStatus("idle"); setRefreshResult(""); }, 5000);
+        }
+      } catch {
+        /* network error — keep polling */
+      }
+    }, 2000);
+  }, [router]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshStatus("loading");
-    setRefreshResult("");
+    setRefreshResult("Starting refresh...");
     try {
       const res = await fetch("/api/dashboard/refresh", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Refresh failed");
-      setRefreshStatus("success");
-      setRefreshResult(data.message || "Data refreshed");
-      router.refresh();
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Refresh failed");
+      }
+      pollStatus();
     } catch (err) {
       setRefreshStatus("error");
       setRefreshResult(err instanceof Error ? err.message : "Refresh failed");
-    } finally {
-      setTimeout(() => setRefreshStatus("idle"), 4000);
+      setTimeout(() => { setRefreshStatus("idle"); setRefreshResult(""); }, 5000);
     }
-  }, [router]);
+  }, [pollStatus]);
 
   const handleSendNow = useCallback(async () => {
     if (missingEmail) {
@@ -112,25 +167,28 @@ export function DashboardContent({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <ActionButton
-            onClick={handleRefresh}
-            status={refreshStatus}
-            result={refreshResult}
-            idleIcon={<RefreshCw className="h-4 w-4" />}
-            idleLabel="Refresh Data"
-          />
-          {hasSubscription && (
-            <ActionButton
-              onClick={handleSendNow}
-              status={sendStatus}
-              result={sendResult}
-              idleIcon={<Send className="h-4 w-4" />}
-              idleLabel="Send Now"
-            />
-          )}
-        </div>
+        <GearMenu
+          onRefresh={handleRefresh}
+          refreshStatus={refreshStatus}
+          onSendNow={hasSubscription ? handleSendNow : undefined}
+          sendStatus={sendStatus}
+        />
       </div>
+
+      {/* Refresh/Send status bar */}
+      {(refreshResult || sendResult) && (
+        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm transition-colors duration-300 ${
+          refreshStatus === "loading" ? "bg-pulse-card/50 text-pulse-muted border border-pulse-border/50" :
+          refreshStatus === "success" || sendStatus === "success" ? "bg-pulse-green/10 text-pulse-green border border-pulse-green/20" :
+          refreshStatus === "error" || sendStatus === "error" ? "bg-pulse-red/10 text-pulse-red border border-pulse-red/20" :
+          "bg-pulse-card/50 text-pulse-muted border border-pulse-border/50"
+        }`}>
+          {refreshStatus === "loading" && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
+          {(refreshStatus === "success" || sendStatus === "success") && <CheckCircle className="h-4 w-4 shrink-0" />}
+          {(refreshStatus === "error" || sendStatus === "error") && <XCircle className="h-4 w-4 shrink-0" />}
+          <span>{refreshResult || sendResult}</span>
+        </div>
+      )}
 
       {/* Profile completeness banner */}
       {profileIncomplete && !dismissedBanner && (
@@ -187,7 +245,12 @@ export function DashboardContent({
 
       {/* Stock Screener */}
       <section id="stocks">
-        <h2 className="text-lg font-bold text-white mb-4">Stock Screener</h2>
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-white">Long-Term Buy Candidates</h2>
+          <p className="text-sm text-pulse-muted mt-1">
+            Stocks trading below their 200-day moving average with strong fundamentals — filtered for recession-resilient long-term investing.
+          </p>
+        </div>
         <StockScreener signals={stockSignals} isPro={isPro} />
       </section>
 
@@ -200,46 +263,67 @@ export function DashboardContent({
   );
 }
 
-function ActionButton({
-  onClick,
-  status,
-  result,
-  idleIcon,
-  idleLabel,
+function GearMenu({
+  onRefresh,
+  refreshStatus,
+  onSendNow,
+  sendStatus,
 }: {
-  onClick: () => void;
-  status: ActionStatus;
-  result: string;
-  idleIcon: React.ReactNode;
-  idleLabel: string;
+  onRefresh: () => void;
+  refreshStatus: ActionStatus;
+  onSendNow?: () => void;
+  sendStatus: ActionStatus;
 }) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  const isWorking = refreshStatus === "loading" || sendStatus === "loading";
+
   return (
-    <div className="relative">
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={onClick}
-        disabled={status === "loading"}
-        className="gap-2"
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={`p-2 rounded-lg border transition-colors ${
+          isWorking
+            ? "border-pulse-green/30 bg-pulse-green/10 text-pulse-green"
+            : "border-pulse-border bg-pulse-card text-pulse-muted hover:text-white hover:border-pulse-text/30"
+        }`}
       >
-        {status === "loading" ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : status === "success" ? (
-          <CheckCircle className="h-4 w-4 text-pulse-green" />
-        ) : status === "error" ? (
-          <XCircle className="h-4 w-4 text-pulse-red" />
+        {isWorking ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
-          idleIcon
+          <Settings className="h-5 w-5" />
         )}
-        {status === "loading" ? "Working..." : status === "success" ? "Done" : status === "error" ? "Failed" : idleLabel}
-      </Button>
-      {result && status !== "idle" && (
-        <div className={`absolute top-full mt-2 right-0 text-xs px-3 py-1.5 rounded-lg whitespace-nowrap z-10 ${
-          status === "success" ? "bg-pulse-green/10 text-pulse-green border border-pulse-green/20" :
-          status === "error" ? "bg-pulse-red/10 text-pulse-red border border-pulse-red/20" :
-          "bg-pulse-card text-pulse-muted border border-pulse-border"
-        }`}>
-          {result}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-48 bg-pulse-card border border-pulse-border rounded-lg shadow-xl z-50 overflow-hidden">
+          <button
+            onClick={() => { onRefresh(); setOpen(false); }}
+            disabled={refreshStatus === "loading"}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-pulse-text hover:bg-pulse-border/30 transition-colors disabled:opacity-50"
+          >
+            {refreshStatus === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Refresh Data
+          </button>
+          {onSendNow && (
+            <button
+              onClick={() => { onSendNow(); setOpen(false); }}
+              disabled={sendStatus === "loading"}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-pulse-text hover:bg-pulse-border/30 transition-colors disabled:opacity-50 border-t border-pulse-border/50"
+            >
+              {sendStatus === "loading" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Send Alerts Now
+            </button>
+          )}
         </div>
       )}
     </div>

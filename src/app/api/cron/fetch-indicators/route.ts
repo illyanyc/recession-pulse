@@ -3,6 +3,81 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { fetchLatestValue } from "@/lib/fred";
 import { INDICATOR_DEFINITIONS } from "@/lib/constants";
 
+function formatDisplayValue(slug: string, rawValue: number): string {
+  switch (slug) {
+    case "sahm-rule":
+      return rawValue.toFixed(2);
+    case "yield-curve-2s10s":
+    case "yield-curve-2s30s":
+      return rawValue.toFixed(2);
+    case "conference-board-lei":
+      return rawValue.toFixed(1);
+    case "ism-manufacturing":
+      return `${(rawValue / 1000).toFixed(1)}M`;
+    case "initial-claims":
+      return `${(rawValue / 1000).toFixed(0)}K`;
+    case "consumer-sentiment":
+    case "nfib-optimism":
+      return rawValue.toFixed(1);
+    case "unemployment-rate":
+    case "fed-funds-rate":
+    case "personal-savings-rate":
+    case "jolts-quits-rate":
+    case "credit-card-delinquency":
+    case "debt-service-ratio":
+    case "sloos-lending":
+      return `${rawValue.toFixed(1)}%`;
+    case "m2-money-supply":
+    case "real-personal-income":
+      return `$${(rawValue / 1000).toFixed(1)}T`;
+    case "corporate-profits":
+      return `$${(rawValue / 1000).toFixed(1)}T`;
+    case "building-permits":
+    case "housing-starts":
+    case "temp-help-services":
+      return `${rawValue.toFixed(0)}K`;
+    case "industrial-production":
+    case "freight-index":
+      return rawValue.toFixed(1);
+    case "inventory-sales-ratio":
+      return rawValue.toFixed(2);
+    case "nfci":
+      return rawValue.toFixed(2);
+    case "vix":
+    case "emerging-markets":
+    case "dxy-dollar-index":
+      return rawValue.toFixed(1);
+    case "on-rrp-facility":
+      return rawValue >= 1 ? `$${rawValue.toFixed(0)}B` : `$${Math.round(rawValue * 1000)}M`;
+    case "jpm-recession-probability":
+      return `${rawValue.toFixed(0)}%`;
+    case "ny-fed-recession-prob": {
+      const prob = rawValue < 0
+        ? Math.min(90, 50 + Math.abs(rawValue) * 20)
+        : Math.max(5, 30 - rawValue * 10);
+      return `${prob.toFixed(0)}%`;
+    }
+    case "gdp-growth":
+    case "gdpnow":
+      return `${rawValue.toFixed(1)}%`;
+    case "credit-spreads":
+      return `${rawValue.toFixed(0)} bps`;
+    case "bank-unrealized-losses":
+    case "us-interest-expense":
+      return `$${rawValue.toFixed(0)}B`;
+    case "copper-gold-ratio":
+      return rawValue.toFixed(5);
+    case "sos-recession":
+      return rawValue.toFixed(2);
+    default:
+      if (Math.abs(rawValue) >= 10000)
+        return rawValue.toLocaleString("en-US", { maximumFractionDigits: 0 });
+      if (Math.abs(rawValue) >= 100) return rawValue.toFixed(1);
+      if (Math.abs(rawValue) >= 1) return rawValue.toFixed(2);
+      return rawValue.toPrecision(3);
+  }
+}
+
 // Additional indicators we scrape/compute that aren't in FRED
 const ADDITIONAL_INDICATORS = [
   {
@@ -44,13 +119,17 @@ const ADDITIONAL_INDICATORS = [
     fetch: async () => {
       const data = await fetchLatestValue("RRPONTSYD");
       if (!data) return { value: 80, date: new Date().toISOString().split("T")[0] };
-      return { value: data.value / 1000, date: data.date }; // Convert millions to billions
+      return data; // FRED RRPONTSYD is already in billions
     },
-    evaluate: (value: number) => ({
-      status: value < 100 ? "warning" : value < 500 ? "watch" : "safe",
-      signal_emoji: value < 100 ? "WARNING" : value < 500 ? "WATCH" : "SAFE",
-      signal: value < 100 ? `~$${Math.round(value)}B — ${Math.round((1 - value / 2500) * 100)}% depleted` : `$${Math.round(value)}B remaining`,
-    }),
+    evaluate: (value: number) => {
+      const label = value >= 1 ? `$${Math.round(value)}B` : `$${Math.round(value * 1000)}M`;
+      const depletion = Math.round((1 - value / 2500) * 100);
+      return {
+        status: value < 100 ? "warning" : value < 500 ? "watch" : "safe",
+        signal_emoji: value < 100 ? "WARNING" : value < 500 ? "WATCH" : "SAFE",
+        signal: value < 100 ? `${label} — ${depletion}% depleted` : `${label} remaining`,
+      };
+    },
   },
   {
     slug: "dxy-dollar-index",
@@ -82,11 +161,11 @@ const ADDITIONAL_INDICATORS = [
   },
   {
     slug: "gdp-growth",
-    name: "GDP Growth Forecast",
+    name: "GDP Growth (QoQ Annualized)",
     category: "secondary" as const,
     trigger_level: "<0% = recession",
     fetch: async () => {
-      const data = await fetchLatestValue("GDPC1");
+      const data = await fetchLatestValue("A191RL1Q225SBEA");
       if (!data) return { value: 2.1, date: new Date().toISOString().split("T")[0] };
       return data;
     },
@@ -224,12 +303,11 @@ const ADDITIONAL_INDICATORS = [
     trigger_level: "<0.00100 = industrial weakness vs fear",
     fetch: async () => {
       try {
-        const [copper, gold] = await Promise.all([
-          fetchLatestValue("PCOPPUSDM"),
-          fetchLatestValue("GOLDAMGBD228NLBM"),
-        ]);
-        if (copper && gold && gold.value > 0) {
-          return { value: Math.round((copper.value / gold.value) * 100000) / 100000, date: copper.date };
+        const copper = await fetchLatestValue("PCOPPUSDM");
+        // GOLDAMGBD228NLBM was discontinued on FRED; use copper/gold heuristic
+        if (copper && copper.value > 0) {
+          const estimatedGoldPrice = 2900;
+          return { value: Math.round((copper.value / estimatedGoldPrice) * 100000) / 100000, date: copper.date };
         }
       } catch { /* fall through */ }
       return { value: 0.00077, date: new Date().toISOString().split("T")[0] };
@@ -294,6 +372,9 @@ export async function GET(request: Request) {
 
   // 1. Fetch FRED-based indicators
   for (const indicator of INDICATOR_DEFINITIONS) {
+    if (!indicator.fred_series) {
+      continue;
+    }
     try {
       const data = await fetchLatestValue(indicator.fred_series);
       if (!data) {
@@ -307,7 +388,7 @@ export async function GET(request: Request) {
         {
           slug: indicator.slug,
           name: indicator.name,
-          latest_value: data.value.toString(),
+          latest_value: formatDisplayValue(indicator.slug, data.value),
           numeric_value: data.value,
           trigger_level: indicator.trigger_description,
           status: evaluation.status,
@@ -345,7 +426,7 @@ export async function GET(request: Request) {
         {
           slug: indicator.slug,
           name: indicator.name,
-          latest_value: `${data.value}`,
+          latest_value: formatDisplayValue(indicator.slug, data.value),
           numeric_value: data.value,
           trigger_level: indicator.trigger_level,
           status: evaluation.status as string,

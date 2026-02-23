@@ -26,9 +26,9 @@ interface HistoryPoint {
 
 const STATUS_COLORS: Record<IndicatorStatus, string> = {
   safe: "#00CC66",
-  watch: "#FFCC00",
-  warning: "#FF3333",
-  danger: "#FF3333",
+  watch: "#F2C94C",
+  warning: "#EB5757",
+  danger: "#EB5757",
 };
 
 export function IndicatorModal({ indicator, onClose }: IndicatorModalProps) {

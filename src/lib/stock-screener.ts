@@ -1,24 +1,8 @@
+import YahooFinance from "yahoo-finance2";
 import { STOCK_SCREENER_CONFIG } from "./constants";
 import type { StockSignal } from "@/types";
 
-interface YahooQuote {
-  symbol: string;
-  shortName?: string;
-  longName?: string;
-  regularMarketPrice?: number;
-  forwardPE?: number;
-  trailingPE?: number;
-  marketCap?: number;
-  averageDailyVolume3Month?: number;
-  dividendYield?: number;
-  sector?: string;
-  twoHundredDayAverage?: number;
-  fiftyDayAverage?: number;
-}
-
-interface YahooChartQuote {
-  close: (number | null)[];
-}
+const yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 
 function calculateRSI(closes: number[], period = 14): number {
   if (closes.length < period + 1) return 50;
@@ -59,155 +43,170 @@ function calculateEMA(closes: number[], period: number): number {
   return ema;
 }
 
-async function fetchQuote(ticker: string): Promise<YahooQuote | null> {
+async function fetchRSI(ticker: string): Promise<number> {
   try {
-    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${ticker}&fields=regularMarketPrice,forwardPE,trailingPE,marketCap,averageDailyVolume3Month,dividendYield,shortName,longName,sector,twoHundredDayAverage`;
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0" },
+    const chart = await yf.chart(ticker, {
+      period1: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      interval: "1d",
     });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data?.quoteResponse?.result?.[0] || null;
+    const closes = chart.quotes?.map((q) => q.close).filter((c): c is number => c != null) ?? [];
+    return calculateRSI(closes);
   } catch {
-    return null;
+    return 50;
   }
 }
 
-async function fetchChart(ticker: string): Promise<number[]> {
-  try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1y`;
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    const quotes: YahooChartQuote = data?.chart?.result?.[0]?.indicators?.quote?.[0];
-    if (!quotes?.close) return [];
-    return quotes.close.filter((c): c is number => c != null);
-  } catch {
-    return [];
-  }
+interface ScreenerQuote {
+  symbol?: string;
+  shortName?: string;
+  longName?: string;
+  regularMarketPrice?: number;
+  trailingPE?: number;
+  forwardPE?: number;
+  marketCap?: number;
+  averageDailyVolume3Month?: number;
+  dividendYield?: number;
+  sector?: string;
+  twoHundredDayAverage?: number;
 }
 
-async function screenTicker(ticker: string): Promise<{
-  ticker: string;
-  company_name: string;
-  price: number;
-  ema_200: number;
-  rsi_14: number;
-  forward_pe: number;
-  market_cap: number;
-  avg_volume: number;
-  dividend_yield: number;
-  sector: string;
-} | null> {
-  try {
-    const [quote, closes] = await Promise.all([
-      fetchQuote(ticker),
-      fetchChart(ticker),
-    ]);
+async function fetchScreenerCandidates(): Promise<ScreenerQuote[]> {
+  const allQuotes: ScreenerQuote[] = [];
+  const screenIds = ["undervalued_large_caps", "undervalued_growth_stocks"];
 
-    if (!quote || closes.length < 200) return null;
-
-    const ema200 = calculateEMA(closes, 200);
-    const rsi14 = calculateRSI(closes);
-    const currentPrice = quote.regularMarketPrice || closes[closes.length - 1];
-
-    return {
-      ticker,
-      company_name: quote.shortName || quote.longName || ticker,
-      price: currentPrice,
-      ema_200: ema200,
-      rsi_14: rsi14,
-      forward_pe: quote.forwardPE || quote.trailingPE || 0,
-      market_cap: quote.marketCap || 0,
-      avg_volume: quote.averageDailyVolume3Month || 0,
-      dividend_yield: (quote.dividendYield || 0) * 100,
-      sector: quote.sector || "Unknown",
-    };
-  } catch (error) {
-    console.error(`Error screening ${ticker}:`, error);
-    return null;
+  for (const scrId of screenIds) {
+    try {
+      const result = await yf.screener({ scrIds: scrId, count: 100 });
+      if (result.quotes) {
+        allQuotes.push(...(result.quotes as ScreenerQuote[]));
+      }
+    } catch (err) {
+      console.error(`Screener ${scrId} failed:`, err instanceof Error ? err.message : err);
+    }
   }
+
+  // Deduplicate by symbol
+  const seen = new Set<string>();
+  return allQuotes.filter((q) => {
+    if (!q.symbol || seen.has(q.symbol)) return false;
+    seen.add(q.symbol);
+    return true;
+  });
 }
 
 export async function runStockScreener(): Promise<StockSignal[]> {
   const signals: StockSignal[] = [];
-  const { watchlist, value_dividend, oversold_growth } = STOCK_SCREENER_CONFIG;
+  const { value_dividend, oversold_growth } = STOCK_SCREENER_CONFIG;
 
-  // Process in batches to avoid rate limiting
-  const batchSize = 5;
-  for (let i = 0; i < watchlist.length; i += batchSize) {
-    const batch = watchlist.slice(i, i + batchSize);
-    const results = await Promise.allSettled(batch.map(screenTicker));
+  const candidates = await fetchScreenerCandidates();
 
-    for (const result of results) {
-      if (result.status !== "fulfilled" || !result.value) continue;
-      const stock = result.value;
+  // Phase 1: Filter candidates into value_dividend and oversold_growth pre-candidates
+  const oversoldCandidates: { quote: ScreenerQuote; ticker: string }[] = [];
 
-      const belowEMA = stock.price < stock.ema_200;
+  for (const q of candidates) {
+    if (!q.symbol || !q.regularMarketPrice || !q.twoHundredDayAverage) continue;
 
-      // Check value dividend criteria
-      if (
-        stock.forward_pe > 0 &&
-        stock.forward_pe <= value_dividend.max_pe &&
-        stock.dividend_yield >= value_dividend.min_dividend_yield &&
-        stock.market_cap >= value_dividend.min_market_cap &&
-        stock.avg_volume >= value_dividend.min_avg_volume &&
-        belowEMA
-      ) {
-        signals.push({
-          id: `${stock.ticker}-${Date.now()}`,
-          ticker: stock.ticker,
-          company_name: stock.company_name,
-          price: stock.price,
-          ema_200: stock.ema_200,
-          rsi_14: stock.rsi_14,
-          forward_pe: stock.forward_pe,
-          market_cap: stock.market_cap,
-          avg_volume: stock.avg_volume,
-          dividend_yield: stock.dividend_yield,
-          sector: stock.sector,
-          signal_type: "value_dividend",
-          passes_filter: true,
-          notes: `P/E ${stock.forward_pe.toFixed(1)}, Yield ${stock.dividend_yield.toFixed(1)}%, Below 200 EMA`,
-          screened_at: new Date().toISOString(),
-        });
-        continue;
-      }
+    const price = q.regularMarketPrice;
+    const ema200 = q.twoHundredDayAverage;
+    const belowEMA = price < ema200;
+    const pe = q.forwardPE || q.trailingPE || 0;
+    const divYield = q.dividendYield || 0;
+    const mCap = q.marketCap || 0;
+    const vol = q.averageDailyVolume3Month || 0;
 
-      // Check oversold growth criteria
-      if (
-        stock.forward_pe > 0 &&
-        stock.forward_pe <= oversold_growth.max_pe &&
-        stock.rsi_14 <= oversold_growth.max_rsi &&
-        stock.market_cap >= oversold_growth.min_market_cap &&
-        stock.avg_volume >= oversold_growth.min_avg_volume &&
-        belowEMA
-      ) {
-        signals.push({
-          id: `${stock.ticker}-${Date.now()}`,
-          ticker: stock.ticker,
-          company_name: stock.company_name,
-          price: stock.price,
-          ema_200: stock.ema_200,
-          rsi_14: stock.rsi_14,
-          forward_pe: stock.forward_pe,
-          market_cap: stock.market_cap,
-          avg_volume: stock.avg_volume,
-          dividend_yield: stock.dividend_yield,
-          sector: stock.sector,
-          signal_type: "oversold_growth",
-          passes_filter: true,
-          notes: `RSI ${stock.rsi_14.toFixed(0)}, P/E ${stock.forward_pe.toFixed(1)}, Below 200 EMA`,
-          screened_at: new Date().toISOString(),
-        });
-      }
+    if (
+      pe > 0 && pe <= value_dividend.max_pe &&
+      divYield >= value_dividend.min_dividend_yield &&
+      mCap >= value_dividend.min_market_cap &&
+      vol >= value_dividend.min_avg_volume &&
+      belowEMA
+    ) {
+      signals.push({
+        id: `${q.symbol}-${Date.now()}`,
+        ticker: q.symbol,
+        company_name: q.shortName || q.longName || q.symbol,
+        price,
+        ema_200: ema200,
+        rsi_14: 0, // populated in phase 2
+        forward_pe: pe,
+        market_cap: mCap,
+        avg_volume: vol,
+        dividend_yield: divYield,
+        sector: q.sector || "Unknown",
+        signal_type: "value_dividend",
+        passes_filter: true,
+        notes: `P/E ${pe.toFixed(1)}, Yield ${divYield.toFixed(1)}%, Below 200 DMA`,
+        screened_at: new Date().toISOString(),
+      });
+      continue;
     }
 
-    // Delay between batches
-    if (i + batchSize < watchlist.length) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (
+      pe > 0 && pe <= oversold_growth.max_pe &&
+      mCap >= oversold_growth.min_market_cap &&
+      vol >= oversold_growth.min_avg_volume &&
+      belowEMA
+    ) {
+      oversoldCandidates.push({ quote: q, ticker: q.symbol });
+    }
+  }
+
+  // Phase 2: Fetch RSI for oversold growth candidates (filter by RSI threshold)
+  if (oversoldCandidates.length > 0) {
+    const batchSize = 5;
+    for (let i = 0; i < oversoldCandidates.length; i += batchSize) {
+      const batch = oversoldCandidates.slice(i, i + batchSize);
+      const rsiResults = await Promise.allSettled(batch.map((c) => fetchRSI(c.ticker)));
+
+      for (let j = 0; j < batch.length; j++) {
+        const rsi = rsiResults[j].status === "fulfilled" ? rsiResults[j].value : 50;
+        if (rsi > oversold_growth.max_rsi) continue;
+
+        const { quote: q, ticker } = batch[j];
+        signals.push({
+          id: `${ticker}-${Date.now()}`,
+          ticker,
+          company_name: q.shortName || q.longName || ticker,
+          price: q.regularMarketPrice!,
+          ema_200: q.twoHundredDayAverage!,
+          rsi_14: rsi,
+          forward_pe: q.forwardPE || q.trailingPE || 0,
+          market_cap: q.marketCap || 0,
+          avg_volume: q.averageDailyVolume3Month || 0,
+          dividend_yield: q.dividendYield || 0,
+          sector: q.sector || "Unknown",
+          signal_type: "oversold_growth",
+          passes_filter: true,
+          notes: `RSI ${rsi.toFixed(0)}, P/E ${(q.forwardPE || q.trailingPE || 0).toFixed(1)}, Below 200 DMA`,
+          screened_at: new Date().toISOString(),
+        });
+      }
+
+      if (i + batchSize < oversoldCandidates.length) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+  }
+
+  // Phase 3: Backfill RSI for all signals that still have rsi_14 === 0
+  const needRSI = signals.filter((s) => s.rsi_14 === 0);
+  if (needRSI.length > 0) {
+    const batchSize = 5;
+    for (let i = 0; i < needRSI.length; i += batchSize) {
+      const batch = needRSI.slice(i, i + batchSize);
+      const rsiResults = await Promise.allSettled(batch.map((s) => fetchRSI(s.ticker)));
+
+      for (let j = 0; j < batch.length; j++) {
+        const rsi = rsiResults[j].status === "fulfilled" ? rsiResults[j].value : 50;
+        batch[j].rsi_14 = rsi;
+        if (batch[j].signal_type === "value_dividend") {
+          batch[j].notes = `P/E ${batch[j].forward_pe.toFixed(1)}, Yield ${batch[j].dividend_yield.toFixed(1)}%, RSI ${rsi.toFixed(0)}`;
+        }
+      }
+
+      if (i + batchSize < needRSI.length) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
     }
   }
 

@@ -24,19 +24,26 @@ export async function GET(request: Request) {
     const { data: indicators } = await supabase
       .from("indicator_readings")
       .select("*")
-      .eq("reading_date", today);
+      .eq("reading_date", today)
+      .order("created_at", { ascending: false });
 
-    // Deduplicate
+    // Deduplicate by slug AND name to handle any DB-level duplicates
     const latestIndicators: RecessionIndicator[] = indicators
-      ? Object.values(
-          indicators.reduce(
-            (acc: Record<string, RecessionIndicator>, ind: RecessionIndicator) => {
-              if (!acc[ind.slug]) acc[ind.slug] = ind;
-              return acc;
-            },
-            {}
-          )
-        )
+      ? (() => {
+          const seenSlugs = new Set<string>();
+          const seenNames = new Set<string>();
+          const unique: RecessionIndicator[] = [];
+          for (const ind of indicators as RecessionIndicator[]) {
+            const slug = ind.slug?.trim();
+            const name = ind.name?.trim();
+            if (slug && seenSlugs.has(slug)) continue;
+            if (name && seenNames.has(name)) continue;
+            if (slug) seenSlugs.add(slug);
+            if (name) seenNames.add(name);
+            unique.push(ind);
+          }
+          return unique;
+        })()
       : [];
 
     // 2. Fetch historical trends from Supabase (past week)

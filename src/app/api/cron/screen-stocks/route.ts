@@ -15,8 +15,10 @@ export async function GET(request: Request) {
   try {
     const signals = await runStockScreener();
 
-    // Store results
+    // Store results permanently in Supabase (cron adds daily, never deletes)
     if (signals.length > 0) {
+      const today = new Date().toISOString().split("T")[0];
+
       const rows = signals.map((s) => ({
         ticker: s.ticker,
         company_name: s.company_name,
@@ -31,7 +33,7 @@ export async function GET(request: Request) {
         signal_type: s.signal_type,
         passes_filter: s.passes_filter,
         notes: s.notes,
-        screened_at: new Date().toISOString().split("T")[0],
+        screened_at: today,
       }));
 
       const { error } = await supabase.from("stock_signals").insert(rows);
@@ -43,13 +45,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       message: `Screened stocks, found ${signals.length} signals`,
-      signals: signals.map((s) => ({
-        ticker: s.ticker,
-        type: s.signal_type,
-        price: s.price,
-        pe: s.forward_pe,
-        rsi: s.rsi_14,
-      })),
+      signals,
     });
   } catch (error) {
     console.error("Stock screener error:", error);

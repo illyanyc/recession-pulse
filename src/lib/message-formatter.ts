@@ -46,11 +46,10 @@ export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWi
   else if (watchCount >= 3) level = "WATCHFUL";
   else level = "ALL CLEAR";
 
-  const lines = [`RECESSION PULSE ${date} - ${level}`, ""];
+  const lines = [`RECESSION PULSE ${date} - ${level}`];
 
   const critical = indicators.filter((i) => i.status === "danger" || i.status === "warning");
   const watching = indicators.filter((i) => i.status === "watch");
-  const safe = indicators.filter((i) => i.status === "safe");
 
   if (hasTrends) {
     const changed = (indicators as IndicatorWithTrend[]).filter(
@@ -62,10 +61,8 @@ export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWi
         const prev = ind.trend.status_changed_1d
           ? ind.trend.prev_status_1d
           : ind.trend.prev_status_7d;
-        const timeframe = ind.trend.status_changed_1d ? "1d" : "7d";
-        lines.push(`  ${ind.name}: ${prev} -> ${ind.status} (${timeframe})`);
+        lines.push(`${ind.name}: ${prev}->${ind.status}`);
       }
-      lines.push("");
     }
   }
 
@@ -73,41 +70,21 @@ export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWi
     lines.push("ALERTS:");
     for (const ind of critical) {
       const tag = hasTrends ? ` ${trendTag((ind as IndicatorWithTrend).trend)}` : "";
-      lines.push(`* ${ind.name}: ${ind.latest_value}${tag}`);
-      lines.push(`  ${ind.signal}`);
-      if (hasTrends) {
-        const wk = weekSummary((ind as IndicatorWithTrend).trend);
-        if (wk) lines.push(`  ${wk}`);
-      }
+      lines.push(`${ind.name}: ${ind.latest_value}${tag}`);
+      lines.push(`- ${ind.signal}`);
     }
-    lines.push("");
   }
 
   if (watching.length > 0) {
     lines.push("WATCHING:");
     for (const ind of watching) {
       const tag = hasTrends ? ` ${trendTag((ind as IndicatorWithTrend).trend)}` : "";
-      lines.push(`* ${ind.name}: ${ind.latest_value}${tag}`);
-      if (hasTrends) {
-        const wk = weekSummary((ind as IndicatorWithTrend).trend);
-        if (wk) lines.push(`  ${wk}`);
-      }
+      lines.push(`${ind.name}: ${ind.latest_value}${tag}`);
     }
-    lines.push("");
   }
 
-  if (safe.length > 0) {
-    lines.push("SAFE:");
-    for (const ind of safe) {
-      const tag = hasTrends ? ` ${trendTag((ind as IndicatorWithTrend).trend)}` : "";
-      lines.push(`* ${ind.name}: ${ind.latest_value}${tag}`);
-    }
-    lines.push("");
-  }
-
-  lines.push(`Score: ${safeCount} safe / ${watchCount} watch / ${dangerCount} alert`);
-  lines.push("");
-  lines.push("Full report: recessionpulse.com/dashboard");
+  lines.push(`${safeCount}safe/${watchCount}watch/${dangerCount}alert`);
+  lines.push("recessionpulse.com/dashboard");
 
   return lines.join("\n");
 }

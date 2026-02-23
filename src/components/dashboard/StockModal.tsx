@@ -147,7 +147,7 @@ export function StockModal({ signal, onClose }: StockModalProps) {
     }
   }
 
-  const chartColor = signal.rsi_14 < 30 ? "#FF3333" : "#FFCC00";
+  const chartColor = signal.rsi_14 < 30 ? "#EB5757" : "#F2C94C";
 
   return (
     <div

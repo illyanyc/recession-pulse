@@ -19,7 +19,7 @@ function wrapper(content: string): string {
   <!-- Header -->
   <div style="background:linear-gradient(135deg,#080808 0%,#0D0D0D 100%);padding:32px 28px 24px;border-bottom:1px solid #2A2A2A;text-align:center;">
     <img src="${APP_URL}/logo-transparent.png" alt="RecessionPulse" width="40" height="40" style="border-radius:0px;margin-bottom:12px;" />
-    <h1 style="margin:0;font-size:22px;color:#FF6600;font-weight:700;letter-spacing:-0.5px;">RecessionPulse</h1>
+    <h1 style="margin:0;font-size:22px;color:#F0913A;font-weight:700;letter-spacing:-0.5px;">RecessionPulse</h1>
     <p style="margin:4px 0 0;font-size:12px;color:#808080;">Real-time recession intelligence</p>
   </div>
   <!-- Content -->
@@ -44,11 +44,11 @@ function wrapper(content: string): string {
 }
 
 function btn(text: string, href: string): string {
-  return `<a href="${href}" style="display:inline-block;background:#FF6600;color:#080808;padding:12px 28px;border-radius:0px;text-decoration:none;font-weight:700;font-size:14px;margin-top:8px;">${text}</a>`;
+  return `<a href="${href}" style="display:inline-block;background:#F0913A;color:#080808;padding:12px 28px;border-radius:0px;text-decoration:none;font-weight:700;font-size:14px;margin-top:8px;">${text}</a>`;
 }
 
 function statusDot(status: string): string {
-  const c = status === "safe" ? "#FF6600" : status === "watch" ? "#FFCC00" : "#FF3333";
+  const c = status === "safe" ? "#F0913A" : status === "watch" ? "#F2C94C" : "#EB5757";
   return `<span style="display:inline-block;width:8px;height:8px;border-radius:0px;background:${c};margin-right:6px;vertical-align:middle;"></span>`;
 }
 
@@ -113,8 +113,8 @@ export function getSupabaseEmailTemplates() {
 // ─── Trend Helpers ───
 
 const ARROW_HTML: Record<TrendDirection, string> = {
-  up: '<span style="color:#FF3333;">▲</span>',
-  down: '<span style="color:#FF6600;">▼</span>',
+  up: '<span style="color:#EB5757;">▲</span>',
+  down: '<span style="color:#F0913A;">▼</span>',
   flat: '<span style="color:#808080;">–</span>',
 };
 
@@ -129,7 +129,7 @@ function trendBadge(trend: IndicatorTrend): string {
 
 function statusChangeBadge(trend: IndicatorTrend, currentStatus: IndicatorStatus): string | null {
   if (trend.status_changed_1d && trend.prev_status_1d) {
-    return `<span style="display:inline-block;padding:2px 6px;border-radius:0px;font-size:10px;font-weight:600;background:#2A2A2A;color:#FFCC00;margin-top:2px;">${trend.prev_status_1d} → ${currentStatus}</span>`;
+    return `<span style="display:inline-block;padding:2px 6px;border-radius:0px;font-size:10px;font-weight:600;background:#2A2A2A;color:#F2C94C;margin-top:2px;">${trend.prev_status_1d} → ${currentStatus}</span>`;
   }
   if (trend.status_changed_7d && trend.prev_status_7d) {
     return `<span style="display:inline-block;padding:2px 6px;border-radius:0px;font-size:10px;font-weight:600;background:#2A2A2A;color:#808080;margin-top:2px;">7d: ${trend.prev_status_7d} → ${currentStatus}</span>`;
@@ -158,12 +158,12 @@ export function buildWelcomeEmail(name: string): { subject: string; html: string
         briefing on the key recession indicators that matter most.
       </p>
       <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-radius:0px;padding:20px;margin-bottom:20px;">
-        <p style="margin:0 0 12px;color:#FF6600;font-weight:600;font-size:14px;">What to expect:</p>
+        <p style="margin:0 0 12px;color:#F0913A;font-weight:600;font-size:14px;">What to expect:</p>
         <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="padding:6px 0;color:#FF6600;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">28 recession indicators tracked daily</td></tr>
-          <tr><td style="padding:6px 0;color:#FF6600;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Morning briefing at 8:00 AM ET</td></tr>
-          <tr><td style="padding:6px 0;color:#FF6600;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Real-time dashboard with AI analysis</td></tr>
-          <tr><td style="padding:6px 0;color:#FF6600;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Instant alerts if critical thresholds breach</td></tr>
+          <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">28 recession indicators tracked daily</td></tr>
+          <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Morning briefing at 8:00 AM ET</td></tr>
+          <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Real-time dashboard with AI analysis</td></tr>
+          <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Instant alerts if critical thresholds breach</td></tr>
         </table>
       </div>
       ${btn("Open Dashboard", `${APP_URL}/dashboard`)}
@@ -223,7 +223,7 @@ export function buildWeeklyRecapEmail(
 
       <!-- AI Recap -->
       <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-radius:0px;padding:20px;margin-bottom:20px;">
-        <p style="margin:0 0 12px;color:#FF6600;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;">AI Weekly Analysis</p>
+        <p style="margin:0 0 12px;color:#F0913A;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;">AI Weekly Analysis</p>
         ${recapHtml}
       </div>
 
@@ -325,7 +325,7 @@ export function buildDailyBriefingEmail(
 
       changesSection = `
         <div style="background:#1a1520;border:1px solid #2d1f3d;border-radius:0px;padding:16px 20px;margin-bottom:20px;">
-          <p style="margin:0 0 8px;color:#FFCC00;font-weight:600;font-size:13px;">Signal Changes</p>
+          <p style="margin:0 0 8px;color:#F2C94C;font-weight:600;font-size:13px;">Signal Changes</p>
           <ul style="margin:0;padding-left:16px;">${changeRows}</ul>
         </div>`;
     }
@@ -337,7 +337,7 @@ export function buildDailyBriefingEmail(
       <tr style="border-bottom:1px solid #2A2A2A;">
         <td style="padding:8px;font-size:13px;font-family:monospace;color:#ffffff;font-weight:700;">$${s.ticker}</td>
         <td style="padding:8px;font-size:13px;font-family:monospace;color:#D4D4D4;">$${s.price.toFixed(2)}</td>
-        <td style="padding:8px;font-size:13px;font-family:monospace;color:${s.rsi_14 < 30 ? "#FF3333" : "#FFCC00"};">RSI ${s.rsi_14.toFixed(0)}</td>
+        <td style="padding:8px;font-size:13px;font-family:monospace;color:${s.rsi_14 < 30 ? "#EB5757" : "#F2C94C"};">RSI ${s.rsi_14.toFixed(0)}</td>
         <td style="padding:8px;font-size:13px;font-family:monospace;color:#D4D4D4;">P/E ${s.forward_pe.toFixed(1)}</td>
       </tr>
     `).join("");

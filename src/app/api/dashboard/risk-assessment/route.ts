@@ -17,7 +17,7 @@ export async function GET() {
     .single();
 
   if (!data) {
-    return NextResponse.json(null, { status: 404 });
+    return NextResponse.json(null);
   }
 
   return NextResponse.json(data);

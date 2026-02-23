@@ -21,10 +21,10 @@ const config: Config = {
     extend: {
       colors: {
         pulse: {
-          green: "#FF6600",
+          green: "#F0913A",
           safe: "#00CC66",
-          red: "#FF3333",
-          yellow: "#FFCC00",
+          red: "#EB5757",
+          yellow: "#F2C94C",
           dark: "#080808",
           darker: "#000000",
           card: "#0D0D0D",

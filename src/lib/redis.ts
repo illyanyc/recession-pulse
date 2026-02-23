@@ -88,3 +88,60 @@ export async function getRiskAssessment(): Promise<unknown | null> {
     return null;
   }
 }
+
+// --- Per-user stock signals cache ---
+
+export async function setUserStockSignals(userId: string, signals: unknown[]): Promise<void> {
+  try {
+    await getRedis().set(`user:${userId}:stocks`, JSON.stringify(signals), { ex: TTL_24H });
+  } catch (err) {
+    console.warn("Redis setUserStockSignals failed:", err instanceof Error ? err.message : err);
+  }
+}
+
+export async function getUserStockSignals(userId: string): Promise<unknown[] | null> {
+  try {
+    const raw = await getRedis().get<string>(`user:${userId}:stocks`);
+    if (!raw) return null;
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return Array.isArray(parsed) ? parsed : null;
+  } catch (err) {
+    console.warn("Redis getUserStockSignals failed:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+// --- Refresh status tracking ---
+
+export interface RefreshStatus {
+  status: "idle" | "processing" | "success" | "failed";
+  step?: "indicators" | "stocks" | "risk" | "summaries" | "caching";
+  message?: string;
+  indicators?: { success: number; failed: number };
+  stocks?: { found: number; tickers: string[] };
+  risk?: { score: number; risk_level: string };
+  startedAt?: number;
+  completedAt?: number;
+  error?: string;
+}
+
+const REFRESH_TTL = 300; // 5 minutes
+
+export async function setRefreshStatus(userId: string, status: RefreshStatus): Promise<void> {
+  try {
+    await getRedis().set(`refresh:${userId}`, JSON.stringify(status), { ex: REFRESH_TTL });
+  } catch (err) {
+    console.warn("Redis setRefreshStatus failed:", err instanceof Error ? err.message : err);
+  }
+}
+
+export async function getRefreshStatus(userId: string): Promise<RefreshStatus | null> {
+  try {
+    const raw = await getRedis().get<string>(`refresh:${userId}`);
+    if (!raw) return null;
+    return typeof raw === "string" ? JSON.parse(raw) : raw;
+  } catch (err) {
+    console.warn("Redis getRefreshStatus failed:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}

@@ -6,16 +6,16 @@ export const runtime = "edge";
 
 const STATUS_COLORS: Record<string, string> = {
   safe: "#00CC66",
-  watch: "#FFCC00",
-  warning: "#FF3333",
-  danger: "#FF3333",
+  watch: "#F2C94C",
+  warning: "#EB5757",
+  danger: "#EB5757",
 };
 
 const STATUS_BG: Record<string, string> = {
   safe: "rgba(0,204,102,0.15)",
-  watch: "rgba(255,204,0,0.15)",
-  warning: "rgba(255,51,51,0.15)",
-  danger: "rgba(255,51,51,0.15)",
+  watch: "rgba(242,201,76,0.15)",
+  warning: "rgba(235,87,87,0.15)",
+  danger: "rgba(235,87,87,0.15)",
 };
 
 export async function GET(

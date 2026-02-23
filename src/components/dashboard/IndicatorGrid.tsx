@@ -82,7 +82,7 @@ export function IndicatorGrid({
           </div>
           <div className="ml-auto hidden sm:block">
             <span className="text-xs text-pulse-muted">
-              {indicators.length > 0 && `Last updated: ${new Date(indicators[0].updated_at).toLocaleDateString()}`}
+              {indicators.length > 0 && indicators[0].reading_date && `Last updated: ${new Date(indicators[0].reading_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
             </span>
           </div>
         </div>

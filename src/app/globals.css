@@ -4,10 +4,10 @@
 
 @layer base {
   :root {
-    --pulse-orange: #FF6600;
+    --pulse-orange: #F0913A;
     --pulse-safe: #00CC66;
-    --pulse-red: #FF3333;
-    --pulse-yellow: #FFCC00;
+    --pulse-red: #EB5757;
+    --pulse-yellow: #F2C94C;
   }
 
   *,
@@ -80,15 +80,15 @@
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-pulse-green via-amber-400 to-orange-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-pulse-green via-amber-300 to-orange-300 bg-clip-text text-transparent;
   }
 
   .glow-green {
-    box-shadow: 0 0 20px rgba(255, 102, 0, 0.15), 0 0 60px rgba(255, 102, 0, 0.05);
+    box-shadow: 0 0 20px rgba(240, 145, 58, 0.15), 0 0 60px rgba(240, 145, 58, 0.05);
   }
 
   .glow-red {
-    box-shadow: 0 0 20px rgba(255, 51, 51, 0.15), 0 0 60px rgba(255, 51, 51, 0.05);
+    box-shadow: 0 0 20px rgba(235, 87, 87, 0.15), 0 0 60px rgba(235, 87, 87, 0.05);
   }
 }
 
