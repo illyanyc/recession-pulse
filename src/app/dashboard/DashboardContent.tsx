@@ -6,7 +6,6 @@ import { RefreshCw, Send, Loader2, CheckCircle, XCircle, AlertTriangle, Phone, M
 import { IndicatorGrid } from "@/components/dashboard/IndicatorGrid";
 import { StockScreener } from "@/components/dashboard/StockScreener";
 import { MessageHistory } from "@/components/dashboard/MessageHistory";
-import { SubscriptionStatus } from "@/components/dashboard/SubscriptionStatus";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { RecessionRiskBanner } from "@/components/dashboard/RecessionRiskBanner";
@@ -175,9 +174,6 @@ export function DashboardContent({
       <section>
         <RecessionRiskBanner assessment={riskAssessment} />
       </section>
-
-      {/* Subscription */}
-      <SubscriptionStatus profile={profile} subscription={subscription} />
 
       {/* Indicators */}
       <section>

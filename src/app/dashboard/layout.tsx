@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/landing/Footer";
+import { NavPlanBadge } from "@/components/dashboard/NavPlanBadge";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -54,13 +55,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             ))}
           </nav>
 
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-pulse-muted hover:text-white hover:bg-pulse-card/50 transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Sign out</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <NavPlanBadge />
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-pulse-muted hover:text-white hover:bg-pulse-card/50 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign out</span>
+            </button>
+          </div>
         </div>
       </header>
 
