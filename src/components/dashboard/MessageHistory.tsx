@@ -1,16 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/Card";
 import type { MessageQueueItem } from "@/types";
-import { MessageSquare, Check, Clock, AlertTriangle, Mail, Phone } from "lucide-react";
+import { MessageSquare, Check, Clock, AlertTriangle, Mail, Phone, ChevronDown, ChevronUp } from "lucide-react";
 
 interface MessageHistoryProps {
   messages: MessageQueueItem[];
 }
 
-function extractEmailPreview(html: string): string {
-  let text = html
+function stripHtmlToText(html: string): string {
+  return html
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<br\s*\/?>/gi, "\n")
@@ -29,21 +29,26 @@ function extractEmailPreview(html: string): string {
     .replace(/&#39;/gi, "'")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
-
-  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
-  return lines.slice(0, 6).join("\n");
 }
 
 function isHtml(content: string): boolean {
   return content.trimStart().startsWith("<!DOCTYPE") || content.trimStart().startsWith("<html");
 }
 
-function getPreview(msg: MessageQueueItem): string {
+function getFullText(msg: MessageQueueItem): string {
   if (msg.channel === "email" && isHtml(msg.content)) {
-    return extractEmailPreview(msg.content);
+    return stripHtmlToText(msg.content);
   }
-  const text = msg.content.slice(0, 300);
-  return text + (msg.content.length > 300 ? "..." : "");
+  return msg.content;
+}
+
+function getPreview(fullText: string): string {
+  const lines = fullText.split("\n").map((l) => l.trim()).filter(Boolean);
+  return lines.slice(0, 5).join("\n");
+}
+
+function isExpandable(fullText: string, preview: string): boolean {
+  return fullText.length > preview.length + 20;
 }
 
 const STATUS_ICON = {
@@ -73,7 +78,10 @@ export function MessageHistory({ messages }: MessageHistoryProps) {
 }
 
 function MessageRow({ msg }: { msg: MessageQueueItem }) {
-  const preview = useMemo(() => getPreview(msg), [msg]);
+  const [expanded, setExpanded] = useState(false);
+  const fullText = useMemo(() => getFullText(msg), [msg]);
+  const preview = useMemo(() => getPreview(fullText), [fullText]);
+  const canExpand = useMemo(() => isExpandable(fullText, preview), [fullText, preview]);
 
   return (
     <Card className="p-4">
@@ -96,9 +104,30 @@ function MessageRow({ msg }: { msg: MessageQueueItem }) {
                 : new Date(msg.scheduled_for).toLocaleString()}
             </span>
           </div>
-          <p className="text-xs text-pulse-muted whitespace-pre-wrap leading-relaxed line-clamp-5">
-            {preview}
+
+          <p className="text-xs text-pulse-muted whitespace-pre-wrap leading-relaxed">
+            {expanded ? fullText : preview}
+            {!expanded && canExpand && "..."}
           </p>
+
+          {canExpand && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="mt-2 inline-flex items-center gap-1 text-xs text-pulse-green hover:text-pulse-green/80 transition-colors"
+            >
+              {expanded ? (
+                <>
+                  <ChevronUp className="h-3 w-3" />
+                  Show less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3 w-3" />
+                  Show full message
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </Card>
