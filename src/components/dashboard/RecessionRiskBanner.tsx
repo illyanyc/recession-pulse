@@ -57,24 +57,29 @@ function RiskGauge({ score, color }: { score: number; color: string }) {
 
 export function RecessionRiskBanner({ assessment: initialAssessment }: RecessionRiskBannerProps) {
   const [assessment, setAssessment] = useState(initialAssessment);
-  const retried = useRef(false);
+  const [retryDone, setRetryDone] = useState(!!initialAssessment);
 
   useEffect(() => {
-    if (assessment || retried.current) return;
-    retried.current = true;
+    if (assessment || retryDone) return;
 
     const timer = setTimeout(async () => {
       try {
         const res = await fetch("/api/dashboard/risk-assessment");
         if (res.ok) {
           const data = await res.json();
-          if (data?.score != null) setAssessment(data);
+          if (data?.score != null) {
+            setAssessment(data);
+            return;
+          }
         }
       } catch { /* silent */ }
+      setRetryDone(true);
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [assessment]);
+  }, [assessment, retryDone]);
+
+  if (!assessment && retryDone) return null;
 
   if (!assessment) {
     return (
@@ -85,7 +90,7 @@ export function RecessionRiskBanner({ assessment: initialAssessment }: Recession
             <div className="h-5 w-48 bg-pulse-dark animate-pulse" />
             <div className="h-4 w-full bg-pulse-dark animate-pulse" />
             <div className="h-4 w-3/4 bg-pulse-dark animate-pulse" />
-            <p className="text-xs text-pulse-muted mt-2">Generating risk assessment...</p>
+            <p className="text-xs text-pulse-muted mt-2">Loading risk assessment...</p>
           </div>
         </div>
       </div>
