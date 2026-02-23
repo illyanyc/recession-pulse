@@ -113,7 +113,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-md flex-1 flex flex-col justify-center">
           <Link href="/" className="flex items-center gap-2 justify-center mb-8">
-            <Image src="/logo-transparent.png" alt="RecessionPulse" width={110} height={60} />
+            <Image src="/logo-transparent.png" alt="RecessionPulse" width={55} height={30} />
             <span className="text-2xl font-bold text-white">RecessionPulse</span>
           </Link>
 
@@ -169,7 +169,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <div className="w-full max-w-md flex-1 flex flex-col justify-center">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 justify-center mb-8">
-          <Image src="/logo-transparent.png" alt="RecessionPulse" width={110} height={60} />
+          <Image src="/logo-transparent.png" alt="RecessionPulse" width={55} height={30} />
           <span className="text-2xl font-bold text-white">RecessionPulse</span>
         </Link>
 

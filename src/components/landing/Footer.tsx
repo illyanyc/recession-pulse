@@ -57,7 +57,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <Image src="/logo-transparent.png" alt="RecessionPulse" width={96} height={52} />
+              <Image src="/logo-transparent.png" alt="RecessionPulse" width={48} height={26} />
               <span className="text-xl font-bold text-white">RecessionPulse</span>
             </div>
             <p className="text-sm text-pulse-muted max-w-sm leading-relaxed mb-4">

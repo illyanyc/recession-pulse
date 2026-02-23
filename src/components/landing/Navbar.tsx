@@ -31,7 +31,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo-transparent.png" alt="RecessionPulse" width={110} height={60} />
+            <Image src="/logo-transparent.png" alt="RecessionPulse" width={55} height={30} />
             <span className="text-lg font-bold text-white">RecessionPulse</span>
           </Link>
 
