@@ -189,12 +189,12 @@ export function IndicatorCard({ indicator, displayMode = "card", onClick }: Indi
 
   return (
     <div
-      className={`group relative bg-pulse-card border border-pulse-border cursor-pointer transition-all duration-300 overflow-hidden ${STATUS_BORDER[indicator.status]}`}
+      className={`group relative h-[200px] bg-pulse-card border border-pulse-border cursor-pointer transition-all duration-300 overflow-hidden ${STATUS_BORDER[indicator.status]}`}
       onClick={onClick}
       onMouseEnter={isChartDefault ? undefined : fetchHistory}
     >
       {/* Default layer */}
-      <div className={`${isChartDefault ? "flex flex-col h-full" : "p-5"} transition-all duration-300 group-hover:opacity-0 group-hover:pointer-events-none`}>
+      <div className={`${isChartDefault ? "flex flex-col" : "p-5"} h-full transition-all duration-300 group-hover:opacity-0 group-hover:pointer-events-none`}>
         {isChartDefault ? (
           <ChartView indicator={indicator} history={history} chartLoading={chartLoading} color={color} />
         ) : (
