@@ -31,7 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Top nav */}
       <header className="sticky top-0 z-50 bg-pulse-darker/80 backdrop-blur-xl border-b border-pulse-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <Image src="/logo.png" alt="RecessionPulse" width={28} height={28} className="rounded" />
             <span className="text-lg font-bold text-white">RecessionPulse</span>
           </Link>
