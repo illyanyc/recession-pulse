@@ -12,7 +12,7 @@ export function FinalCTA() {
         </h2>
         <p className="text-lg text-pulse-muted max-w-2xl mx-auto mb-8 leading-relaxed">
           Every recession in the last 50 years was preceded by the exact indicators we track.
-          28 signals across 8 categories — free to access. The question isn&apos;t <em>if</em> the
+          38 signals across 8 categories — free to access. The question isn&apos;t <em>if</em> the
           next downturn is coming — it&apos;s <em>when</em>. Be positioned before it arrives.
         </p>
 
@@ -25,7 +25,7 @@ export function FinalCTA() {
           </Link>
           <Link href="/#indicators">
             <Button variant="secondary" size="lg" className="w-full sm:w-auto">
-              See all 28 signals
+              See all 38 signals
             </Button>
           </Link>
         </div>
