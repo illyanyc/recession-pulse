@@ -69,43 +69,52 @@ export default async function IndicatorPage({ params }: PageProps) {
   const seo = getIndicatorSEO(slug);
   if (!seo) notFound();
 
-  const supabase = createServiceClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let latest: any = null;
+  let history: { date: string; value: number }[] = [];
+  let aiSummary: string | null = null;
 
-  const { data: readings } = await supabase
-    .from("indicator_readings")
-    .select("*")
-    .eq("slug", slug)
-    .order("reading_date", { ascending: false })
-    .limit(90);
+  try {
+    const supabase = createServiceClient();
 
-  const latest = readings?.[0] ?? null;
-  const history = readings
-    ? [...readings]
-        .reverse()
-        .map((r) => ({
-          date: r.reading_date,
-          value: r.numeric_value ?? (parseFloat(r.latest_value) || 0),
-        }))
-    : [];
+    const { data: readings } = await supabase
+      .from("indicator_readings")
+      .select("*")
+      .eq("slug", slug)
+      .order("reading_date", { ascending: false })
+      .limit(90);
 
-  let aiSummary = await getGlobalSummary(slug);
+    latest = readings?.[0] ?? null;
+    history = readings
+      ? [...readings]
+          .reverse()
+          .map((r) => ({
+            date: r.reading_date,
+            value: r.numeric_value ?? (parseFloat(r.latest_value) || 0),
+          }))
+      : [];
 
-  if (!aiSummary) {
-    try {
-      const { data: dbSummary } = await supabase
-        .from("indicator_summaries")
-        .select("summary")
-        .eq("slug", slug)
-        .order("reading_date", { ascending: false })
-        .limit(1)
-        .single();
+    aiSummary = await getGlobalSummary(slug);
 
-      if (dbSummary?.summary) {
-        aiSummary = dbSummary.summary;
+    if (!aiSummary) {
+      try {
+        const { data: dbSummary } = await supabase
+          .from("indicator_summaries")
+          .select("summary")
+          .eq("slug", slug)
+          .order("reading_date", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (dbSummary?.summary) {
+          aiSummary = dbSummary.summary;
+        }
+      } catch {
+        // indicator_summaries table may not exist yet
       }
-    } catch {
-      // indicator_summaries table may not exist yet
     }
+  } catch {
+    // Supabase unavailable at build time — render with static content only
   }
 
   const relatedSlugs = ALL_INDICATOR_SLUGS.filter((s) => s !== slug).slice(0, 3);
