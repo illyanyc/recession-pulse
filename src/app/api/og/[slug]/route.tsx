@@ -75,7 +75,7 @@ export async function GET(
                 alignItems: "center",
                 gap: "8px",
                 padding: "6px 14px",
-                borderRadius: "9999px",
+                borderRadius: "0px",
                 background: bgColor,
                 border: `1px solid ${color}40`,
                 color,

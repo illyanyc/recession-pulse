@@ -10,6 +10,12 @@
     --pulse-yellow: #FFCC00;
   }
 
+  *,
+  *::before,
+  *::after {
+    border-radius: 0 !important;
+  }
+
   html {
     scroll-behavior: smooth;
   }

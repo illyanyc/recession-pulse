@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { DashboardContent } from "./DashboardContent";
+import { getRiskAssessment } from "@/lib/redis";
+import type { RecessionRiskAssessment } from "@/types";
 
 export const metadata = {
   title: "Dashboard — RecessionPulse",
@@ -62,13 +64,22 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false })
     .limit(50);
 
-  // Fetch latest recession risk assessment
-  const { data: riskAssessment } = await supabase
-    .from("recession_risk_assessments")
-    .select("*")
-    .order("assessment_date", { ascending: false })
-    .limit(1)
-    .single();
+  // Fetch latest recession risk assessment (Redis first, then Supabase)
+  let riskAssessment: RecessionRiskAssessment | null = null;
+  try {
+    const cached = await getRiskAssessment();
+    if (cached) riskAssessment = cached as RecessionRiskAssessment;
+  } catch { /* Redis miss */ }
+
+  if (!riskAssessment) {
+    const { data } = await supabase
+      .from("recession_risk_assessments")
+      .select("*")
+      .order("assessment_date", { ascending: false })
+      .limit(1)
+      .single();
+    riskAssessment = data;
+  }
 
   return (
     <DashboardContent

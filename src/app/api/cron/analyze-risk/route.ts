@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { generateRecessionRiskAssessment } from "@/lib/content-generator";
+import { setRiskAssessment } from "@/lib/redis";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -70,6 +71,19 @@ export async function GET(request: Request) {
     if (insertError) {
       console.error("Failed to insert risk assessment:", insertError);
     }
+
+    const assessmentRecord = {
+      id: "generated",
+      score: result.score,
+      risk_level: result.risk_level,
+      summary: result.summary,
+      key_factors: result.key_factors,
+      outlook: result.outlook,
+      model: "gpt-4o",
+      assessment_date: today,
+      created_at: new Date().toISOString(),
+    };
+    await setRiskAssessment(assessmentRecord).catch(() => {});
 
     const dateSlug = result.blog_article.slug;
     const { data: existingPost } = await supabase

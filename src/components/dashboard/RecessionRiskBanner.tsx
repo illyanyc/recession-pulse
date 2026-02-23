@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import type { RecessionRiskAssessment } from "@/types";
 
 interface RecessionRiskBannerProps {
@@ -42,7 +43,7 @@ function RiskGauge({ score, color }: { score: number; color: string }) {
           strokeWidth={stroke}
           strokeDasharray={circumference}
           strokeDashoffset={circumference - progress}
-          strokeLinecap="round"
+          strokeLinecap="square"
           className="transition-all duration-1000 ease-out"
         />
       </svg>
@@ -54,16 +55,37 @@ function RiskGauge({ score, color }: { score: number; color: string }) {
   );
 }
 
-export function RecessionRiskBanner({ assessment }: RecessionRiskBannerProps) {
+export function RecessionRiskBanner({ assessment: initialAssessment }: RecessionRiskBannerProps) {
+  const [assessment, setAssessment] = useState(initialAssessment);
+  const retried = useRef(false);
+
+  useEffect(() => {
+    if (assessment || retried.current) return;
+    retried.current = true;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/dashboard/risk-assessment");
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.score != null) setAssessment(data);
+        }
+      } catch { /* silent */ }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [assessment]);
+
   if (!assessment) {
     return (
-      <div className="p-6 rounded-2xl bg-pulse-card border border-pulse-border">
+      <div className="p-6 bg-pulse-card border border-pulse-border">
         <div className="flex items-center gap-4">
-          <div className="w-[132px] h-[132px] rounded-full bg-pulse-dark animate-pulse flex-shrink-0" />
+          <div className="w-[132px] h-[132px] bg-pulse-dark animate-pulse flex-shrink-0" />
           <div className="flex-1 space-y-3">
-            <div className="h-5 w-48 bg-pulse-dark rounded animate-pulse" />
-            <div className="h-4 w-full bg-pulse-dark rounded animate-pulse" />
-            <div className="h-4 w-3/4 bg-pulse-dark rounded animate-pulse" />
+            <div className="h-5 w-48 bg-pulse-dark animate-pulse" />
+            <div className="h-4 w-full bg-pulse-dark animate-pulse" />
+            <div className="h-4 w-3/4 bg-pulse-dark animate-pulse" />
+            <p className="text-xs text-pulse-muted mt-2">Generating risk assessment...</p>
           </div>
         </div>
       </div>
@@ -73,9 +95,8 @@ export function RecessionRiskBanner({ assessment }: RecessionRiskBannerProps) {
   const config = RISK_CONFIG[assessment.risk_level];
 
   return (
-    <div className={`p-6 rounded-2xl bg-gradient-to-r ${config.bg} bg-pulse-card border ${config.border} transition-all`}>
+    <div className={`p-6 bg-gradient-to-r ${config.bg} bg-pulse-card border ${config.border} transition-all`}>
       <div className="flex flex-col sm:flex-row gap-6">
-        {/* Gauge */}
         <div className="flex flex-col items-center gap-2">
           <RiskGauge score={assessment.score} color={config.color} />
           <span
@@ -86,7 +107,6 @@ export function RecessionRiskBanner({ assessment }: RecessionRiskBannerProps) {
           </span>
         </div>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-3">
             <h2 className="text-lg font-bold text-white">Overall Recession Risk</h2>
@@ -107,7 +127,7 @@ export function RecessionRiskBanner({ assessment }: RecessionRiskBannerProps) {
             <ul className="space-y-1.5 mb-4">
               {assessment.key_factors.map((factor, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-pulse-text">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: config.color }} />
+                  <span className="mt-1.5 w-1.5 h-1.5 flex-shrink-0" style={{ backgroundColor: config.color }} />
                   {factor}
                 </li>
               ))}

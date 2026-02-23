@@ -69,3 +69,22 @@ export async function getGlobalSummary(slug: string): Promise<string | null> {
     return null;
   }
 }
+
+export async function setRiskAssessment(data: unknown): Promise<void> {
+  try {
+    await getRedis().set("global:risk-assessment", JSON.stringify(data), { ex: TTL_24H });
+  } catch (err) {
+    console.warn("Redis setRiskAssessment failed:", err instanceof Error ? err.message : err);
+  }
+}
+
+export async function getRiskAssessment(): Promise<unknown | null> {
+  try {
+    const raw = await getRedis().get<string>("global:risk-assessment");
+    if (!raw) return null;
+    return typeof raw === "string" ? JSON.parse(raw) : raw;
+  } catch (err) {
+    console.warn("Redis getRiskAssessment failed:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}

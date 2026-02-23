@@ -137,7 +137,7 @@ export async function GET(request: Request) {
             const result = await sendEmail({
               to: msg.recipient,
               subject,
-              html: isHtml ? msg.content : `<div style="font-family:monospace;white-space:pre-wrap;background:#0a0a0f;color:#e5e7eb;padding:24px;border-radius:12px;">${msg.content}</div>`,
+              html: isHtml ? msg.content : `<div style="font-family:monospace;white-space:pre-wrap;background:#0a0a0f;color:#e5e7eb;padding:24px;border-radius:0px;">${msg.content}</div>`,
             });
             success = result.success;
             errorMsg = result.error || "";
