@@ -116,6 +116,7 @@ export default async function IndicatorPage({ params }: PageProps) {
     name: seo.title,
     description: seo.metaDescription,
     url: `https://recessionpulse.com/indicators/${slug}`,
+    license: "https://creativecommons.org/licenses/by/4.0/",
     temporalCoverage: history.length
       ? `${history[0].date}/${history[history.length - 1].date}`
       : undefined,
