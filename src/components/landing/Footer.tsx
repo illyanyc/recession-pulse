@@ -139,7 +139,6 @@ export function Footer() {
               <FooterLink href="/privacy">Privacy Policy</FooterLink>
               <FooterLink href="/terms">Terms of Service</FooterLink>
               <FooterLink href="/disclaimer">Disclaimer</FooterLink>
-              <FooterLink href="/sla">99% Uptime SLA</FooterLink>
               <FooterLink href="/contact">Contact Us</FooterLink>
             </ul>
           </div>
