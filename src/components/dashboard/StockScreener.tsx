@@ -271,8 +271,8 @@ function StockCardDetails({ signal }: { signal: StockSignal }) {
       <div className="mt-3 pt-3 border-t border-pulse-border">
         <span className="text-xs text-pulse-muted">
           {signal.signal_type === "value_dividend"
-            ? `P/E ${formatNumber(signal.forward_pe, 1)} · Yield ${formatNumber(signal.dividend_yield, 1)}% · RSI ${signal.rsi_14.toFixed(0)}`
-            : `RSI ${signal.rsi_14.toFixed(0)} · P/E ${formatNumber(signal.forward_pe, 1)} · Below 200 DMA`}
+            ? `P/E ${formatNumber(signal.forward_pe, 1)} · Yield ${formatNumber(signal.dividend_yield, 1)}% · RSI ${(signal.rsi_14 ?? 0).toFixed(0)}`
+            : `RSI ${(signal.rsi_14 ?? 0).toFixed(0)} · P/E ${formatNumber(signal.forward_pe, 1)} · Below 200 DMA`}
         </span>
       </div>
     </>
