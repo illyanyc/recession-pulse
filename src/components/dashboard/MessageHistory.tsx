@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/Card";
 import type { MessageQueueItem } from "@/types";
-import { MessageSquare, Check, Clock, AlertTriangle, Mail, Phone, ChevronDown, ChevronUp } from "lucide-react";
+import { MessageSquare, Check, Clock, AlertTriangle, Mail, Phone, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface MessageHistoryProps {
   messages: MessageQueueItem[];
@@ -58,7 +58,11 @@ const STATUS_ICON = {
   processing: <Clock className="h-4 w-4 text-pulse-yellow animate-spin" />,
 } as const;
 
+const PAGE_SIZE = 5;
+
 export function MessageHistory({ messages }: MessageHistoryProps) {
+  const [page, setPage] = useState(0);
+
   if (messages.length === 0) {
     return (
       <Card className="text-center py-8">
@@ -68,11 +72,51 @@ export function MessageHistory({ messages }: MessageHistoryProps) {
     );
   }
 
+  const totalPages = Math.ceil(messages.length / PAGE_SIZE);
+  const pageMessages = messages.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
   return (
     <div className="space-y-3">
-      {messages.map((msg) => (
+      {pageMessages.map((msg) => (
         <MessageRow key={msg.id} msg={msg} />
       ))}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-xs text-pulse-muted">
+            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, messages.length)} of {messages.length}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="p-1.5 rounded-lg border border-pulse-border text-pulse-muted hover:text-white hover:bg-pulse-dark transition-colors disabled:opacity-30 disabled:pointer-events-none"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i)}
+                className={`w-7 h-7 rounded-lg text-xs font-medium transition-colors ${
+                  i === page
+                    ? "bg-pulse-green/10 text-pulse-green border border-pulse-green/20"
+                    : "text-pulse-muted hover:text-white hover:bg-pulse-dark border border-pulse-border"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page === totalPages - 1}
+              className="p-1.5 rounded-lg border border-pulse-border text-pulse-muted hover:text-white hover:bg-pulse-dark transition-colors disabled:opacity-30 disabled:pointer-events-none"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
