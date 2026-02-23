@@ -23,7 +23,7 @@ function groupByCategory(indicators: RecessionIndicator[]): [string, RecessionIn
   }
   return CATEGORY_ORDER
     .filter((cat) => grouped.has(cat))
-    .map((cat) => [cat, grouped.get(cat)!] as [string, RecessionIndicator[]]);
+    .map((cat) => [cat, grouped.get(cat)!.sort((a, b) => a.name.localeCompare(b.name))] as [string, RecessionIndicator[]]);
 }
 
 function savePref(key: string, value: string) {

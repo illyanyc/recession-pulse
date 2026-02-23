@@ -194,7 +194,8 @@ export default async function IndicatorsIndexPage() {
                 return SLUG_CATEGORY_MAP[slug] === cat.key;
               })
               .map((slug) => ({ slug, seo: INDICATORS_SEO[slug], row: latestBySlug.get(slug) }))
-              .filter((i) => i.seo);
+              .filter((i) => i.seo)
+              .sort((a, b) => a.seo!.shortName.localeCompare(b.seo!.shortName));
 
             if (items.length === 0) return null;
 
