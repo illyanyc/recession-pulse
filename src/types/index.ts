@@ -155,7 +155,7 @@ export const PLANS = {
     price: 0,
     description: "Real-time recession dashboard — no credit card required",
     features: [
-      "38 recession & macro indicators tracked",
+      "42 recession & macro indicators tracked",
       "Real-time dashboard access",
       "Indicator status, signals & trends",
       "Historical context for every reading",

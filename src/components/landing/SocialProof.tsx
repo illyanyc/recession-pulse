@@ -3,7 +3,7 @@ import { BarChart3, Clock, Shield, TrendingUp } from "lucide-react";
 const stats = [
   {
     icon: TrendingUp,
-    value: "28",
+    value: "42",
     label: "Recession & macro indicators",
   },
   {

@@ -17,11 +17,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://recessionpulse.com"),
   title: {
-    default: "RecessionPulse — 38 Recession Indicators Tracked in Real Time | Free Dashboard",
+    default: "RecessionPulse — 42 Recession Indicators Tracked in Real Time | Free Dashboard",
     template: "%s | RecessionPulse",
   },
   description:
-    "Track 38 recession & macro indicators free: Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI, and more. The quant's edge for every investor. SMS alerts from $6.99/mo.",
+    "Track 42 recession & macro indicators free: Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI, and more. The quant's edge for every investor. SMS alerts from $6.99/mo.",
   keywords: [
     "recession indicators",
     "recession tracker",
@@ -77,21 +77,21 @@ export const metadata: Metadata = {
     siteName: "RecessionPulse",
     title: "RecessionPulse — Think Like a Quant. Prepare for What's Next.",
     description:
-      "38 recession & macro indicators tracked free. Sahm Rule, yield curves, VIX, JOLTS, GDPNow & more. SMS alerts from $6.99/mo.",
+      "42 recession & macro indicators tracked free. Sahm Rule, yield curves, VIX, JOLTS, GDPNow & more. SMS alerts from $6.99/mo.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "RecessionPulse — 38 Recession Indicators Dashboard",
+        alt: "RecessionPulse — 42 Recession Indicators Dashboard",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "RecessionPulse — 38 Recession Indicators, Free Dashboard",
+    title: "RecessionPulse — 42 Recession Indicators, Free Dashboard",
     description:
-      "Track 38 recession indicators free. Sahm Rule, yield curves, VIX, JOLTS, building permits & more. SMS alerts from $6.99/mo.",
+      "Track 42 recession indicators free. Sahm Rule, yield curves, VIX, JOLTS, building permits & more. SMS alerts from $6.99/mo.",
     images: ["/og-image.png"],
   },
   alternates: {
@@ -107,7 +107,7 @@ const jsonLd = {
   applicationCategory: "FinanceApplication",
   operatingSystem: "Web",
   description:
-    "Track 38 recession & macro indicators in real time. Free dashboard with Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI, and more. SMS alerts from $6.99/mo.",
+    "Track 42 recession & macro indicators in real time. Free dashboard with Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI, and more. SMS alerts from $6.99/mo.",
   url: "https://recessionpulse.com",
   offers: [
     {
@@ -115,7 +115,7 @@ const jsonLd = {
       name: "Free Plan",
       price: "0",
       priceCurrency: "USD",
-      description: "Free dashboard with all 38 recession and macro indicators tracked in real time",
+      description: "Free dashboard with all 42 recession and macro indicators tracked in real time",
       url: "https://recessionpulse.com/signup",
     },
     {
@@ -123,7 +123,7 @@ const jsonLd = {
       name: "Pulse Plan",
       price: "6.99",
       priceCurrency: "USD",
-      description: "Daily email and SMS recession alerts — 38 indicators tracked with threshold notifications",
+      description: "Daily email and SMS recession alerts — 42 indicators tracked with threshold notifications",
       url: "https://recessionpulse.com/pricing",
     },
     {
@@ -132,7 +132,7 @@ const jsonLd = {
       price: "9.99",
       priceCurrency: "USD",
       description:
-        "Full quant toolkit — 38 indicators + stock screener alerts. Stocks below 200 EMA, RSI <30, P/E <15.",
+        "Full quant toolkit — 42 indicators + stock screener alerts. Stocks below 200 EMA, RSI <30, P/E <15.",
       url: "https://recessionpulse.com/pricing",
     },
   ],
@@ -177,7 +177,7 @@ const faqJsonLd = {
       name: "What indicators does RecessionPulse track?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "RecessionPulse monitors 38 recession and macro indicators across 8 categories: Primary (Sahm Rule, unemployment, industrial production, JOLTS quits, temp help, SOS indicator), Housing (building permits, housing starts), Business Activity (corporate profits, NFIB, inventory-to-sales), Credit Stress (savings rate, credit card delinquency, SLOOS, debt service ratio), Market (yield curves, VIX, NFCI, copper-gold ratio, NY Fed & JPM recession probability), Liquidity (M2), and Real-Time (freight index, GDPNow).",
+        text: "RecessionPulse monitors 42 recession and macro indicators across 8 categories: Primary (Sahm Rule, unemployment, industrial production, JOLTS quits, temp help, SOS indicator), Housing (building permits, housing starts), Business Activity (corporate profits, NFIB, inventory-to-sales), Credit Stress (savings rate, credit card delinquency, SLOOS, debt service ratio), Market (yield curves, VIX, NFCI, copper-gold ratio, NY Fed & JPM recession probability), Liquidity (M2), and Real-Time (freight index, GDPNow).",
       },
     },
     {
@@ -185,7 +185,7 @@ const faqJsonLd = {
       name: "Is RecessionPulse really free?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. The full dashboard with all 38 indicators, signals, trends, and historical context is completely free with no credit card required. The Pulse plan ($6.99/mo) adds daily email and SMS alerts. Pulse Pro ($9.99/mo) adds stock screener alerts, value picks, and AI recession risk assessment.",
+        text: "Yes. The full dashboard with all 42 indicators, signals, trends, and historical context is completely free with no credit card required. The Pulse plan ($6.99/mo) adds daily email and SMS alerts. Pulse Pro ($9.99/mo) adds stock screener alerts, value picks, and AI recession risk assessment.",
       },
     },
     {
@@ -209,7 +209,7 @@ const faqJsonLd = {
       name: "How much does RecessionPulse cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "RecessionPulse has three tiers: Free (full dashboard with all 38 indicators), Pulse at $6.99/month (adds daily email and SMS alerts with threshold notifications), and Pulse Pro at $9.99/month (adds stock screener alerts, value picks, sector rotation signals, and AI risk assessment). Cancel anytime. No contracts.",
+        text: "RecessionPulse has three tiers: Free (full dashboard with all 42 indicators), Pulse at $6.99/month (adds daily email and SMS alerts with threshold notifications), and Pulse Pro at $9.99/month (adds stock screener alerts, value picks, sector rotation signals, and AI risk assessment). Cancel anytime. No contracts.",
       },
     },
     {

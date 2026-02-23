@@ -112,7 +112,7 @@ export async function GET(
                 width: "32px",
                 height: "32px",
                 borderRadius: "0px",
-                background: "#00CC66",
+                background: "#FF6600",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

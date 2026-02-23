@@ -78,13 +78,13 @@ const features = [
     icon: Shield,
     title: "AI Risk Assessment",
     description:
-      "Multi-model recession risk score combining all 38 indicators into a single probability estimate. Updated daily.",
+      "Multi-model recession risk score combining all 42 indicators into a single probability estimate. Updated daily.",
   },
   {
     icon: Zap,
     title: "Real-Time Dashboard",
     description:
-      "All 38 indicators at a glance, organized by category. Financial-terminal aesthetic designed for quick daily check-ins. Free forever.",
+      "All 42 indicators at a glance, organized by category. Financial-terminal aesthetic designed for quick daily check-ins. Free forever.",
   },
 ];
 
@@ -94,7 +94,7 @@ export function Features() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            38 indicators. 8 categories.
+            42 indicators. 8 categories.
             <br />
             <span className="gradient-text">Zero noise.</span>
           </h2>

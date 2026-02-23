@@ -23,7 +23,7 @@ export function Hero() {
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-pulse-green/20 bg-pulse-green/5 mb-8">
           <span className="w-2 h-2 rounded-full bg-pulse-green animate-pulse" />
-          <span className="text-pulse-green text-sm font-medium">38 indicators tracked live</span>
+          <span className="text-pulse-green text-sm font-medium">42 indicators tracked live</span>
         </div>
 
         <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
@@ -33,7 +33,7 @@ export function Hero() {
         </h1>
 
         <p className="text-lg sm:text-xl text-pulse-muted max-w-2xl mx-auto mb-10 leading-relaxed">
-          38 recession and macro indicators from FRED, Treasury, and financial APIs — analyzed
+          42 recession and macro indicators from FRED, Treasury, and financial APIs — analyzed
           daily. The same signals Wall Street quant desks monitor, in your pocket.
           <span className="text-white font-medium"> Free to start.</span>
         </p>
@@ -73,7 +73,7 @@ export function Hero() {
         {/* Feature pills */}
         <div className="flex flex-wrap justify-center gap-4">
           {[
-            { icon: BarChart3, label: "38 macro indicators" },
+            { icon: BarChart3, label: "42 macro indicators" },
             { icon: Bell, label: "SMS & email alerts" },
             { icon: Shield, label: "Recession-proof positioning" },
           ].map(({ icon: Icon, label }) => (
