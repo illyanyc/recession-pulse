@@ -99,21 +99,27 @@ const SLUG_CATEGORY_MAP: Record<string, IndicatorCategory> = {
 };
 
 export default async function IndicatorsIndexPage() {
-  const supabase = createServiceClient();
-  const authClient = await createClient();
-  const { data: { user } } = await authClient.auth.getUser();
-  const isSignedIn = !!user;
-
-  const { data: readings } = await supabase
-    .from("indicator_readings")
-    .select("slug, name, latest_value, status, status_text, signal, signal_emoji, category, reading_date")
-    .order("reading_date", { ascending: false });
-
   const latestBySlug = new Map<string, IndicatorRow>();
-  if (readings) {
-    for (const r of readings as IndicatorRow[]) {
-      if (!latestBySlug.has(r.slug)) latestBySlug.set(r.slug, r);
+  let isSignedIn = false;
+
+  try {
+    const supabase = createServiceClient();
+    const authClient = await createClient();
+    const { data: { user } } = await authClient.auth.getUser();
+    isSignedIn = !!user;
+
+    const { data: readings } = await supabase
+      .from("indicator_readings")
+      .select("slug, name, latest_value, status, status_text, signal, signal_emoji, category, reading_date")
+      .order("reading_date", { ascending: false });
+
+    if (readings) {
+      for (const r of readings as IndicatorRow[]) {
+        if (!latestBySlug.has(r.slug)) latestBySlug.set(r.slug, r);
+      }
     }
+  } catch {
+    // Supabase unavailable at build time
   }
 
   const categories = CATEGORY_ORDER.map((key) => ({

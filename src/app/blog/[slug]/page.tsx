@@ -33,14 +33,20 @@ const TYPE_LABELS: Record<string, string> = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = createServiceClient();
+  let post: { title: string; meta_description: string; keywords: string[]; og_image_url?: string } | null = null;
 
-  const { data: post } = await supabase
-    .from("blog_posts")
-    .select("title, meta_description, keywords, og_image_url")
-    .eq("slug", slug)
-    .eq("status", "published")
-    .single();
+  try {
+    const supabase = createServiceClient();
+    const { data } = await supabase
+      .from("blog_posts")
+      .select("title, meta_description, keywords, og_image_url")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .single();
+    post = data;
+  } catch {
+    // Supabase unavailable at build time
+  }
 
   if (!post) return {};
 
@@ -66,25 +72,36 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const supabase = createServiceClient();
+  let post: BlogPost | null = null;
+  let relatedPosts: { slug: string; title: string; excerpt: string; content_type: string; published_at: string }[] | null = null;
 
-  const { data } = await supabase
-    .from("blog_posts")
-    .select("*")
-    .eq("slug", slug)
-    .eq("status", "published")
-    .single();
+  try {
+    const supabase = createServiceClient();
 
-  if (!data) notFound();
-  const post = data as BlogPost;
+    const { data } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .single();
 
-  const { data: relatedPosts } = await supabase
-    .from("blog_posts")
-    .select("slug, title, excerpt, content_type, published_at")
-    .eq("status", "published")
-    .neq("slug", slug)
-    .order("published_at", { ascending: false })
-    .limit(3);
+    post = data as BlogPost | null;
+
+    if (post) {
+      const { data: related } = await supabase
+        .from("blog_posts")
+        .select("slug, title, excerpt, content_type, published_at")
+        .eq("status", "published")
+        .neq("slug", slug)
+        .order("published_at", { ascending: false })
+        .limit(3);
+      relatedPosts = related;
+    }
+  } catch {
+    // Supabase unavailable at build time
+  }
+
+  if (!post) notFound();
 
   const articleLd = {
     "@context": "https://schema.org",

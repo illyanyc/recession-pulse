@@ -44,16 +44,22 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default async function BlogIndexPage() {
-  const supabase = createServiceClient();
+  let blogPosts: BlogPost[] = [];
 
-  const { data: posts } = await supabase
-    .from("blog_posts")
-    .select("slug, title, excerpt, content_type, published_at, keywords")
-    .eq("status", "published")
-    .order("published_at", { ascending: false })
-    .limit(50);
+  try {
+    const supabase = createServiceClient();
 
-  const blogPosts = (posts as BlogPost[]) || [];
+    const { data: posts } = await supabase
+      .from("blog_posts")
+      .select("slug, title, excerpt, content_type, published_at, keywords")
+      .eq("status", "published")
+      .order("published_at", { ascending: false })
+      .limit(50);
+
+    blogPosts = (posts as BlogPost[]) || [];
+  } catch {
+    // Supabase unavailable at build time
+  }
 
   return (
     <>

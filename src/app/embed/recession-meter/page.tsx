@@ -4,31 +4,37 @@ import type { IndicatorStatus } from "@/types";
 export const revalidate = 3600;
 
 export default async function RecessionMeterEmbed() {
-  const supabase = createServiceClient();
-
-  const { data: readings } = await supabase
-    .from("indicator_readings")
-    .select("slug, name, latest_value, status, signal_emoji, reading_date")
-    .order("reading_date", { ascending: false });
-
-  const latestBySlug = new Map<string, {
+  let indicators: {
     slug: string;
     name: string;
     latest_value: string;
     status: IndicatorStatus;
     signal_emoji: string;
     reading_date: string;
-  }>();
+  }[] = [];
 
-  if (readings) {
-    for (const r of readings) {
-      if (!latestBySlug.has(r.slug)) {
-        latestBySlug.set(r.slug, r as typeof latestBySlug extends Map<string, infer V> ? V : never);
+  try {
+    const supabase = createServiceClient();
+
+    const { data: readings } = await supabase
+      .from("indicator_readings")
+      .select("slug, name, latest_value, status, signal_emoji, reading_date")
+      .order("reading_date", { ascending: false });
+
+    const latestBySlug = new Map<string, typeof indicators[0]>();
+
+    if (readings) {
+      for (const r of readings) {
+        if (!latestBySlug.has(r.slug)) {
+          latestBySlug.set(r.slug, r as typeof indicators[0]);
+        }
       }
     }
-  }
 
-  const indicators = Array.from(latestBySlug.values());
+    indicators = Array.from(latestBySlug.values());
+  } catch {
+    // Supabase unavailable at build time
+  }
   const statusCounts = { safe: 0, watch: 0, warning: 0, danger: 0 };
   for (const ind of indicators) {
     if (ind.status in statusCounts) statusCounts[ind.status]++;
