@@ -72,7 +72,7 @@ interface ScreenerQuote {
 
 async function fetchScreenerCandidates(): Promise<ScreenerQuote[]> {
   const allQuotes: ScreenerQuote[] = [];
-  const screenIds = ["undervalued_large_caps", "undervalued_growth_stocks"];
+  const screenIds = ["undervalued_large_caps", "undervalued_growth_stocks"] as const;
 
   for (const scrId of screenIds) {
     try {
@@ -159,7 +159,8 @@ export async function runStockScreener(): Promise<StockSignal[]> {
       const rsiResults = await Promise.allSettled(batch.map((c) => fetchRSI(c.ticker)));
 
       for (let j = 0; j < batch.length; j++) {
-        const rsi = rsiResults[j].status === "fulfilled" ? rsiResults[j].value : 50;
+        const rsiResult = rsiResults[j];
+        const rsi = rsiResult.status === "fulfilled" ? rsiResult.value : 50;
         if (rsi > oversold_growth.max_rsi) continue;
 
         const { quote: q, ticker } = batch[j];
@@ -197,10 +198,11 @@ export async function runStockScreener(): Promise<StockSignal[]> {
       const rsiResults = await Promise.allSettled(batch.map((s) => fetchRSI(s.ticker)));
 
       for (let j = 0; j < batch.length; j++) {
-        const rsi = rsiResults[j].status === "fulfilled" ? rsiResults[j].value : 50;
+        const rsiResult = rsiResults[j];
+        const rsi = rsiResult.status === "fulfilled" ? rsiResult.value : 50;
         batch[j].rsi_14 = rsi;
         if (batch[j].signal_type === "value_dividend") {
-          batch[j].notes = `P/E ${batch[j].forward_pe.toFixed(1)}, Yield ${batch[j].dividend_yield.toFixed(1)}%, RSI ${rsi.toFixed(0)}`;
+          batch[j].notes = `P/E ${(batch[j].forward_pe ?? 0).toFixed(1)}, Yield ${(batch[j].dividend_yield ?? 0).toFixed(1)}%, RSI ${rsi.toFixed(0)}`;
         }
       }
 
