@@ -46,6 +46,9 @@ export function Navbar() {
             <Link href="/#pricing" className="text-sm text-pulse-muted hover:text-white transition-colors">
               Pricing
             </Link>
+            <Link href="/blog" className="text-sm text-pulse-muted hover:text-white transition-colors">
+              Blog
+            </Link>
             {isLoggedIn ? (
               <Link href="/dashboard">
                 <Button size="sm">
@@ -87,6 +90,9 @@ export function Navbar() {
             </Link>
             <Link href="/#pricing" className="block px-2 py-2 text-sm text-pulse-muted hover:text-white" onClick={() => setIsOpen(false)}>
               Pricing
+            </Link>
+            <Link href="/blog" className="block px-2 py-2 text-sm text-pulse-muted hover:text-white" onClick={() => setIsOpen(false)}>
+              Blog
             </Link>
             <div className="flex gap-3 pt-2">
               {isLoggedIn ? (
