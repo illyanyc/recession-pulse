@@ -103,7 +103,7 @@ export interface Subscription {
 export const PLANS = {
   pulse: {
     name: "Pulse",
-    price: 9.99,
+    price: 6.99,
     description: "Daily recession indicator alerts via SMS",
     features: [
       "9 key recession indicators tracked daily",
@@ -116,7 +116,7 @@ export const PLANS = {
   },
   pulse_pro: {
     name: "Pulse Pro",
-    price: 14.99,
+    price: 9.99,
     description: "Everything in Pulse + daily stock screener alerts",
     features: [
       "Everything in Pulse plan",

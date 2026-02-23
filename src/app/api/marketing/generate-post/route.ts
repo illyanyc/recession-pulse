@@ -53,7 +53,7 @@ Write a self-post that provides real analysis. Mention recessionpulse.com natura
 Format: Title line, then blank line, then body.`,
 
       producthunt: `Write a Product Hunt launch description for RecessionPulse.
-RecessionPulse tracks 15+ recession indicators daily and sends SMS/email alerts ($9.99/mo).
+RecessionPulse tracks 15+ recession indicators daily and sends SMS/email alerts ($6.99/mo).
 Built with Next.js, Supabase, FRED API, OpenAI for AI summaries.
 
 Features:

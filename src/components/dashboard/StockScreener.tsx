@@ -38,7 +38,7 @@ export function StockScreener({ signals, isPro }: StockScreenerProps) {
           P/E &lt;15. Value dividend plays and oversold growth opportunities.
         </p>
         <Link href="/pricing">
-          <Button>Upgrade to Pulse Pro — $14.99/mo</Button>
+          <Button>Upgrade to Pulse Pro — $9.99/mo</Button>
         </Link>
       </Card>
     );

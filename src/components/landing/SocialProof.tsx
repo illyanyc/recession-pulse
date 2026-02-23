@@ -19,7 +19,7 @@ const stats = [
   },
   {
     icon: Shield,
-    value: "$9.99",
+    value: "$6.99",
     label: "Per month — cancel anytime",
   },
 ];

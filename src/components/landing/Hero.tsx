@@ -34,7 +34,7 @@ export function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
           <Link href="/signup">
             <Button size="lg" className="w-full sm:w-auto">
-              Start monitoring — $9.99/mo
+              Start monitoring — $6.99/mo
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>

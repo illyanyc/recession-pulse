@@ -71,10 +71,10 @@ export function SubscriptionStatus({ profile, subscription }: SubscriptionStatus
             </p>
             <div className="flex gap-3">
               <Button size="sm" onClick={() => handleCheckout("pulse")} loading={loading}>
-                Pulse — $9.99/mo
+                Pulse — $6.99/mo
               </Button>
               <Button size="sm" variant="secondary" onClick={() => handleCheckout("pulse_pro")} loading={loading}>
-                Pulse Pro — $14.99/mo
+                Pulse Pro — $9.99/mo
               </Button>
             </div>
             {error && (

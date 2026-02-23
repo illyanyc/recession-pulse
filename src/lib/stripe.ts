@@ -16,11 +16,11 @@ export const STRIPE_PLANS = {
   pulse: {
     priceId: process.env.STRIPE_PULSE_PRICE_ID!,
     name: "Pulse",
-    amount: 999,
+    amount: 699,
   },
   pulse_pro: {
     priceId: process.env.STRIPE_PULSE_PRO_PRICE_ID!,
     name: "Pulse Pro",
-    amount: 1499,
+    amount: 999,
   },
 } as const;

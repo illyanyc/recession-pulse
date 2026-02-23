@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | RecessionPulse",
   },
   description:
-    "Track 9 critical recession indicators daily: Sahm Rule, yield curves, Conference Board LEI, credit spreads, and more. Get daily SMS alerts with data-driven economic signals. From $9.99/month.",
+    "Track 9 critical recession indicators daily: Sahm Rule, yield curves, Conference Board LEI, credit spreads, and more. Get daily SMS alerts with data-driven economic signals. From $6.99/month.",
   keywords: [
     "recession indicators",
     "recession tracker",
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     siteName: "RecessionPulse",
     title: "RecessionPulse — Know Before the Recession Hits",
     description:
-      "9 critical recession indicators analyzed daily. Sahm Rule, yield curves, LEI, credit spreads & more. Daily SMS alerts from $9.99/mo.",
+      "9 critical recession indicators analyzed daily. Sahm Rule, yield curves, LEI, credit spreads & more. Daily SMS alerts from $6.99/mo.",
     images: [
       {
         url: "/og-image.png",
@@ -103,7 +103,7 @@ const jsonLd = {
     {
       "@type": "Offer",
       name: "Pulse Plan",
-      price: "9.99",
+      price: "6.99",
       priceCurrency: "USD",
       description: "Daily recession indicator SMS alerts — 9 key indicators tracked",
       url: "https://recessionpulse.com/pricing",
@@ -111,7 +111,7 @@ const jsonLd = {
     {
       "@type": "Offer",
       name: "Pulse Pro Plan",
-      price: "14.99",
+      price: "9.99",
       priceCurrency: "USD",
       description:
         "Daily recession alerts + stock screener. Stocks below 200 EMA, RSI <30, P/E <15.",
@@ -199,7 +199,7 @@ const faqJsonLd = {
       name: "How much does RecessionPulse cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "RecessionPulse offers two plans: Pulse at $9.99/month (daily SMS and email alerts with all recession indicators) and Pulse Pro at $14.99/month (adds daily stock screener alerts for stocks below 200 EMA with RSI <30 and P/E <15). Cancel anytime. No contracts.",
+        text: "RecessionPulse offers two plans: Pulse at $6.99/month (daily SMS and email alerts with all recession indicators) and Pulse Pro at $9.99/month (adds daily stock screener alerts for stocks below 200 EMA with RSI <30 and P/E <15). Cancel anytime. No contracts.",
       },
     },
     {

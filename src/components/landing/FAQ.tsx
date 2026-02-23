@@ -33,7 +33,7 @@ const faqs = [
   {
     question: "How much does RecessionPulse cost?",
     answer:
-      "RecessionPulse offers two plans: Pulse at $9.99/month (daily SMS and email alerts with all recession indicators) and Pulse Pro at $14.99/month (adds daily stock screener alerts for stocks below 200 EMA with RSI <30 and P/E <15). Cancel anytime. No contracts.",
+      "RecessionPulse offers two plans: Pulse at $6.99/month (daily SMS and email alerts with all recession indicators) and Pulse Pro at $9.99/month (adds daily stock screener alerts for stocks below 200 EMA with RSI <30 and P/E <15). Cancel anytime. No contracts.",
   },
   {
     question: "Is RecessionPulse investment advice?",

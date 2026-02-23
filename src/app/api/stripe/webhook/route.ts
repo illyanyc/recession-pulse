@@ -96,7 +96,7 @@ export async function POST(request: Request) {
 
           // Notify owner of new subscriber
           await notifyOwner(
-            `💰 NEW SUBSCRIBER!\n\n${profile.full_name || "Unknown"}\n${profile.email}\nPlan: ${plan === "pulse_pro" ? "Pulse Pro ($14.99)" : "Pulse ($9.99)"}\n\nTotal: check dashboard`
+            `💰 NEW SUBSCRIBER!\n\n${profile.full_name || "Unknown"}\n${profile.email}\nPlan: ${plan === "pulse_pro" ? "Pulse Pro ($9.99)" : "Pulse ($6.99)"}\n\nTotal: check dashboard`
           );
         }
       }
