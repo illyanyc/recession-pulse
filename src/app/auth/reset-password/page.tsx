@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <Link href="/" className="flex items-center gap-2 justify-center mb-8">
-          <Image src="/logo-transparent.png" alt="RecessionPulse" width={36} height={36} />
+          <Image src="/logo-transparent.png" alt="RecessionPulse" width={110} height={60} />
           <span className="text-2xl font-bold text-white">RecessionPulse</span>
         </Link>
 

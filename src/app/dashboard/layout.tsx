@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <header className="sticky top-0 z-50 bg-pulse-darker/80 backdrop-blur-xl border-b border-pulse-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo-transparent.png" alt="RecessionPulse" width={36} height={36} />
+            <Image src="/logo-transparent.png" alt="RecessionPulse" width={110} height={60} />
             <span className="text-lg font-bold text-white">RecessionPulse</span>
           </Link>
 
