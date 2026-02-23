@@ -9,13 +9,13 @@ export function SMSPreview() {
             </h2>
             <p className="text-pulse-muted text-lg mb-8 leading-relaxed">
               Every morning at 8 AM ET, Pulse subscribers get a concise SMS with the signals that moved.
-              28 indicators distilled into one glance. <span className="text-white font-medium">$6.99/mo</span> — or
+              38 indicators distilled into one glance. <span className="text-white font-medium">$6.99/mo</span> — or
               start with the free dashboard.
             </p>
 
             <div className="space-y-4">
               {[
-                "28 indicators analyzed — only alerts surface",
+                "38 indicators analyzed — only alerts surface",
                 "Prioritized by severity — danger signals first",
                 "AI-generated context for each shift",
                 "One glance = full macro picture",

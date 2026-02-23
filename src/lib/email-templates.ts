@@ -160,7 +160,7 @@ export function buildWelcomeEmail(name: string): { subject: string; html: string
       <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-radius:0px;padding:20px;margin-bottom:20px;">
         <p style="margin:0 0 12px;color:#F0913A;font-weight:600;font-size:14px;">What to expect:</p>
         <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">28 recession indicators tracked daily</td></tr>
+          <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">38 recession indicators tracked daily</td></tr>
           <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Morning briefing at 8:00 AM ET</td></tr>
           <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Real-time dashboard with AI analysis</td></tr>
           <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Instant alerts if critical thresholds breach</td></tr>
