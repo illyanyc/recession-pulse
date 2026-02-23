@@ -89,14 +89,8 @@ export function IndicatorCard({ indicator, onClick }: IndicatorCardProps) {
           <TrendIcon status={indicator.status} />
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{indicator.signal_emoji}</span>
-            <span className="text-xs text-pulse-muted">{indicator.signal}</span>
-          </div>
-          <div className="text-xs text-pulse-muted">
-            Trigger: {indicator.trigger_level}
-          </div>
+        <div className="text-xs text-pulse-muted">
+          Trigger: {indicator.trigger_level}
         </div>
 
         <div className="mt-3 pt-3 border-t border-pulse-border">
