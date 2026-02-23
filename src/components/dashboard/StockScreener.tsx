@@ -40,9 +40,6 @@ export function StockScreener({ signals, isPro }: StockScreenerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [cardDisplayMode, setCardDisplayMode] = useState<CardDisplayMode>("card");
 
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/7e11db6f-d41c-493a-83e3-c08fecaa79d6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'StockScreener.tsx:42',message:'StockScreener rendered',data:{signalCount:signals.length,isPro,tickers:signals.map(s=>s.ticker)},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
-  // #endregion
 
   if (!isPro) {
     return (

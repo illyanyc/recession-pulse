@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { PLANS } from "@/types";
-import { Check, Zap } from "lucide-react";
+import { Check, Shield, Zap } from "lucide-react";
 import Link from "next/link";
 
 export function Pricing() {
@@ -120,6 +120,16 @@ export function Pricing() {
         <p className="text-center text-sm text-pulse-muted mt-8">
           Cancel anytime. No contracts. No hidden fees.
         </p>
+
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <Shield className="h-4 w-4 text-pulse-green" />
+          <p className="text-center text-sm text-pulse-muted">
+            Backed by our{" "}
+            <Link href="/sla" className="text-pulse-green hover:underline">
+              99% uptime SLA
+            </Link>
+          </p>
+        </div>
       </div>
     </section>
   );

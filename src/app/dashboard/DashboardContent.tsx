@@ -53,9 +53,6 @@ export function DashboardContent({
       if (!res.ok) throw new Error(data.error || "Refresh failed");
       setRefreshStatus("success");
       setRefreshResult(data.message || "Data refreshed");
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/7e11db6f-d41c-493a-83e3-c08fecaa79d6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DashboardContent.tsx:56',message:'Refresh success - calling router.refresh()',data:{responseData:data},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
-      // #endregion
       router.refresh();
     } catch (err) {
       setRefreshStatus("error");

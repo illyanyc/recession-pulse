@@ -14,9 +14,6 @@ export async function POST() {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const secret = process.env.CRON_SECRET;
 
-    // #region agent log
-    const fs = await import("fs"); fs.appendFileSync("/Users/illya/dev/recession-tracker/.cursor/debug.log", JSON.stringify({id:"log_refresh_1",timestamp:Date.now(),location:"api/dashboard/refresh/route.ts:17",message:"Refresh route called - fetching indicators + stocks",data:{appUrl,hasSecret:!!secret},hypothesisId:"H1"})+"\n");
-    // #endregion
 
     const [indicatorRes, stockRes] = await Promise.all([
       fetch(`${appUrl}/api/cron/fetch-indicators?secret=${secret}`),
@@ -66,9 +63,6 @@ export async function POST() {
       console.warn("Redis cache failed (non-critical):", cacheErr instanceof Error ? cacheErr.message : cacheErr);
     }
 
-    // #region agent log
-    const fs2 = await import("fs"); fs2.appendFileSync("/Users/illya/dev/recession-tracker/.cursor/debug.log", JSON.stringify({id:"log_refresh_2",timestamp:Date.now(),location:"api/dashboard/refresh/route.ts:end",message:"Refresh completed - indicators + stocks",data:{indicatorOk:indicatorRes.ok,stockOk:stockRes.ok,indicatorMsg:indicatorData?.message,stockMsg:stockData?.message},hypothesisId:"H1"})+"\n");
-    // #endregion
 
     return NextResponse.json({
       message: `${indicatorData.message || "Indicators refreshed"}. ${stockData.message || "Stocks screened"}.`,
