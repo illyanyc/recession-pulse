@@ -55,6 +55,9 @@ export interface StockSignal {
   screened_at: string;
 }
 
+export type ViewMode = "grid" | "list";
+export type CardDisplayMode = "card" | "chart";
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -67,6 +70,8 @@ export interface UserProfile {
   email_alerts_enabled: boolean;
   preferred_alert_time: string;
   timezone: string;
+  dashboard_view_mode: ViewMode;
+  card_display_mode: CardDisplayMode;
   created_at: string;
   updated_at: string;
 }

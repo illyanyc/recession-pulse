@@ -178,7 +178,11 @@ export function DashboardContent({
       {/* Indicators */}
       <section>
         <h2 className="text-lg font-bold text-white mb-4">Recession Indicators</h2>
-        <IndicatorGrid indicators={displayIndicators} />
+        <IndicatorGrid
+          indicators={displayIndicators}
+          initialViewMode={profile?.dashboard_view_mode || "grid"}
+          initialCardDisplayMode={profile?.card_display_mode || "card"}
+        />
       </section>
 
       {/* Stock Screener */}
