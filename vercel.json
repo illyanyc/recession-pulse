@@ -1,51 +1,51 @@
 {
   "crons": [
     {
-      "path": "/api/cron/fetch-indicators?secret=${CRON_SECRET}",
+      "path": "/api/cron/fetch-indicators",
       "schedule": "0 11 * * *"
     },
     {
-      "path": "/api/cron/screen-stocks?secret=${CRON_SECRET}",
+      "path": "/api/cron/screen-stocks",
       "schedule": "5 11 * * 1-5"
     },
     {
-      "path": "/api/cron/analyze-risk?secret=${CRON_SECRET}",
+      "path": "/api/cron/analyze-risk",
       "schedule": "30 11 * * *"
     },
     {
-      "path": "/api/cron/send-alerts?secret=${CRON_SECRET}",
-      "schedule": "0 13 * * *"
+      "path": "/api/cron/send-alerts",
+      "schedule": "15 12 * * *"
     },
     {
-      "path": "/api/cron/post-daily-tweet?secret=${CRON_SECRET}",
+      "path": "/api/cron/post-daily-tweet",
       "schedule": "0 14 * * *"
     },
     {
-      "path": "/api/cron/post-market-open?secret=${CRON_SECRET}",
+      "path": "/api/cron/post-market-open",
       "schedule": "30 14 * * 1-5"
     },
     {
-      "path": "/api/cron/post-educational?secret=${CRON_SECRET}",
+      "path": "/api/cron/post-educational",
       "schedule": "0 17 * * *"
     },
     {
-      "path": "/api/cron/post-engagement?secret=${CRON_SECRET}",
+      "path": "/api/cron/post-engagement",
       "schedule": "0 20 * * *"
     },
     {
-      "path": "/api/cron/send-newsletter?secret=${CRON_SECRET}",
+      "path": "/api/cron/send-newsletter",
       "schedule": "15 21 * * 5"
     },
     {
-      "path": "/api/cron/post-cta?secret=${CRON_SECRET}",
+      "path": "/api/cron/post-cta",
       "schedule": "0 23 * * *"
     },
     {
-      "path": "/api/cron/generate-content?secret=${CRON_SECRET}",
+      "path": "/api/cron/generate-content",
       "schedule": "0 14 * * 0"
     },
     {
-      "path": "/api/cron/post-weekly-thread?secret=${CRON_SECRET}",
+      "path": "/api/cron/post-weekly-thread",
       "schedule": "0 22 * * 0"
     }
   ]

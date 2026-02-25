@@ -5,15 +5,12 @@ import { sendEmail } from "@/lib/resend";
 import { formatRecessionSMS, formatStockAlertSMS } from "@/lib/message-formatter";
 import { buildDailyBriefingEmail } from "@/lib/email-templates";
 import { fetchIndicatorTrends, mergeWithTrends } from "@/lib/indicator-history";
+import { verifyCronAuth } from "@/lib/cron-auth";
 import type { RecessionIndicator, StockSignal } from "@/types";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
-
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { authorized, response } = verifyCronAuth(request);
+  if (!authorized) return response!;
 
   const supabase = createServiceClient();
   const stats = { queued: 0, sent: 0, failed: 0, processed: 0 };

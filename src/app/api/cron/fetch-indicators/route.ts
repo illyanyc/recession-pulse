@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { fetchLatestValue } from "@/lib/fred";
 import { INDICATOR_DEFINITIONS } from "@/lib/constants";
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 function formatDisplayValue(slug: string, rawValue: number): string {
   switch (slug) {
@@ -358,13 +359,8 @@ const ADDITIONAL_INDICATORS = [
 ];
 
 export async function GET(request: Request) {
-  // Verify cron secret
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
-
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { authorized, response } = verifyCronAuth(request);
+  if (!authorized) return response!;
 
   const supabase = createServiceClient();
   const results: { slug: string; success: boolean; error?: string }[] = [];

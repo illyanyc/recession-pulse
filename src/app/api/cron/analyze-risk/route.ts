@@ -2,16 +2,13 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { runAgenticRiskAssessment } from "@/lib/risk-assessment-agent";
 import { setRiskAssessment } from "@/lib/redis";
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 export const maxDuration = 120;
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
-
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { authorized, response } = verifyCronAuth(request);
+  if (!authorized) return response!;
 
   const supabase = createServiceClient();
   const today = new Date().toISOString().split("T")[0];

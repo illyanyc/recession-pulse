@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
 import { generateEducationalPost, getEducationalTopic } from "@/lib/content-generator";
 import { postMarketingTweet } from "@/lib/social-poster";
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 // Runs at 17:00 UTC (12:00 PM ET) — midday educational content.
 // Rotates through recession indicator explainers to build authority.
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
-
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { authorized, response } = verifyCronAuth(request);
+  if (!authorized) return response!;
 
   try {
     const dayOfMonth = new Date().getDate();

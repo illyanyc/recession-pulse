@@ -1,17 +1,14 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { postDailyBriefing } from "@/lib/social-poster";
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 // Runs at 14:00 UTC (9:00 AM ET) — 1 hour after email/SMS alerts,
 // 30 minutes before NYSE market open at 9:30 AM ET.
 // Generates an AI tweet and SMSes it to OWNER_PHONE_NUMBER for manual posting.
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
-
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { authorized, response } = verifyCronAuth(request);
+  if (!authorized) return response!;
 
   try {
     const supabase = createServiceClient();

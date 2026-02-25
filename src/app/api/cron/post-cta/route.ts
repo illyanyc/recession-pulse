@@ -2,16 +2,13 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { generateCTAPost, generateStockScreenerHighlight } from "@/lib/content-generator";
 import { postMarketingTweet } from "@/lib/social-poster";
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 // Runs at 23:00 UTC (6:00 PM ET) — evening CTA / social proof tweet.
 // On Thursdays, posts stock screener highlights instead.
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
-
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { authorized, response } = verifyCronAuth(request);
+  if (!authorized) return response!;
 
   try {
     const isThursday = new Date().getUTCDay() === 4;

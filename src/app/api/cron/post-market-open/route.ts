@@ -2,16 +2,13 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { generateMarketOpenHook } from "@/lib/content-generator";
 import { postMarketingTweet } from "@/lib/social-poster";
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 // Runs at 14:30 UTC (9:30 AM ET) — NYSE market open.
 // Posts a punchy, data-driven tweet about the most interesting indicator.
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
-
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { authorized, response } = verifyCronAuth(request);
+  if (!authorized) return response!;
 
   try {
     const supabase = createServiceClient();

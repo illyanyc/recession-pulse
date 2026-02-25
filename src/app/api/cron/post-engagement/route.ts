@@ -2,16 +2,13 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { generateEngagementPost } from "@/lib/content-generator";
 import { postMarketingTweet } from "@/lib/social-poster";
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 // Runs at 20:00 UTC (3:00 PM ET) — afternoon engagement tweet.
 // Hot takes, questions, and contrarian views to drive replies and algo boost.
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
-
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { authorized, response } = verifyCronAuth(request);
+  if (!authorized) return response!;
 
   try {
     const supabase = createServiceClient();

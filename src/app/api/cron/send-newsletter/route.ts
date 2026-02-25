@@ -3,18 +3,15 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/resend";
 import { buildWeeklyRecapEmail } from "@/lib/email-templates";
 import { generateNewsletterRecap } from "@/lib/content-generator";
+import { verifyCronAuth } from "@/lib/cron-auth";
 import type { RecessionIndicator } from "@/types";
 
 // Runs Friday at 21:15 UTC (4:15 PM ET) — 15 minutes after market close.
 // Fetches the full week's indicator data, generates an AI recap, and emails
 // every active newsletter subscriber.
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get("secret");
-
-  if (secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const { authorized, response } = verifyCronAuth(request);
+  if (!authorized) return response!;
 
   const supabase = createServiceClient();
   const stats = { subscribers: 0, sent: 0, failed: 0 };
