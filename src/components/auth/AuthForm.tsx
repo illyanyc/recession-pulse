@@ -68,7 +68,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       if (error) {
         setError(error.message);
       } else {
-        setMessage("Check your email for a confirmation link!");
+        setMessage("Check your email for a confirmation link! If you don't see it, check your spam or promotions folder.");
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
@@ -103,7 +103,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     if (error) {
       setError(error.message);
     } else {
-      setMessage("Check your email for a password reset link!");
+      setMessage("Check your email for a password reset link! If you don't see it, check your spam or promotions folder.");
     }
     setResetLoading(false);
   }
