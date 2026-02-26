@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { RefreshCw, Send, Loader2, CheckCircle, XCircle, AlertTriangle, Phone, Mail, ArrowRight, Settings } from "lucide-react";
+import { RefreshCw, Send, Loader2, AlertTriangle, Phone, Mail, ArrowRight, Settings } from "lucide-react";
+import { useToast } from "@/lib/toast-context";
 import { IndicatorGrid } from "@/components/dashboard/IndicatorGrid";
 import { StockScreener } from "@/components/dashboard/StockScreener";
 import { MessageHistory } from "@/components/dashboard/MessageHistory";
@@ -50,10 +51,10 @@ export function DashboardContent({
 
   const [refreshStatus, setRefreshStatus] = useState<ActionStatus>("idle");
   const [sendStatus, setSendStatus] = useState<ActionStatus>("idle");
-  const [refreshResult, setRefreshResult] = useState<string>("");
-  const [sendResult, setSendResult] = useState<string>("");
   const [dismissedBanner, setDismissedBanner] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const loadingToastId = useRef<string>("");
+  const { addToast, removeToast } = useToast();
 
   useEffect(() => {
     return () => {
@@ -79,30 +80,33 @@ export function DashboardContent({
         const data: RefreshStatusPayload = await res.json();
 
         if (data.status === "processing") {
-          setRefreshResult(data.step ? stepLabels[data.step] || data.message || "Processing..." : "Processing...");
+          if (loadingToastId.current) removeToast(loadingToastId.current);
+          loadingToastId.current = addToast("loading", data.step ? stepLabels[data.step] || data.message || "Processing..." : "Processing...");
         } else if (data.status === "success") {
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
+          if (loadingToastId.current) removeToast(loadingToastId.current);
           setRefreshStatus("success");
-          setRefreshResult(data.message || "Data refreshed");
+          addToast("success", data.message || "Data refreshed");
           router.refresh();
-          setTimeout(() => { setRefreshStatus("idle"); setRefreshResult(""); }, 5000);
+          setTimeout(() => setRefreshStatus("idle"), 3000);
         } else if (data.status === "failed") {
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
+          if (loadingToastId.current) removeToast(loadingToastId.current);
           setRefreshStatus("error");
-          setRefreshResult(data.error || data.message || "Refresh failed");
-          setTimeout(() => { setRefreshStatus("idle"); setRefreshResult(""); }, 5000);
+          addToast("error", data.error || data.message || "Refresh failed");
+          setTimeout(() => setRefreshStatus("idle"), 3000);
         }
       } catch {
         /* network error — keep polling */
       }
     }, 2000);
-  }, [router]);
+  }, [router, addToast, removeToast]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshStatus("loading");
-    setRefreshResult("Starting refresh...");
+    loadingToastId.current = addToast("loading", "Starting refresh...");
     try {
       const res = await fetch("/api/dashboard/refresh", { method: "POST" });
       if (!res.ok) {
@@ -111,46 +115,49 @@ export function DashboardContent({
       }
       pollStatus();
     } catch (err) {
+      if (loadingToastId.current) removeToast(loadingToastId.current);
       setRefreshStatus("error");
-      setRefreshResult(err instanceof Error ? err.message : "Refresh failed");
-      setTimeout(() => { setRefreshStatus("idle"); setRefreshResult(""); }, 5000);
+      addToast("error", err instanceof Error ? err.message : "Refresh failed");
+      setTimeout(() => setRefreshStatus("idle"), 3000);
     }
-  }, [pollStatus]);
+  }, [pollStatus, addToast, removeToast]);
 
   const handleSendNow = useCallback(async () => {
     if (missingEmail) {
       setSendStatus("error");
-      setSendResult("Add an email in Settings first");
+      addToast("error", "Add an email in Settings first");
       setTimeout(() => setSendStatus("idle"), 4000);
       return;
     }
     setSendStatus("loading");
-    setSendResult("");
+    const sendToastId = addToast("loading", "Sending alerts...");
     try {
       const res = await fetch("/api/dashboard/send-now", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Send failed");
-      setSendStatus("success");
+      removeToast(sendToastId);
       if (data.channels) {
-        const lines = (data.channels as { name: string; status: string; error?: string }[]).map((ch) => {
-          if (ch.status === "sent") return `[OK] ${ch.name}`;
-          if (ch.status === "skipped") return `[SKIP] ${ch.name}: ${ch.error}`;
-          return `[FAIL] ${ch.name}: ${ch.error}`;
-        });
         const hasFail = data.channels.some((ch: { status: string }) => ch.status === "failed");
-        if (hasFail) setSendStatus("error");
-        setSendResult(lines.join("  |  "));
+        const lines = (data.channels as { name: string; status: string; error?: string }[]).map((ch) => {
+          if (ch.status === "sent") return `${ch.name}: sent`;
+          if (ch.status === "skipped") return `${ch.name}: skipped`;
+          return `${ch.name}: failed`;
+        });
+        setSendStatus(hasFail ? "error" : "success");
+        addToast(hasFail ? "error" : "success", lines.join(" | "));
       } else {
-        setSendResult("Alerts sent");
+        setSendStatus("success");
+        addToast("success", "Alerts sent");
       }
       router.refresh();
     } catch (err) {
+      removeToast(sendToastId);
       setSendStatus("error");
-      setSendResult(err instanceof Error ? err.message : "Send failed");
+      addToast("error", err instanceof Error ? err.message : "Send failed");
     } finally {
       setTimeout(() => setSendStatus("idle"), 4000);
     }
-  }, [router, missingPhone, missingEmail]);
+  }, [router, missingEmail, addToast, removeToast]);
 
   const displayIndicators = indicators.length > 0 ? indicators : SAMPLE_INDICATORS;
 
@@ -174,21 +181,6 @@ export function DashboardContent({
           sendStatus={sendStatus}
         />
       </div>
-
-      {/* Refresh/Send status bar */}
-      {(refreshResult || sendResult) && (
-        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm transition-colors duration-300 ${
-          refreshStatus === "loading" ? "bg-pulse-card/50 text-pulse-muted border border-pulse-border/50" :
-          refreshStatus === "success" || sendStatus === "success" ? "bg-pulse-green/10 text-pulse-green border border-pulse-green/20" :
-          refreshStatus === "error" || sendStatus === "error" ? "bg-pulse-red/10 text-pulse-red border border-pulse-red/20" :
-          "bg-pulse-card/50 text-pulse-muted border border-pulse-border/50"
-        }`}>
-          {refreshStatus === "loading" && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
-          {(refreshStatus === "success" || sendStatus === "success") && <CheckCircle className="h-4 w-4 shrink-0" />}
-          {(refreshStatus === "error" || sendStatus === "error") && <XCircle className="h-4 w-4 shrink-0" />}
-          <span>{refreshResult || sendResult}</span>
-        </div>
-      )}
 
       {/* Profile completeness banner */}
       {profileIncomplete && !dismissedBanner && (

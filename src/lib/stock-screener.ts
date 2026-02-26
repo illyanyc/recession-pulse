@@ -192,17 +192,26 @@ export async function runStockScreener(): Promise<StockSignal[]> {
   // Phase 3: Backfill RSI for all signals that still have rsi_14 === 0
   const needRSI = signals.filter((s) => s.rsi_14 === 0);
   if (needRSI.length > 0) {
+    const rsiCache = new Map<string, number>();
     const batchSize = 5;
     for (let i = 0; i < needRSI.length; i += batchSize) {
       const batch = needRSI.slice(i, i + batchSize);
-      const rsiResults = await Promise.allSettled(batch.map((s) => fetchRSI(s.ticker)));
+      const uncached = batch.filter((s) => !rsiCache.has(s.ticker));
 
-      for (let j = 0; j < batch.length; j++) {
-        const rsiResult = rsiResults[j];
-        const rsi = rsiResult.status === "fulfilled" ? rsiResult.value : 50;
-        batch[j].rsi_14 = rsi;
-        if (batch[j].signal_type === "value_dividend") {
-          batch[j].notes = `P/E ${(batch[j].forward_pe ?? 0).toFixed(1)}, Yield ${(batch[j].dividend_yield ?? 0).toFixed(1)}%, RSI ${rsi.toFixed(0)}`;
+      if (uncached.length > 0) {
+        const rsiResults = await Promise.allSettled(uncached.map((s) => fetchRSI(s.ticker)));
+        for (let j = 0; j < uncached.length; j++) {
+          const rsiResult = rsiResults[j];
+          const rsi = rsiResult.status === "fulfilled" ? Math.round(rsiResult.value * 10) / 10 : 50;
+          rsiCache.set(uncached[j].ticker, rsi);
+        }
+      }
+
+      for (const s of batch) {
+        const rsi = rsiCache.get(s.ticker) ?? 50;
+        s.rsi_14 = rsi;
+        if (s.signal_type === "value_dividend") {
+          s.notes = `P/E ${(s.forward_pe ?? 0).toFixed(1)}, Yield ${(s.dividend_yield ?? 0).toFixed(1)}%, RSI ${rsi.toFixed(0)}`;
         }
       }
 
@@ -212,5 +221,14 @@ export async function runStockScreener(): Promise<StockSignal[]> {
     }
   }
 
-  return signals;
+  // Deduplicate: keep one entry per ticker, prefer the one with the best signal
+  const deduped = new Map<string, StockSignal>();
+  for (const s of signals) {
+    const existing = deduped.get(s.ticker);
+    if (!existing || (s.signal_type === "oversold_growth" && existing.signal_type === "value_dividend")) {
+      deduped.set(s.ticker, s);
+    }
+  }
+
+  return Array.from(deduped.values());
 }

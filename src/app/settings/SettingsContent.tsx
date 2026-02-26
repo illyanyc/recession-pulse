@@ -6,8 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { Activity, Bell, Phone, Mail, Save, ArrowLeft } from "lucide-react";
+import { Activity, Bell, Phone, Mail, Save, ArrowLeft, BellOff } from "lucide-react";
 import Link from "next/link";
+import { useToast } from "@/lib/toast-context";
 import type { UserProfile } from "@/types";
 
 function normalizePhoneE164(raw: string): string {
@@ -41,6 +42,7 @@ export function SettingsContent() {
   const [fullName, setFullName] = useState("");
   const [smsEnabled, setSmsEnabled] = useState(true);
   const [emailEnabled, setEmailEnabled] = useState(true);
+  const { notificationsEnabled, setNotificationsEnabled } = useToast();
 
   useEffect(() => {
     async function loadProfile() {
@@ -205,9 +207,43 @@ export function SettingsContent() {
               <div className="p-3 rounded-lg bg-pulse-dark border border-pulse-border">
                 <p className="text-sm font-medium text-white">Daily schedule</p>
                 <p className="text-xs text-pulse-muted mt-1">
-                  Alerts are sent every day at <span className="text-pulse-green font-medium">8:00 AM ET</span>. Data is refreshed from FRED and financial APIs at 6:00 AM ET.
+                  Alerts are sent every day at <span className="text-pulse-green font-medium">7:15 AM ET</span>. Data is refreshed from FRED and financial APIs at 6:00 AM ET.
                 </p>
               </div>
+            </div>
+          </Card>
+
+          {/* In-App Notifications */}
+          <Card>
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <BellOff className="h-5 w-5 text-pulse-green" />
+              In-App Notifications
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-pulse-dark border border-pulse-border">
+                <div>
+                  <p className="text-sm font-medium text-white">Show notifications</p>
+                  <p className="text-xs text-pulse-muted">
+                    Toast messages for status updates, errors, and confirmations
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                  className={`relative w-12 h-6 rounded-full transition-colors ${
+                    notificationsEnabled ? "bg-pulse-green" : "bg-pulse-border"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                      notificationsEnabled ? "left-6" : "left-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+              <p className="text-xs text-pulse-muted">
+                Notifications can be dragged to any position on the page. Click the X to dismiss individually.
+              </p>
             </div>
           </Card>
 

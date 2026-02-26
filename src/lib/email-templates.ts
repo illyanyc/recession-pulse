@@ -49,7 +49,24 @@ function btn(text: string, href: string): string {
 
 function statusDot(status: string): string {
   const c = status === "safe" ? "#F0913A" : status === "watch" ? "#F2C94C" : "#EB5757";
-  return `<span style="display:inline-block;width:8px;height:8px;border-radius:0px;background:${c};margin-right:6px;vertical-align:middle;"></span>`;
+  return `<span style="display:inline-block;width:8px;height:8px;border-radius:0px;background:${c};margin-right:8px;vertical-align:middle;"></span>`;
+}
+
+function scoreBar(safe: number, watch: number, alert: number): string {
+  return `
+    <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+      <tr>
+        <td style="padding-right:24px;font-size:13px;color:#D4D4D4;white-space:nowrap;">
+          ${statusDot("safe")}<strong>${safe}</strong>&nbsp;Safe
+        </td>
+        <td style="padding-right:24px;font-size:13px;color:#D4D4D4;white-space:nowrap;">
+          ${statusDot("watch")}<strong>${watch}</strong>&nbsp;Watch
+        </td>
+        <td style="font-size:13px;color:#D4D4D4;white-space:nowrap;">
+          ${statusDot("warning")}<strong>${alert}</strong>&nbsp;Alert
+        </td>
+      </tr>
+    </table>`;
 }
 
 // ─── Supabase Auth Templates (paste into Supabase dashboard) ───
@@ -215,11 +232,7 @@ export function buildWeeklyRecapEmail(
       <p style="margin:0 0 20px;font-size:13px;color:#808080;">Week of ${weekLabel} &middot; Friday Close</p>
 
       <!-- Score bar -->
-      <div style="display:flex;gap:16px;margin-bottom:20px;">
-        <span style="font-size:13px;color:#D4D4D4;">${statusDot("safe")}<strong>${safe.length}</strong> Safe</span>
-        <span style="font-size:13px;color:#D4D4D4;">${statusDot("watch")}<strong>${watch.length}</strong> Watch</span>
-        <span style="font-size:13px;color:#D4D4D4;">${statusDot("warning")}<strong>${danger.length}</strong> Alert</span>
-      </div>
+      ${scoreBar(safe.length, watch.length, danger.length)}
 
       <!-- AI Recap -->
       <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-radius:0px;padding:20px;margin-bottom:20px;">
@@ -367,11 +380,7 @@ export function buildDailyBriefingEmail(
       <p style="margin:0 0 20px;font-size:13px;color:#808080;">${date}</p>
 
       <!-- Score bar -->
-      <div style="display:flex;gap:16px;margin-bottom:20px;">
-        <span style="font-size:13px;color:#D4D4D4;">${statusDot("safe")}<strong>${safe.length}</strong> Safe</span>
-        <span style="font-size:13px;color:#D4D4D4;">${statusDot("watch")}<strong>${watch.length}</strong> Watch</span>
-        <span style="font-size:13px;color:#D4D4D4;">${statusDot("warning")}<strong>${danger.length}</strong> Alert</span>
-      </div>
+      ${scoreBar(safe.length, watch.length, danger.length)}
 
       ${changesSection}
 
