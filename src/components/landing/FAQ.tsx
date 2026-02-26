@@ -13,7 +13,7 @@ const faqs = [
   {
     question: "Is RecessionPulse really free?",
     answer:
-      "Yes. The full dashboard with all 42 indicators, signals, trends, and historical context is completely free — no credit card required. The Pulse plan ($6.99/mo) adds daily email and SMS alerts. Pulse Pro ($9.99/mo) adds stock screener alerts, value picks, and AI recession risk assessment.",
+      "Yes. The full dashboard with all 42 indicators, signals, trends, historical context, and daily email briefings is completely free — no credit card required. The Pulse plan ($6.99/mo) adds AI recession risk assessment, SMS alerts, and threshold notifications. Pulse Pro ($9.99/mo) adds the stock screener with value picks, sector rotation signals, and portfolio defense positioning.",
   },
   {
     question: "What is the Sahm Rule?",
@@ -38,7 +38,7 @@ const faqs = [
   {
     question: "How much does RecessionPulse cost?",
     answer:
-      "RecessionPulse has three tiers: Free (full dashboard with all 42 indicators), Pulse at $6.99/month (adds daily email and SMS alerts with threshold notifications), and Pulse Pro at $9.99/month (adds stock screener alerts, value picks, sector rotation signals, and AI risk assessment). Cancel anytime. No contracts.",
+      "RecessionPulse has three tiers: Free (full dashboard with all 42 indicators plus daily email briefings), Pulse at $6.99/month (adds AI recession risk assessment, SMS alerts, and threshold notifications), and Pulse Pro at $9.99/month (adds stock screener alerts, value picks, sector rotation signals, and portfolio defense positioning). Cancel anytime. No contracts.",
   },
   {
     question: "Is RecessionPulse investment advice?",

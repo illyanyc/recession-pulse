@@ -64,9 +64,9 @@ const features = [
   },
   {
     icon: MessageSquare,
-    title: "Daily SMS & Email Briefing",
+    title: "Daily Email Briefing (Free)",
     description:
-      "Concise, actionable morning briefings delivered to your phone. No noise, no fluff — just the signals that matter.",
+      "Concise, actionable morning email briefings with all 42 indicators. SMS alerts available on the Pulse plan.",
   },
   {
     icon: Bell,
@@ -76,9 +76,9 @@ const features = [
   },
   {
     icon: Shield,
-    title: "AI Risk Assessment",
+    title: "AI Risk Assessment (Pulse)",
     description:
-      "Multi-model recession risk score combining all 42 indicators into a single probability estimate. Updated daily.",
+      "Multi-model recession risk score combining all 42 indicators into a single probability estimate. Available on Pulse and above.",
   },
   {
     icon: Zap,

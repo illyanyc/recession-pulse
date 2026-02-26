@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Lock } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import type { RecessionRiskAssessment } from "@/types";
 
 interface RecessionRiskBannerProps {
   assessment: RecessionRiskAssessment | null;
+  hasSubscription?: boolean;
 }
 
 const RISK_CONFIG = {
@@ -55,12 +59,41 @@ function RiskGauge({ score, color }: { score: number; color: string }) {
   );
 }
 
-export function RecessionRiskBanner({ assessment: initialAssessment }: RecessionRiskBannerProps) {
+export function RecessionRiskBanner({ assessment: initialAssessment, hasSubscription = true }: RecessionRiskBannerProps) {
   const [assessment] = useState(initialAssessment);
 
   if (!assessment) return null;
 
   const config = RISK_CONFIG[assessment.risk_level];
+
+  if (!hasSubscription) {
+    return (
+      <div className="relative p-6 bg-pulse-card border border-pulse-border transition-all overflow-hidden">
+        <div className="flex flex-col sm:flex-row gap-6 opacity-30 blur-[2px] pointer-events-none select-none" aria-hidden="true">
+          <div className="flex flex-col items-center gap-2">
+            <RiskGauge score={assessment.score} color={config.color} />
+            <span className="text-xs font-bold tracking-widest" style={{ color: config.color }}>
+              {config.label} RISK
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-bold text-white mb-3">Overall Recession Risk</h2>
+            <p className="text-sm text-pulse-text leading-relaxed">{assessment.summary?.slice(0, 120)}...</p>
+          </div>
+        </div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-pulse-darker/60">
+          <Lock className="h-8 w-8 text-pulse-muted mb-3" />
+          <h3 className="text-base font-bold text-white mb-1">AI Recession Risk Assessment</h3>
+          <p className="text-xs text-pulse-muted mb-4 max-w-sm text-center">
+            Get daily AI-powered macro analysis with risk scoring across all 42 indicators.
+          </p>
+          <Link href="/pricing">
+            <Button size="sm">Upgrade to Pulse — $6.99/mo</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`p-6 bg-gradient-to-r ${config.bg} bg-pulse-card border ${config.border} transition-all`}>

@@ -5,9 +5,9 @@ import { ArrowRight, BarChart3, Bell, Shield } from "lucide-react";
 import Link from "next/link";
 
 const pricingPills = [
-  { label: "Dashboard", detail: "Free forever", href: "/signup" },
-  { label: "SMS & Email Alerts", detail: "$6.99/mo", href: "/signup?plan=pulse" },
-  { label: "Stock Picks + Indicators", detail: "$9.99/mo", href: "/signup?plan=pulse_pro" },
+  { label: "Dashboard + Daily Email", detail: "Free forever", href: "/signup" },
+  { label: "AI Analysis + SMS", detail: "$6.99/mo", href: "/signup?plan=pulse" },
+  { label: "Stock Screener", detail: "$9.99/mo", href: "/signup?plan=pulse_pro" },
 ];
 
 export function Hero() {
@@ -74,7 +74,7 @@ export function Hero() {
         <div className="flex flex-wrap justify-center gap-4">
           {[
             { icon: BarChart3, label: "42 macro indicators" },
-            { icon: Bell, label: "SMS & email alerts" },
+            { icon: Bell, label: "Daily email briefing — free" },
             { icon: Shield, label: "Recession-proof positioning" },
           ].map(({ icon: Icon, label }) => (
             <div

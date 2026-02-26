@@ -53,21 +53,35 @@ export async function GET(request: Request) {
       .select("*")
       .eq("screened_at", today);
 
-    // 4. Get active subscribers
+    // 4. Get ALL users with email alerts enabled (emails go to every tier)
+    const { data: allProfiles } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("email_alerts_enabled", true);
+
+    // Also get subscription data for users that have one
     const { data: subscribers } = await supabase
       .from("profiles")
       .select("*, subscriptions!inner(plan, status)")
       .eq("subscriptions.status", "active");
 
-    if (!subscribers || subscribers.length === 0) {
-      return NextResponse.json({ message: "No active subscribers", stats });
+    const subscriptionMap = new Map<string, string>();
+    if (subscribers) {
+      for (const sub of subscribers) {
+        const plan = sub.subscriptions?.[0]?.plan || "free";
+        subscriptionMap.set(sub.id, plan);
+      }
+    }
+
+    if (!allProfiles || allProfiles.length === 0) {
+      return NextResponse.json({ message: "No users with alerts enabled", stats });
     }
 
     // 5. Format messages (with trend context)
     const recessionMessage = formatRecessionSMS(indicatorsWithTrends);
     const stockMessage = formatStockAlertSMS((stockSignals as StockSignal[]) || []);
 
-    // 5. Queue messages for each subscriber
+    // 6. Queue messages for each user
     const messagesToInsert: {
       user_id: string;
       message_type: string;
@@ -77,25 +91,25 @@ export async function GET(request: Request) {
       scheduled_for: string;
     }[] = [];
 
-    for (const sub of subscribers) {
-      const plan = sub.subscriptions?.[0]?.plan || "pulse";
+    for (const user of allProfiles) {
+      const plan = subscriptionMap.get(user.id) || "free";
 
-      // SMS — disabled until toll-free verification completes
+      // SMS — Pulse+ only (disabled until toll-free verification completes)
       // TODO: re-enable SMS alerts once Twilio toll-free is verified
 
-      // Email alerts (branded HTML with trend data)
-      if (sub.email && sub.email_alerts_enabled) {
-        const emailPlan = plan === "pulse_pro" ? "pulse_pro" : "pulse";
+      // Email alerts go to ALL tiers (branded HTML with trend data)
+      if (user.email) {
+        const emailPlan = plan === "pulse_pro" ? "pulse_pro" : plan === "pulse" ? "pulse" : "free";
         const { html: emailHtml } = buildDailyBriefingEmail(
           indicatorsWithTrends,
           (stockSignals as StockSignal[]) || [],
           emailPlan
         );
         messagesToInsert.push({
-          user_id: sub.id,
+          user_id: user.id,
           message_type: "recession_alert",
           channel: "email",
-          recipient: sub.email,
+          recipient: user.email,
           content: emailHtml,
           scheduled_for: new Date().toISOString(),
         });
@@ -185,7 +199,8 @@ export async function GET(request: Request) {
     return NextResponse.json({
       message: `Alert cycle complete`,
       stats,
-      subscribers: subscribers.length,
+      users: allProfiles.length,
+      paidSubscribers: subscribers?.length ?? 0,
       indicators: latestIndicators.length,
     });
   } catch (error) {

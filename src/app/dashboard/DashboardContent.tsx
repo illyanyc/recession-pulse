@@ -220,9 +220,9 @@ export function DashboardContent({
         </div>
       )}
 
-      {/* Overall Recession Risk */}
+      {/* Overall Recession Risk — Pulse+ only */}
       <section>
-        <RecessionRiskBanner assessment={riskAssessment} />
+        <RecessionRiskBanner assessment={riskAssessment} hasSubscription={hasSubscription} />
       </section>
 
       {/* Indicators */}
