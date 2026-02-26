@@ -65,7 +65,7 @@ ${authorContext}
 
 Features:
 - 9+ recession indicators tracked daily (Sahm Rule, yield curve, LEI, credit spreads, etc.)
-- Daily SMS + email briefings at 8 AM ET
+- Daily email briefings at 7:15 AM ET (free) + SMS alerts (Pulse)
 - Stock screener: stocks below 200 EMA, RSI <30, P/E <15
 - AI-generated indicator summaries
 - Real-time dashboard

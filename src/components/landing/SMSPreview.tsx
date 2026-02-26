@@ -8,9 +8,9 @@ export function SMSPreview() {
               Your morning <span className="gradient-text">briefing</span>
             </h2>
             <p className="text-pulse-muted text-lg mb-8 leading-relaxed">
-              Every morning at 8 AM ET, Pulse subscribers get a concise SMS with the signals that moved.
-              42 indicators distilled into one glance. <span className="text-white font-medium">$6.99/mo</span> — or
-              start with the free dashboard.
+              Every morning at 7:15 AM ET, get a concise briefing with the signals that moved.
+              42 indicators distilled into one glance. <span className="text-white font-medium">Email briefings are free</span> — upgrade
+              to Pulse for SMS alerts + AI analysis.
             </p>
 
             <div className="space-y-4">
@@ -68,7 +68,7 @@ export function SMSPreview() {
                   {/* Message content */}
                   <div className="px-4 py-4 space-y-2 min-h-[380px]">
                     <div className="text-center text-[10px] text-gray-500 mb-3">
-                      Today 8:00 AM
+                      Today 7:15 AM
                     </div>
 
                     {/* SMS bubble */}

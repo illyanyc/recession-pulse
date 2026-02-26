@@ -178,7 +178,7 @@ export function buildWelcomeEmail(name: string): { subject: string; html: string
         <p style="margin:0 0 12px;color:#F0913A;font-weight:600;font-size:14px;">What to expect:</p>
         <table style="width:100%;border-collapse:collapse;">
           <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">42 recession indicators tracked daily</td></tr>
-          <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Morning briefing at 8:00 AM ET</td></tr>
+          <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Morning briefing at 7:15 AM ET</td></tr>
           <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Real-time dashboard with AI analysis</td></tr>
           <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Instant alerts if critical thresholds breach</td></tr>
         </table>

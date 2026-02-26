@@ -97,7 +97,7 @@ export async function POST(request: Request) {
       // Send confirmation
       await sendSMS(
         consent.phone_number,
-        "RecessionPulse: SMS alerts confirmed! You'll receive daily recession indicator briefings at 8 AM ET. Reply STOP to opt out anytime."
+        "RecessionPulse: SMS alerts confirmed! You'll receive daily recession indicator briefings at 7:15 AM ET. Reply STOP to opt out anytime."
       );
 
       return NextResponse.json({ success: true, message: "SMS consent confirmed" });

@@ -141,7 +141,7 @@ export function formatWelcomeSMS(): string {
   return [
     "Welcome to RecessionPulse!",
     "",
-    "You'll receive daily recession indicator briefings every morning at 8am ET.",
+    "You'll receive daily recession indicator briefings every morning at 7:15 AM ET.",
     "",
     "Your dashboard is live at:",
     "recessionpulse.com/dashboard",
@@ -158,7 +158,7 @@ export function formatConfirmationSMS(plan: string): string {
       ? "You'll receive daily recession indicators AND stock screener alerts."
       : "You'll receive daily recession indicator alerts.",
     "",
-    "First briefing arrives tomorrow at 8am ET.",
+    "First briefing arrives tomorrow at 7:15 AM ET.",
     "",
     "recessionpulse.com/dashboard",
   ].join("\n");

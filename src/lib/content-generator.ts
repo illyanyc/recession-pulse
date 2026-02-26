@@ -702,7 +702,7 @@ Write a tweet where Illya naturally promotes RecessionPulse as something he buil
 Choose ONE angle randomly:
 1. Builder story: "I built this because I needed it for my own trading. ${socialProof}."
 2. Value angle: "I pay more for a single trade commission than this costs per month."
-3. Feature flex: Share a specific feature and why he built it that way ("I wanted SMS alerts at 8 AM because...")
+3. Feature flex: Share a specific feature and why he built it that way ("I wanted SMS alerts before 8 AM because...")
 4. Social proof: "${socialProof}" — frame it as genuine surprise/gratitude, not hype
 End with: "recessionpulse.com" — worked in naturally.
 Max 270 characters. Sound like a founder sharing his project, not a marketer.`,

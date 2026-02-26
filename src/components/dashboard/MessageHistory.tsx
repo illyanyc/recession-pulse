@@ -67,7 +67,7 @@ export function MessageHistory({ messages }: MessageHistoryProps) {
     return (
       <Card className="text-center py-8">
         <MessageSquare className="h-8 w-8 text-pulse-muted mx-auto mb-3" />
-        <p className="text-sm text-pulse-muted">No messages yet. Your first briefing arrives tomorrow at 8am ET.</p>
+        <p className="text-sm text-pulse-muted">No messages yet. Your first briefing arrives tomorrow at 7:15 AM ET.</p>
       </Card>
     );
   }

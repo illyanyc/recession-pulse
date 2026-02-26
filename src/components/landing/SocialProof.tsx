@@ -8,8 +8,8 @@ const stats = [
   },
   {
     icon: Clock,
-    value: "8 AM ET",
-    label: "Morning briefing delivered",
+    value: "7:15 AM ET",
+    label: "Daily email briefing delivered",
   },
   {
     icon: BarChart3,
@@ -20,7 +20,7 @@ const stats = [
   {
     icon: Shield,
     value: "Free",
-    label: "Dashboard — upgrade for SMS alerts",
+    label: "Dashboard + daily email included",
   },
 ];
 
