@@ -90,7 +90,7 @@ export async function generateRecessionRiskAssessment(
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
   const res = await getOpenAI().chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5.2",
     temperature: 0.3,
     max_tokens: 2000,
     response_format: { type: "json_object" },
@@ -162,28 +162,79 @@ Produce the recession risk assessment JSON.`,
   };
 }
 
+interface HistoricalReading {
+  slug: string;
+  name: string;
+  latest_value: string;
+  status: string;
+  signal: string;
+  reading_date: string;
+}
+
+function buildHistoryBlock(history: HistoricalReading[]): string {
+  const bySlug = new Map<string, HistoricalReading[]>();
+  for (const h of history) {
+    const arr = bySlug.get(h.slug) || [];
+    arr.push(h);
+    bySlug.set(h.slug, arr);
+  }
+  return Array.from(bySlug.entries())
+    .slice(0, 15)
+    .map(([slug, readings]) => {
+      const sorted = readings.sort((a, b) => a.reading_date.localeCompare(b.reading_date));
+      const trail = sorted.map((r) => `  ${r.reading_date}: ${r.latest_value} (${r.status})`).join("\n");
+      return `${slug}:\n${trail}`;
+    })
+    .join("\n\n");
+}
+
 export async function generateRiskBlogPost(
   indicators: IndicatorSnapshot[],
   assessment: { score: number; risk_level: string; summary: string; key_factors: string[]; outlook: string },
-  dateLabel: string
+  dateLabel: string,
+  history?: HistoricalReading[]
 ): Promise<GeneratedArticle> {
   const indicatorBlock = indicators
     .map((i) => `- ${i.signal_emoji} ${i.name}: ${i.latest_value} (${i.status.toUpperCase()}) — ${i.signal}`)
     .join("\n");
 
-  const res = await getOpenAI().chat.completions.create({
-    model: "gpt-4o",
-    temperature: 0.4,
-    max_tokens: 2000,
-    messages: [
+  const historySection = history?.length
+    ? `\n\n7-DAY INDICATOR HISTORY (use this to analyze trends and weekly movement):\n${buildHistoryBlock(history)}`
+    : "";
+
+  const MODEL = "gpt-5.2";
+
+  const response = await getOpenAI().responses.create({
+    model: MODEL,
+    tools: [{ type: "web_search" }],
+    input: [
       {
         role: "system",
         content: `You are a macro-economic analyst writing a daily recession risk update for RecessionPulse.com.
-Write a concise, data-driven blog post (600-900 words) in Markdown.
-Start with the risk score prominently, then analyze the key factors.
-Use ## headings, **bold** for emphasis, and bullet points for lists.
-Be direct and actionable. Do NOT include disclaimers.
-Structure: Risk Score + Verdict, Key Drivers, Indicator Breakdown, What to Watch.`,
+Write a comprehensive, data-driven blog post (800-1200 words) in Markdown.
+You have access to web search — USE IT to find the latest economic news, Fed statements, jobs data, and market developments from the past 48 hours to enrich your analysis.
+
+Structure your article:
+## Recession Risk Score: [score]/100 — [LEVEL]
+Opening verdict paragraph with the score and what it means.
+
+## Key Drivers
+The 4-6 most important factors, each with specific data points.
+
+## This Week's Indicator Trends
+Analyze how indicators moved over the past 7 days. Call out significant changes.
+
+## Latest Economic Developments
+Synthesize the latest news from your web search — Fed decisions, jobs data, GDP, market movements.
+
+## What to Watch
+Forward-looking section on upcoming data releases and potential catalysts.
+
+Guidelines:
+- Use ## headings, **bold** for emphasis, bullet points for lists
+- Be direct and actionable. No disclaimers.
+- Reference specific numbers, dates, and sources from web search
+- Compare this week's data to last week where possible`,
       },
       {
         role: "user",
@@ -194,15 +245,25 @@ Key Factors:
 ${assessment.key_factors.map((f) => `- ${f}`).join("\n")}
 Outlook: ${assessment.outlook}
 
-Indicator readings:
-${indicatorBlock}
+TODAY'S INDICATOR READINGS:
+${indicatorBlock}${historySection}
 
-Write the daily risk assessment blog post.`,
+Search the web for the latest economic news and data, then write a comprehensive daily recession risk blog post.`,
       },
     ],
   });
 
-  const content = res.choices[0]?.message?.content?.trim() || "";
+  let content = "";
+  for (const item of response.output) {
+    if (item.type === "message" && item.content) {
+      for (const block of item.content) {
+        if (block.type === "output_text") {
+          content = block.text;
+        }
+      }
+    }
+  }
+
   const dateSlug = dateLabel.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const slug = `daily-recession-risk-${dateSlug}`;
 
@@ -230,18 +291,23 @@ export async function generateWeeklyReport(
     .map((i) => `- ${i.signal_emoji} ${i.name}: ${i.latest_value} (${i.status.toUpperCase()}) — ${i.signal}`)
     .join("\n");
 
-  const res = await getOpenAI().chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0.4,
-    max_tokens: 2000,
-    messages: [
+  const MODEL = "gpt-5.2";
+
+  const response = await getOpenAI().responses.create({
+    model: MODEL,
+    tools: [{ type: "web_search" }],
+    input: [
       {
         role: "system",
-        content: `You are a macro-economic analyst writing a weekly recession risk report for RecessionPulse.com. 
+        content: `You are a macro-economic analyst writing a weekly recession risk report for RecessionPulse.com.
+You have access to web search — USE IT to find the latest economic news, Fed statements, jobs data, and market developments from the past week to enrich your analysis.
+
 Write in a professional but accessible tone. Be factual and data-driven. Include specific numbers.
 Format the content in Markdown with clear sections for each indicator group.
 Do NOT include disclaimers — the site has a separate disclaimer page.
-Structure: Opening summary paragraph, then sections for Primary, Secondary, Liquidity, and Market indicators, then a Conclusion with outlook.`,
+Structure: Opening summary paragraph, then sections for Primary, Secondary, Liquidity, and Market indicators, then a Conclusion with outlook.
+Reference specific data from your web search to make the report timely and comprehensive.
+Target 1000-1500 words.`,
       },
       {
         role: "user",
@@ -250,12 +316,21 @@ Structure: Opening summary paragraph, then sections for Primary, Secondary, Liqu
 Current indicator readings:
 ${indicatorBlock}
 
-Write a comprehensive 800-1200 word report analyzing these indicators and what they mean for recession risk.`,
+Search the web for the latest economic developments this week, then write a comprehensive report analyzing these indicators and the latest news.`,
       },
     ],
   });
 
-  const content = res.choices[0]?.message?.content?.trim() || "";
+  let content = "";
+  for (const item of response.output) {
+    if (item.type === "message" && item.content) {
+      for (const block of item.content) {
+        if (block.type === "output_text") {
+          content = block.text;
+        }
+      }
+    }
+  }
 
   const dateSlug = weekDate.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const slug = `weekly-recession-report-${dateSlug}`;

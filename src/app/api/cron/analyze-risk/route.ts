@@ -102,12 +102,12 @@ export async function GET(request: Request) {
     };
     await setRiskAssessment(assessmentRecord).catch(() => {});
 
-    // Generate and publish blog post
+    // Generate and publish blog post (with 7-day history for trend analysis)
     let blogPublished = false;
     try {
       const { generateRiskBlogPost } = await import("@/lib/content-generator");
       const todayLabel = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-      const blogArticle = await generateRiskBlogPost(currentIndicators, result, todayLabel);
+      const blogArticle = await generateRiskBlogPost(currentIndicators, result, todayLabel, historyData || []);
 
       const dateSlug = blogArticle.slug;
       const { data: existingPost } = await supabase

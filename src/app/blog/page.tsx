@@ -38,6 +38,7 @@ interface BlogPost {
 }
 
 const TYPE_LABELS: Record<string, string> = {
+  daily_risk_assessment: "Daily Risk Assessment",
   weekly_report: "Weekly Report",
   deep_dive: "Deep Dive",
   market_commentary: "Market Commentary",
