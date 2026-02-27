@@ -56,6 +56,7 @@ export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWi
       (i) => i.trend.status_changed_1d || i.trend.status_changed_7d
     );
     if (changed.length > 0) {
+      lines.push("");
       lines.push("CHANGES:");
       for (const ind of changed) {
         const prev = ind.trend.status_changed_1d
@@ -67,6 +68,7 @@ export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWi
   }
 
   if (critical.length > 0) {
+    lines.push("");
     lines.push("ALERTS:");
     for (const ind of critical) {
       const tag = hasTrends ? ` ${trendTag((ind as IndicatorWithTrend).trend)}` : "";
@@ -76,6 +78,7 @@ export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWi
   }
 
   if (watching.length > 0) {
+    lines.push("");
     lines.push("WATCHING:");
     for (const ind of watching) {
       const tag = hasTrends ? ` ${trendTag((ind as IndicatorWithTrend).trend)}` : "";
@@ -83,7 +86,9 @@ export function formatRecessionSMS(indicators: (RecessionIndicator | IndicatorWi
     }
   }
 
-  lines.push(`${safeCount}safe/${watchCount}watch/${dangerCount}alert`);
+  lines.push("");
+  lines.push(`${safeCount} safe / ${watchCount} watch / ${dangerCount} alert`);
+  lines.push("");
   lines.push("recessionpulse.com/dashboard");
 
   return lines.join("\n");
