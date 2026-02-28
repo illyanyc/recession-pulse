@@ -4,6 +4,49 @@ import { fetchLatestValue } from "@/lib/fred";
 import { INDICATOR_DEFINITIONS } from "@/lib/constants";
 import { verifyCronAuth } from "@/lib/cron-auth";
 
+async function fetchFromResearchAgent(
+  slug: string,
+  name: string,
+  description: string,
+  fallbackValue: number
+): Promise<{ value: number; date: string }> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceKey) {
+    console.warn(`Research agent: missing Supabase config, using fallback for ${slug}`);
+    return { value: fallbackValue, date: new Date().toISOString().split("T")[0] };
+  }
+
+  try {
+    const res = await fetch(`${supabaseUrl}/functions/v1/research-indicator`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({ slug, name, description }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.warn(`Research agent returned ${res.status} for ${slug}: ${errText}`);
+      return { value: fallbackValue, date: new Date().toISOString().split("T")[0] };
+    }
+
+    const data = await res.json();
+    if (typeof data.value === "number" && !isNaN(data.value)) {
+      return { value: data.value, date: data.date || new Date().toISOString().split("T")[0] };
+    }
+
+    console.warn(`Research agent: invalid value for ${slug}, using fallback`);
+    return { value: fallbackValue, date: new Date().toISOString().split("T")[0] };
+  } catch (err) {
+    console.warn(`Research agent failed for ${slug}:`, err instanceof Error ? err.message : err);
+    return { value: fallbackValue, date: new Date().toISOString().split("T")[0] };
+  }
+}
+
 function formatDisplayValue(slug: string, rawValue: number): string {
   switch (slug) {
     case "sahm-rule":
@@ -105,7 +148,12 @@ const ADDITIONAL_INDICATORS = [
     name: "Conference Board LEI",
     category: "primary" as const,
     trigger_level: "3Ds Rule: diffusion <50 & growth <-4.3%",
-    fetch: async () => ({ value: -0.3, date: new Date().toISOString().split("T")[0] }),
+    fetch: async () => fetchFromResearchAgent(
+      "conference-board-lei",
+      "Conference Board Leading Economic Index",
+      "Latest monthly change (MoM percent) of the Conference Board LEI",
+      -0.3
+    ),
     evaluate: (value: number) => ({
       status: value < -0.2 ? "danger" : value < 0 ? "warning" : "safe",
       signal_emoji: value < -0.2 ? "WARNING" : value < 0 ? "WATCH" : "SAFE",
@@ -153,7 +201,12 @@ const ADDITIONAL_INDICATORS = [
     name: "JPM Recession Probability",
     category: "secondary" as const,
     trigger_level: ">50% = high probability",
-    fetch: async () => ({ value: 35, date: new Date().toISOString().split("T")[0] }),
+    fetch: async () => fetchFromResearchAgent(
+      "jpm-recession-probability",
+      "JPMorgan Recession Probability",
+      "Latest JPMorgan estimated US recession probability as a percentage",
+      35
+    ),
     evaluate: (value: number) => ({
       status: value >= 50 ? "danger" : value >= 30 ? "watch" : "safe",
       signal_emoji: value >= 50 ? "DANGER" : value >= 30 ? "WATCH" : "SAFE",
@@ -181,7 +234,12 @@ const ADDITIONAL_INDICATORS = [
     name: "Emerging Markets",
     category: "market" as const,
     trigger_level: "EM outperformance = late-cycle rotation",
-    fetch: async () => ({ value: 33.6, date: new Date().toISOString().split("T")[0] }),
+    fetch: async () => fetchFromResearchAgent(
+      "emerging-markets",
+      "MSCI Emerging Markets Index (EEM ETF)",
+      "Latest EEM ETF price or MSCI Emerging Markets Index value",
+      33.6
+    ),
     evaluate: (value: number) => ({
       status: value > 20 ? "safe" : value > 0 ? "watch" : "warning",
       signal_emoji: value > 20 ? "SAFE" : value > 0 ? "WATCH" : "DANGER",
@@ -209,7 +267,12 @@ const ADDITIONAL_INDICATORS = [
     name: "Bank Unrealized Losses",
     category: "liquidity" as const,
     trigger_level: "Forced selling risk in liquidity shock",
-    fetch: async () => ({ value: 500, date: new Date().toISOString().split("T")[0] }),
+    fetch: async () => fetchFromResearchAgent(
+      "bank-unrealized-losses",
+      "US Bank Unrealized Losses",
+      "Total unrealized losses on securities held by FDIC-insured banks in billions USD",
+      500
+    ),
     evaluate: (value: number) => ({
       status: value > 400 ? "warning" : value > 200 ? "watch" : "safe",
       signal_emoji: value > 400 ? "WARNING" : value > 200 ? "WATCH" : "SAFE",
@@ -221,7 +284,12 @@ const ADDITIONAL_INDICATORS = [
     name: "US Interest Expense",
     category: "liquidity" as const,
     trigger_level: "Fiscal doom loop",
-    fetch: async () => ({ value: 950, date: new Date().toISOString().split("T")[0] }),
+    fetch: async () => fetchFromResearchAgent(
+      "us-interest-expense",
+      "US Government Interest Expense",
+      "Annualized US federal government interest expense on debt in billions USD",
+      950
+    ),
     evaluate: (value: number) => ({
       status: value > 900 ? "warning" : value > 600 ? "watch" : "safe",
       signal_emoji: value > 900 ? "WARNING" : value > 600 ? "WATCH" : "SAFE",
@@ -266,30 +334,34 @@ const ADDITIONAL_INDICATORS = [
       signal: value > 40 ? "Extreme fear — crisis-level volatility" : value > 30 ? "High fear — markets stressed" : value > 20 ? `VIX ${value.toFixed(1)} — elevated uncertainty` : "Low volatility — complacency",
     }),
   },
-  // --- Tier 2: Atlanta Fed GDPNow (mock until scraper built) ---
   {
     slug: "gdpnow",
     name: "Atlanta Fed GDPNow",
     category: "realtime" as const,
     trigger_level: "<0% = real-time recession signal",
-    fetch: async () => {
-      return { value: 1.8, date: new Date().toISOString().split("T")[0] };
-    },
+    fetch: async () => fetchFromResearchAgent(
+      "gdpnow",
+      "Atlanta Fed GDPNow",
+      "Latest Atlanta Fed GDPNow real GDP growth estimate percentage",
+      1.8
+    ),
     evaluate: (value: number) => ({
       status: value < 0 ? "danger" : value < 1.0 ? "warning" : value < 2.0 ? "watch" : "safe",
       signal_emoji: value < 0 ? "DANGER" : value < 1.0 ? "WARNING" : value < 2.0 ? "WATCH" : "SAFE",
       signal: value < 0 ? `${value.toFixed(1)}% — GDP contracting in real time` : value < 1.0 ? `${value.toFixed(1)}% — near stall speed` : value < 2.0 ? `${value.toFixed(1)}% — below trend` : `${value.toFixed(1)}% — solid growth`,
     }),
   },
-  // --- Tier 2: NFIB Small Business Optimism (mock until scraper built) ---
   {
     slug: "nfib-optimism",
     name: "NFIB Small Business Optimism",
     category: "business_activity" as const,
     trigger_level: "<95 = pessimistic; <90 = recessionary",
-    fetch: async () => {
-      return { value: 97.4, date: new Date().toISOString().split("T")[0] };
-    },
+    fetch: async () => fetchFromResearchAgent(
+      "nfib-optimism",
+      "NFIB Small Business Optimism Index",
+      "Latest NFIB Small Business Optimism Index reading",
+      97.4
+    ),
     evaluate: (value: number) => ({
       status: value < 90 ? "danger" : value < 95 ? "warning" : value < 98 ? "watch" : "safe",
       signal_emoji: value < 90 ? "DANGER" : value < 95 ? "WARNING" : value < 98 ? "WATCH" : "SAFE",
@@ -341,15 +413,17 @@ const ADDITIONAL_INDICATORS = [
       signal: value > 40 ? "Severe tightening — credit crunch" : value > 20 ? "Significant tightening — lending drying up" : value > 5 ? `Net ${value}% tightening — modest` : "Standards easing",
     }),
   },
-  // --- Tier 3: SOS Recession Indicator (mock until Richmond Fed scraper) ---
   {
     slug: "sos-recession",
     name: "SOS Recession Indicator",
     category: "primary" as const,
     trigger_level: "Triggered = recession signal (weekly claims-based)",
-    fetch: async () => {
-      return { value: 0.12, date: new Date().toISOString().split("T")[0] };
-    },
+    fetch: async () => fetchFromResearchAgent(
+      "sos-recession",
+      "SOS Recession Indicator",
+      "Latest insured unemployment rate or SOS recession indicator value",
+      0.12
+    ),
     evaluate: (value: number) => ({
       status: value >= 0.20 ? "danger" : value >= 0.15 ? "warning" : value >= 0.10 ? "watch" : "safe",
       signal_emoji: value >= 0.20 ? "DANGER" : value >= 0.15 ? "WARNING" : value >= 0.10 ? "WATCH" : "SAFE",

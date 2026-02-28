@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { setUserIndicators, setUserStockSignals, setRefreshStatus, setRiskAssessment } from "@/lib/redis";
 import type { RefreshStatus } from "@/lib/redis";
 import { runAgenticRiskAssessment } from "@/lib/risk-assessment-agent";
+import { persistIndicatorsToSupabase, type IndicatorReading } from "@/lib/indicator-persistence";
 
 export const maxDuration = 120;
 
@@ -65,7 +66,7 @@ export async function POST() {
         await setUserStockSignals(userId, signals);
       }
 
-      // Cache indicators in Redis for this user
+      // Cache indicators in Redis for this user, and persist to Supabase as source of truth
       try {
         const { createServiceClient } = await import("@/lib/supabase/server");
         const service = createServiceClient();
@@ -81,7 +82,25 @@ export async function POST() {
           for (const row of indicators) {
             if (!bySlug.has(row.slug)) bySlug.set(row.slug, row);
           }
-          await setUserIndicators(userId, Array.from(bySlug.values()));
+          const deduped = Array.from(bySlug.values());
+          await setUserIndicators(userId, deduped);
+
+          // Persist refreshed data back to Supabase to ensure source of truth is updated
+          const readingsToUpsert: IndicatorReading[] = deduped.map((ind) => ({
+            slug: ind.slug,
+            name: ind.name,
+            latest_value: ind.latest_value,
+            numeric_value: ind.numeric_value,
+            trigger_level: ind.trigger_level,
+            status: ind.status,
+            status_text: ind.status_text,
+            signal: ind.signal,
+            signal_emoji: ind.signal_emoji,
+            source_url: ind.source_url,
+            category: ind.category,
+            reading_date: today,
+          }));
+          await persistIndicatorsToSupabase(readingsToUpsert);
         }
       } catch (cacheErr) {
         console.warn("Redis cache failed (non-critical):", cacheErr instanceof Error ? cacheErr.message : cacheErr);

@@ -165,14 +165,24 @@ export function SettingsContent() {
                 Enter your number — it will be formatted automatically.
               </p>
 
-              <div className="flex items-center justify-between p-3 rounded-lg bg-pulse-dark border border-pulse-border opacity-60">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-pulse-dark border border-pulse-border">
                 <div>
                   <p className="text-sm font-medium text-white">SMS alerts</p>
-                  <p className="text-xs text-yellow-400">Coming soon — SMS alerts are being activated</p>
+                  <p className="text-xs text-pulse-muted">Receive daily recession briefing via SMS (Pulse+)</p>
                 </div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 rounded-full px-2.5 py-1">
-                  Soon
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setSmsEnabled(!smsEnabled)}
+                  className={`relative w-12 h-6 rounded-full transition-colors ${
+                    smsEnabled ? "bg-pulse-green" : "bg-pulse-border"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                      smsEnabled ? "left-6" : "left-0.5"
+                    }`}
+                  />
+                </button>
               </div>
             </div>
           </Card>
