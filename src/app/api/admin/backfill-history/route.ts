@@ -5,6 +5,9 @@ import { INDICATOR_DEFINITIONS } from "@/lib/constants";
 
 const BACKFILL_LIMIT = 90;
 
+// Slugs handled by ADDITIONAL_FRED_INDICATORS with custom transforms — skip in the main INDICATOR_DEFINITIONS loop
+const SKIP_FROM_DEFINITIONS = new Set(["ny-fed-recession-prob"]);
+
 const ADDITIONAL_FRED_INDICATORS: {
   slug: string;
   name: string;
@@ -17,6 +20,16 @@ const ADDITIONAL_FRED_INDICATORS: {
   { slug: "gdp-growth", name: "GDP Growth (QoQ Annualized)", category: "secondary", fred_series: "A191RL1Q225SBEA" },
   { slug: "credit-spreads", name: "Credit Spreads (HY OAS)", category: "market", fred_series: "BAMLH0A0HYM2", transform: (v) => v * 100 },
   { slug: "vix", name: "VIX Volatility Index", category: "market", fred_series: "VIXCLS" },
+  {
+    slug: "ny-fed-recession-prob",
+    name: "NY Fed Recession Probability",
+    category: "primary",
+    fred_series: "T10Y3M",
+    transform: (spread) => {
+      const prob = Math.min(100, Math.max(0, 100 / (1 + Math.exp(0.5 + 3.2 * spread))));
+      return Math.round(prob * 10) / 10;
+    },
+  },
 ];
 
 function formatDisplayValue(slug: string, rawValue: number): string {
@@ -50,7 +63,8 @@ function formatDisplayValue(slug: string, rawValue: number): string {
     case "on-rrp-facility":
       return rawValue >= 1 ? `$${rawValue.toFixed(0)}B` : `$${Math.round(rawValue * 1000)}M`;
     case "gdp-growth":
-    case "gdpnow": return `${rawValue.toFixed(1)}%`;
+    case "gdpnow":
+    case "ny-fed-recession-prob": return `${rawValue.toFixed(1)}%`;
     case "credit-spreads": return `${rawValue.toFixed(0)} bps`;
     case "copper-gold-ratio": return rawValue.toFixed(5);
     case "sos-recession": return rawValue.toFixed(2);
@@ -75,6 +89,7 @@ export async function POST(request: Request) {
   // Backfill INDICATOR_DEFINITIONS (from constants.ts)
   for (const indicator of INDICATOR_DEFINITIONS) {
     if (!indicator.fred_series) continue;
+    if (SKIP_FROM_DEFINITIONS.has(indicator.slug)) continue;
 
     try {
       const observations = await fetchFredSeries(indicator.fred_series, BACKFILL_LIMIT);
