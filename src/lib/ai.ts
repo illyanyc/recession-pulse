@@ -22,8 +22,15 @@ interface IndicatorContext {
   history?: { date: string; value: number }[];
 }
 
-const SYSTEM_PROMPT =
-  "You are a concise macro-economic analyst writing a daily briefing. Write a 2-3 sentence plain-English summary of this recession indicator for a retail investor. Reference the current value and date. Be factual, cite the numbers, mention the trend direction, and state clearly what it means for recession risk right now. No disclaimers or hedging — just the signal.";
+const SYSTEM_PROMPT = `You are a concise macro-economic analyst writing a daily briefing for retail investors.
+
+You will receive the indicator's current value AND up to 90 days of historical readings. You MUST analyze the full trend — identify direction changes, acceleration, inflection points, and how today's value compares to the recent range.
+
+Write 2-3 sentences:
+1. State today's value, its trend over the past weeks/months (rising, falling, flat, reversing), and the magnitude of change.
+2. Explain what this trend means for recession risk right now — not just the level, but the direction.
+
+Be factual. Cite specific numbers from the history. No disclaimers or hedging — just the signal.`;
 
 function buildUserPrompt(ctx: IndicatorContext): string {
   const today = new Date().toLocaleDateString("en-US", {
@@ -32,9 +39,24 @@ function buildUserPrompt(ctx: IndicatorContext): string {
     month: "long",
     day: "numeric",
   });
-  const historyBlock = ctx.history?.length
-    ? `\nRecent readings:\n${ctx.history.map((h) => `  ${h.date}: ${h.value}`).join("\n")}`
-    : "";
+
+  let historyBlock = "";
+  if (ctx.history?.length) {
+    const sorted = [...ctx.history].sort((a, b) => a.date.localeCompare(b.date));
+    const oldest = sorted[0];
+    const newest = sorted[sorted.length - 1];
+    const mid = sorted[Math.floor(sorted.length / 2)];
+    const values = sorted.map((h) => h.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+
+    historyBlock = `\n\n--- Historical data (${sorted.length} readings, ${oldest.date} to ${newest.date}) ---`;
+    historyBlock += `\nRange: ${min} to ${max}`;
+    historyBlock += `\nMidpoint reading (${mid.date}): ${mid.value}`;
+    historyBlock += `\nOldest (${oldest.date}): ${oldest.value} → Latest (${newest.date}): ${newest.value}`;
+    historyBlock += `\n\nFull time series:\n${sorted.map((h) => `  ${h.date}: ${h.value}`).join("\n")}`;
+  }
+
   return `Date: ${today}\nIndicator: ${ctx.name}\nCurrent value: ${ctx.latestValue}\nStatus: ${ctx.status}\nSignal: ${ctx.signal}\nTrigger: ${ctx.triggerLevel}${historyBlock}`;
 }
 

@@ -95,12 +95,8 @@ function formatDisplayValue(slug: string, rawValue: number): string {
       return rawValue >= 1 ? `$${rawValue.toFixed(0)}B` : `$${Math.round(rawValue * 1000)}M`;
     case "jpm-recession-probability":
       return `${rawValue.toFixed(0)}%`;
-    case "ny-fed-recession-prob": {
-      const prob = rawValue < 0
-        ? Math.min(90, 50 + Math.abs(rawValue) * 20)
-        : Math.max(5, 30 - rawValue * 10);
-      return `${prob.toFixed(0)}%`;
-    }
+    case "ny-fed-recession-prob":
+      return `${rawValue.toFixed(1)}%`;
     case "gdp-growth":
     case "gdpnow":
       return `${rawValue.toFixed(1)}%`;
@@ -522,7 +518,7 @@ export async function GET(request: Request) {
   const successCount = results.filter((r) => r.success).length;
   const failCount = results.filter((r) => !r.success).length;
 
-  // 3. Generate AI summaries for all indicators
+  // 3. Generate AI summaries for all indicators (with full 90-day history)
   let summariesGenerated = 0;
   try {
     const { generateIndicatorSummary } = await import("@/lib/ai");
@@ -541,6 +537,18 @@ export async function GET(request: Request) {
 
       for (const [slug, ind] of bySlug) {
         try {
+          // Fetch up to 90 days of history for trend analysis
+          const { data: historyRows } = await supabase
+            .from("indicator_readings")
+            .select("reading_date, numeric_value")
+            .eq("slug", slug)
+            .order("reading_date", { ascending: true })
+            .limit(90);
+
+          const history = (historyRows || [])
+            .filter((r) => r.numeric_value !== null)
+            .map((r) => ({ date: r.reading_date, value: r.numeric_value as number }));
+
           const summary = await generateIndicatorSummary({
             name: ind.name,
             slug,
@@ -548,6 +556,7 @@ export async function GET(request: Request) {
             status: ind.status,
             signal: ind.signal,
             triggerLevel: ind.trigger_level || "",
+            history,
           });
 
           await supabase.from("indicator_summaries").upsert(

@@ -66,6 +66,18 @@ export async function GET(
       );
     }
 
+    // Fetch up to 90 days of history for trend analysis
+    const { data: historyRows } = await service
+      .from("indicator_readings")
+      .select("reading_date, numeric_value")
+      .eq("slug", slug)
+      .order("reading_date", { ascending: true })
+      .limit(90);
+
+    const history = (historyRows || [])
+      .filter((r) => r.numeric_value !== null)
+      .map((r) => ({ date: r.reading_date, value: r.numeric_value as number }));
+
     let stream;
     try {
       stream = await streamIndicatorSummary({
@@ -75,6 +87,7 @@ export async function GET(
         status: indicator.status,
         signal: indicator.signal,
         triggerLevel: indicator.trigger_level || "",
+        history,
       });
     } catch {
       return NextResponse.json({
