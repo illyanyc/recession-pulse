@@ -375,7 +375,7 @@ export const INDICATORS_SEO: Record<string, IndicatorSEO> = {
     title: "Building Permits (Residential)",
     shortName: "Building Permits",
     metaDescription:
-      "Track U.S. residential building permits in real time. Declining permits are the single most critical variable for predicting recessions according to Moody's Analytics.",
+      "Track U.S. residential building permits in real time. Declining permits are the most critical recession predictor per Moody's Analytics.",
     keywords: [
       "building permits",
       "building permits recession",
@@ -396,7 +396,7 @@ export const INDICATORS_SEO: Record<string, IndicatorSEO> = {
     title: "Real Personal Income (Excluding Transfers)",
     shortName: "Real Income (ex Transfers)",
     metaDescription:
-      "Track real personal income excluding government transfers — the NBER's most-weighted recession indicator. Declining organic income signals true economic weakness.",
+      "Track real personal income excluding transfers — the NBER's top recession indicator. Declining organic income signals economic weakness.",
     keywords: [
       "real personal income",
       "personal income less transfers",
@@ -456,7 +456,7 @@ export const INDICATORS_SEO: Record<string, IndicatorSEO> = {
     title: "Chicago Fed National Financial Conditions Index",
     shortName: "Chicago Fed NFCI",
     metaDescription:
-      "Monitor the Chicago Fed NFCI — 105 financial measures combined into one index. Positive values signal tighter-than-average financial conditions and recession risk.",
+      "Monitor the Chicago Fed NFCI — 105 financial measures in one index. Positive values signal tight financial conditions and recession risk.",
     keywords: [
       "NFCI",
       "Chicago Fed financial conditions",

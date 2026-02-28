@@ -174,9 +174,9 @@ export function AuthForm({ mode }: AuthFormProps) {
         </Link>
 
         <div className="card">
-          <h2 className="text-xl font-bold text-white mb-1 text-center">
+          <h1 className="text-xl font-bold text-white mb-1 text-center">
             {mode === "login" ? "Welcome back" : "Create your account"}
-          </h2>
+          </h1>
           <p className="text-sm text-pulse-muted text-center mb-6">
             {mode === "login"
               ? "Sign in to access your dashboard"

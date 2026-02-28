@@ -56,11 +56,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: post.meta_description,
     keywords: post.keywords,
     openGraph: {
+      type: "article",
+      siteName: "RecessionPulse",
       title: `${post.title} — RecessionPulse`,
       description: post.meta_description,
       url: `https://recessionpulse.com/blog/${slug}`,
-      type: "article",
-      images: post.og_image_url ? [{ url: post.og_image_url }] : [{ url: "/og-image.png" }],
+      images: post.og_image_url
+        ? [{ url: post.og_image_url, width: 1200, height: 630, alt: post.title }]
+        : [{ url: "/og-image.png", width: 1200, height: 630, alt: post.title }],
     },
     twitter: {
       card: "summary_large_image",

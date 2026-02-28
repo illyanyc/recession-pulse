@@ -20,10 +20,13 @@ export const metadata: Metadata = {
     "recession indicators analysis",
   ],
   openGraph: {
+    type: "website",
+    siteName: "RecessionPulse",
     title: "RecessionPulse Blog — Weekly Recession Reports & Analysis",
     description:
       "Data-driven weekly recession reports, indicator deep dives, and market commentary.",
     url: "https://recessionpulse.com/blog",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "RecessionPulse Blog" }],
   },
   alternates: { canonical: "https://recessionpulse.com/blog" },
 };

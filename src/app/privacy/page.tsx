@@ -1,8 +1,21 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Privacy Policy — RecessionPulse",
+  description:
+    "Learn how RecessionPulse collects, uses, and protects your data. We never sell personal information. SMS opt-out available anytime.",
+  openGraph: {
+    type: "website",
+    siteName: "RecessionPulse",
+    title: "Privacy Policy — RecessionPulse",
+    description:
+      "Learn how RecessionPulse collects, uses, and protects your data. We never sell personal information.",
+    url: "https://recessionpulse.com/privacy",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "RecessionPulse Privacy Policy" }],
+  },
+  alternates: { canonical: "https://recessionpulse.com/privacy" },
 };
 
 export default function PrivacyPage() {

@@ -1,10 +1,22 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { ContactForm } from "./ContactForm";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Contact Us — RecessionPulse",
-  description: "Report a problem, request a feature, or ask a question about RecessionPulse.",
+  description:
+    "Get in touch with the RecessionPulse team. Report bugs, request features, ask questions about recession indicators, or get help with your subscription.",
+  openGraph: {
+    type: "website",
+    siteName: "RecessionPulse",
+    title: "Contact Us — RecessionPulse",
+    description:
+      "Get in touch with the RecessionPulse team. Report bugs, request features, or ask questions about recession indicators.",
+    url: "https://recessionpulse.com/contact",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Contact RecessionPulse" }],
+  },
+  alternates: { canonical: "https://recessionpulse.com/contact" },
 };
 
 export default function ContactPage() {

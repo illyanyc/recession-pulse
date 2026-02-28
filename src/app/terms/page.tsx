@@ -1,8 +1,21 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Terms of Service — RecessionPulse",
+  description:
+    "RecessionPulse terms of service covering subscriptions, billing, SMS alerts, data accuracy, and limitation of liability. RecessionPulse is not investment advice.",
+  openGraph: {
+    type: "website",
+    siteName: "RecessionPulse",
+    title: "Terms of Service — RecessionPulse",
+    description:
+      "RecessionPulse terms of service covering subscriptions, billing, SMS alerts, and limitation of liability.",
+    url: "https://recessionpulse.com/terms",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "RecessionPulse Terms of Service" }],
+  },
+  alternates: { canonical: "https://recessionpulse.com/terms" },
 };
 
 export default function TermsPage() {

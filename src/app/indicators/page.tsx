@@ -20,7 +20,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Recession Indicators — Live Economic Dashboard",
   description:
-    "Track 38+ recession indicators in real time: Sahm Rule, yield curve, credit spreads, ISM PMI, JOLTS, building permits, consumer stress, and more. Updated daily with AI analysis.",
+    "Track 38+ recession indicators in real time: Sahm Rule, yield curve, credit spreads, ISM PMI, JOLTS, building permits & more. Updated daily.",
   keywords: [
     "recession indicators",
     "recession tracker",
@@ -30,10 +30,13 @@ export const metadata: Metadata = {
     "live recession indicators",
   ],
   openGraph: {
+    type: "website",
+    siteName: "RecessionPulse",
     title: "Live Recession Indicators Dashboard — RecessionPulse",
     description:
       "38+ recession indicators tracked daily. Sahm Rule, yield curve, JOLTS, building permits, credit spreads, PMI, and more.",
     url: "https://recessionpulse.com/indicators",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "RecessionPulse Indicators Dashboard" }],
   },
   alternates: { canonical: "https://recessionpulse.com/indicators" },
 };
@@ -217,9 +220,10 @@ export default async function IndicatorsIndexPage() {
 
                     if (isLocked) {
                       return (
-                        <div
+                        <Link
                           key={slug}
-                          className="relative bg-pulse-card border border-pulse-border rounded-xl p-5 overflow-hidden"
+                          href={`/indicators/${slug}`}
+                          className="relative bg-pulse-card border border-pulse-border rounded-xl p-5 overflow-hidden block"
                         >
                           <div className="blur-[6px] select-none pointer-events-none" aria-hidden="true">
                             <div className="flex items-start justify-between mb-3">
@@ -255,15 +259,14 @@ export default async function IndicatorsIndexPage() {
                             <p className="text-xs text-pulse-muted mb-3">
                               Sign in to view live data
                             </p>
-                            <Link
-                              href="/login"
-                              className="inline-flex items-center gap-1.5 bg-pulse-green text-pulse-darker text-xs font-semibold px-4 py-2 rounded-lg hover:bg-pulse-green/90 transition-colors"
+                            <span
+                              className="inline-flex items-center gap-1.5 bg-pulse-green text-pulse-darker text-xs font-semibold px-4 py-2 rounded-lg"
                             >
                               Sign in
                               <ArrowRight className="h-3 w-3" />
-                            </Link>
+                            </span>
                           </div>
-                        </div>
+                        </Link>
                       );
                     }
 

@@ -1,8 +1,21 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Investment Disclaimer — RecessionPulse",
+  description:
+    "RecessionPulse is an informational service only and does not provide investment advice. All data is for educational purposes. Consult a financial advisor.",
+  openGraph: {
+    type: "website",
+    siteName: "RecessionPulse",
+    title: "Investment Disclaimer — RecessionPulse",
+    description:
+      "RecessionPulse is informational only and does not provide investment advice. Consult a financial advisor.",
+    url: "https://recessionpulse.com/disclaimer",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "RecessionPulse Disclaimer" }],
+  },
+  alternates: { canonical: "https://recessionpulse.com/disclaimer" },
 };
 
 export default function DisclaimerPage() {
