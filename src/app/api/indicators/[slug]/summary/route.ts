@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { getUserSummary, setUserSummary, getGlobalSummary } from "@/lib/redis";
 import { streamIndicatorSummary } from "@/lib/ai";
+import { getChartLimit } from "@/lib/constants";
 
 export async function GET(
   _request: Request,
@@ -71,7 +72,7 @@ export async function GET(
       .select("reading_date, numeric_value")
       .eq("slug", slug)
       .order("reading_date", { ascending: false })
-      .limit(90);
+      .limit(getChartLimit(slug));
 
     const history = (historyRows || [])
       .reverse()

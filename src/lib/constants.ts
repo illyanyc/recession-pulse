@@ -417,6 +417,33 @@ export const INDICATOR_DEFINITIONS = [
 
 export const TOTAL_INDICATORS = INDICATOR_DEFINITIONS.length;
 
+/**
+ * Chart data limits per indicator based on publication frequency.
+ * Daily → 90 points (~3 months), Weekly → 52 (~1 year),
+ * Monthly → 36 (~3 years), Quarterly → 20 (~5 years).
+ */
+const DAILY_INDICATORS = new Set([
+  "vix", "yield-curve-2s10s", "yield-curve-2s30s", "ny-fed-recession-prob",
+  "credit-spreads", "dxy-dollar-index", "on-rrp-facility",
+]);
+
+const WEEKLY_INDICATORS = new Set([
+  "initial-claims", "nfci", "sos-recession", "silver-gold-ratio",
+  "copper-gold-ratio", "emerging-markets",
+]);
+
+const QUARTERLY_INDICATORS = new Set([
+  "gdp-growth", "corporate-profits", "debt-service-ratio",
+  "credit-card-delinquency", "sloos-lending",
+]);
+
+export function getChartLimit(slug: string): number {
+  if (DAILY_INDICATORS.has(slug)) return 90;
+  if (WEEKLY_INDICATORS.has(slug)) return 52;
+  if (QUARTERLY_INDICATORS.has(slug)) return 20;
+  return 36; // monthly default
+}
+
 export const STOCK_SCREENER_CONFIG = {
   value_dividend: {
     max_pe: 12,

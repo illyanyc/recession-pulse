@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getIndicatorSEO, ALL_INDICATOR_SLUGS, INDICATORS_SEO } from "@/lib/indicators-metadata";
+import { getChartLimit } from "@/lib/constants";
 import { getGlobalSummary } from "@/lib/redis";
 import { Badge } from "@/components/ui/Badge";
 import { Navbar } from "@/components/landing/Navbar";
@@ -91,7 +92,7 @@ export default async function IndicatorPage({ params }: PageProps) {
       .select("*")
       .eq("slug", slug)
       .order("reading_date", { ascending: false })
-      .limit(90);
+      .limit(getChartLimit(slug));
 
     latest = readings?.[0] ?? null;
     history = readings

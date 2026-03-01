@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { fetchLatestValue } from "@/lib/fred";
-import { INDICATOR_DEFINITIONS } from "@/lib/constants";
+import { INDICATOR_DEFINITIONS, getChartLimit } from "@/lib/constants";
 import { verifyCronAuth } from "@/lib/cron-auth";
 import { researchIndicatorValue } from "@/lib/serper-research-agent";
 
@@ -482,7 +482,7 @@ export async function GET(request: Request) {
             .select("reading_date, numeric_value")
             .eq("slug", slug)
             .order("reading_date", { ascending: false })
-            .limit(90);
+            .limit(getChartLimit(slug));
 
           const history = (historyRows || [])
             .reverse()

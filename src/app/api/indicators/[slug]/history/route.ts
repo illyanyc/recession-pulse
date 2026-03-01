@@ -1,5 +1,6 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { getChartLimit } from "@/lib/constants";
 
 export async function GET(
   _request: Request,
@@ -14,13 +15,14 @@ export async function GET(
   }
 
   const service = createServiceClient();
+  const limit = getChartLimit(slug);
 
   const { data: readings } = await service
     .from("indicator_readings")
     .select("reading_date, numeric_value")
     .eq("slug", slug)
     .order("reading_date", { ascending: false })
-    .limit(90);
+    .limit(limit);
 
   const history = (readings || [])
     .reverse()
