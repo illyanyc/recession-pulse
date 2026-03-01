@@ -86,16 +86,12 @@ export default async function IndicatorPage({ params }: PageProps) {
   try {
     const supabase = createServiceClient();
 
-    const ninetyDaysAgo = new Date();
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-    const cutoff = ninetyDaysAgo.toISOString().split("T")[0];
-
     const { data: readings } = await supabase
       .from("indicator_readings")
       .select("*")
       .eq("slug", slug)
-      .gte("reading_date", cutoff)
-      .order("reading_date", { ascending: false });
+      .order("reading_date", { ascending: false })
+      .limit(90);
 
     latest = readings?.[0] ?? null;
     history = readings

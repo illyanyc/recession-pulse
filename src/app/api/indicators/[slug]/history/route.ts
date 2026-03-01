@@ -15,18 +15,15 @@ export async function GET(
 
   const service = createServiceClient();
 
-  const ninetyDaysAgo = new Date();
-  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-  const cutoff = ninetyDaysAgo.toISOString().split("T")[0];
-
   const { data: readings } = await service
     .from("indicator_readings")
     .select("reading_date, numeric_value")
     .eq("slug", slug)
-    .gte("reading_date", cutoff)
-    .order("reading_date", { ascending: true });
+    .order("reading_date", { ascending: false })
+    .limit(90);
 
   const history = (readings || [])
+    .reverse()
     .filter((r) => r.numeric_value !== null)
     .map((r) => ({ date: r.reading_date, value: r.numeric_value }));
 
