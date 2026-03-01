@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { fetchFredSeries } from "@/lib/fred";
 import { INDICATOR_DEFINITIONS } from "@/lib/constants";
+import { researchIndicatorValue } from "@/lib/serper-research-agent";
+
+export const maxDuration = 300;
 
 const BACKFILL_LIMIT = 90;
 
@@ -30,6 +33,31 @@ const ADDITIONAL_FRED_INDICATORS: {
       return Math.round(prob * 10) / 10;
     },
   },
+  { slug: "conference-board-lei", name: "Conference Board LEI", category: "primary", fred_series: "USSLIND" },
+  { slug: "us-interest-expense", name: "US Interest Expense", category: "liquidity", fred_series: "A091RC1Q027SBEA" },
+  { slug: "bank-unrealized-losses", name: "Bank Unrealized Losses", category: "liquidity", fred_series: "QBPBSTLKTEQKTBKEQKCMYAFS" },
+];
+
+// Computed FRED indicators that require multiple series joined by date
+const COMPUTED_FRED_INDICATORS = [
+  {
+    slug: "yield-curve-2s30s",
+    name: "Yield Curve (2s30s)",
+    category: "primary",
+    seriesA: "DGS30",
+    seriesB: "DGS2",
+    compute: (a: number, b: number) => a - b,
+  },
+];
+
+// Indicators that only exist via agentic web search
+const AGENTIC_BACKFILL_INDICATORS = [
+  { slug: "nfib-optimism", name: "NFIB Small Business Optimism Index", category: "business_activity", months: 24 },
+  { slug: "gdpnow", name: "Atlanta Fed GDPNow", category: "realtime", months: 12 },
+  { slug: "jpm-recession-probability", name: "JPMorgan Recession Probability", category: "secondary", months: 12 },
+  { slug: "emerging-markets", name: "MSCI Emerging Markets Index (EEM)", category: "market", months: 12 },
+  { slug: "copper-gold-ratio", name: "Copper to Gold Ratio", category: "realtime", months: 12 },
+  { slug: "silver-gold-ratio", name: "Gold to Silver Ratio", category: "market", months: 12 },
 ];
 
 function formatDisplayValue(slug: string, rawValue: number): string {
@@ -67,6 +95,7 @@ function formatDisplayValue(slug: string, rawValue: number): string {
     case "ny-fed-recession-prob": return `${rawValue.toFixed(1)}%`;
     case "credit-spreads": return `${rawValue.toFixed(0)} bps`;
     case "copper-gold-ratio": return rawValue.toFixed(5);
+    case "silver-gold-ratio": return rawValue.toFixed(1);
     case "sos-recession": return rawValue.toFixed(2);
     default:
       if (Math.abs(rawValue) >= 10000) return rawValue.toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -83,6 +112,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const targetSlug = searchParams.get("slug");
+
   const supabase = createServiceClient();
   const results: { slug: string; series: string; inserted: number; error?: string }[] = [];
 
@@ -90,6 +122,7 @@ export async function POST(request: Request) {
   for (const indicator of INDICATOR_DEFINITIONS) {
     if (!indicator.fred_series) continue;
     if (SKIP_FROM_DEFINITIONS.has(indicator.slug)) continue;
+    if (targetSlug && indicator.slug !== targetSlug) continue;
 
     try {
       const observations = await fetchFredSeries(indicator.fred_series, BACKFILL_LIMIT);
@@ -133,6 +166,7 @@ export async function POST(request: Request) {
 
   // Backfill additional FRED-based indicators
   for (const indicator of ADDITIONAL_FRED_INDICATORS) {
+    if (targetSlug && indicator.slug !== targetSlug) continue;
     try {
       const observations = await fetchFredSeries(indicator.fred_series, BACKFILL_LIMIT);
       const valid = observations
@@ -173,6 +207,108 @@ export async function POST(request: Request) {
         error: error instanceof Error ? error.message : "Unknown",
       });
     }
+  }
+
+  // Backfill computed FRED indicators (two series joined by date)
+  for (const indicator of COMPUTED_FRED_INDICATORS) {
+    if (targetSlug && indicator.slug !== targetSlug) continue;
+    try {
+      const [seriesA, seriesB] = await Promise.all([
+        fetchFredSeries(indicator.seriesA, BACKFILL_LIMIT),
+        fetchFredSeries(indicator.seriesB, BACKFILL_LIMIT),
+      ]);
+
+      const mapB = new Map<string, number>();
+      for (const obs of seriesB) {
+        if (obs.value !== ".") mapB.set(obs.date, parseFloat(obs.value));
+      }
+
+      let inserted = 0;
+      for (const obs of seriesA) {
+        if (obs.value === ".") continue;
+        const aVal = parseFloat(obs.value);
+        const bVal = mapB.get(obs.date);
+        if (isNaN(aVal) || bVal === undefined || isNaN(bVal)) continue;
+
+        const computed = indicator.compute(aVal, bVal);
+        if (isNaN(computed)) continue;
+
+        const { error } = await supabase.from("indicator_readings").upsert(
+          {
+            slug: indicator.slug,
+            name: indicator.name,
+            latest_value: formatDisplayValue(indicator.slug, computed),
+            numeric_value: computed,
+            status: "watch",
+            status_text: "Historical backfill",
+            signal: "Historical backfill",
+            signal_emoji: "WATCH",
+            category: indicator.category,
+            reading_date: obs.date,
+          },
+          { onConflict: "slug,reading_date" }
+        );
+        if (!error) inserted++;
+      }
+
+      results.push({ slug: indicator.slug, series: `${indicator.seriesA}/${indicator.seriesB}`, inserted });
+    } catch (error) {
+      results.push({
+        slug: indicator.slug,
+        series: `${indicator.seriesA}/${indicator.seriesB}`,
+        inserted: 0,
+        error: error instanceof Error ? error.message : "Unknown",
+      });
+    }
+  }
+
+  // Agentic backfill for indicators without FRED series
+  for (const indicator of AGENTIC_BACKFILL_INDICATORS) {
+    if (targetSlug && indicator.slug !== targetSlug) continue;
+    let inserted = 0;
+    const errors: string[] = [];
+
+    const now = new Date();
+    for (let i = 0; i < indicator.months; i++) {
+      const target = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthLabel = target.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      const dateStr = target.toISOString().split("T")[0];
+
+      try {
+        const result = await researchIndicatorValue(indicator.slug, indicator.name, monthLabel);
+        if (!result) {
+          errors.push(`${monthLabel}: no result`);
+          continue;
+        }
+
+        const readingDate = result.date || dateStr;
+        const { error } = await supabase.from("indicator_readings").upsert(
+          {
+            slug: indicator.slug,
+            name: indicator.name,
+            latest_value: formatDisplayValue(indicator.slug, result.value),
+            numeric_value: result.value,
+            status: "watch",
+            status_text: `Backfill (${result.confidence})`,
+            signal: `Backfill via Serper (${result.confidence})`,
+            signal_emoji: "WATCH",
+            category: indicator.category,
+            reading_date: readingDate,
+          },
+          { onConflict: "slug,reading_date" }
+        );
+        if (!error) inserted++;
+      } catch (err) {
+        errors.push(`${monthLabel}: ${err instanceof Error ? err.message : "Unknown"}`);
+      }
+    }
+
+    results.push({
+      slug: indicator.slug,
+      series: "serper-agent",
+      inserted,
+      error: errors.length > 0 ? `${errors.length} months failed` : undefined,
+    });
   }
 
   const totalInserted = results.reduce((sum, r) => sum + r.inserted, 0);

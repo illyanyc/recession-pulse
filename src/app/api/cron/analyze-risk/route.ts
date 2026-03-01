@@ -40,19 +40,19 @@ export async function GET(request: Request) {
     }
     const currentIndicators = Array.from(latestBySlug.values());
 
-    // 7-day history
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    // 90-day history for richer trend analysis
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     const { data: historyData } = await supabase
       .from("indicator_readings")
-      .select("slug, name, latest_value, status, signal, reading_date")
-      .gte("reading_date", sevenDaysAgo.toISOString().split("T")[0])
+      .select("slug, name, latest_value, numeric_value, status, signal, reading_date")
+      .gte("reading_date", ninetyDaysAgo.toISOString().split("T")[0])
       .order("reading_date", { ascending: true });
 
     // Fetch latest stock signals (today's or most recent)
     const { data: stockSignals } = await supabase
       .from("stock_signals")
-      .select("ticker, company_name, signal_type, pe_ratio, dividend_yield, rsi_14, market_cap")
+      .select("ticker, company_name, signal_type, forward_pe, dividend_yield, rsi_14, market_cap")
       .order("screened_at", { ascending: false })
       .limit(30);
 
@@ -102,7 +102,7 @@ export async function GET(request: Request) {
     };
     await setRiskAssessment(assessmentRecord).catch(() => {});
 
-    // Generate and publish blog post (with 7-day history for trend analysis)
+    // Generate and publish blog post (with 90-day history for trend analysis)
     let blogPublished = false;
     try {
       const { generateRiskBlogPost } = await import("@/lib/content-generator");

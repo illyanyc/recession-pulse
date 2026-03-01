@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Lock } from "lucide-react";
+import { useState } from "react";
+import { Lock, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import type { RecessionRiskAssessment } from "@/types";
@@ -61,6 +61,7 @@ function RiskGauge({ score, color }: { score: number; color: string }) {
 
 export function RecessionRiskBanner({ assessment: initialAssessment, hasSubscription = true }: RecessionRiskBannerProps) {
   const [assessment] = useState(initialAssessment);
+  const [expanded, setExpanded] = useState(false);
 
   if (!assessment) return null;
 
@@ -85,7 +86,7 @@ export function RecessionRiskBanner({ assessment: initialAssessment, hasSubscrip
           <Lock className="h-8 w-8 text-pulse-muted mb-3" />
           <h3 className="text-base font-bold text-white mb-1">AI Recession Risk Assessment</h3>
           <p className="text-xs text-pulse-muted mb-4 max-w-sm text-center">
-            Get daily AI-powered macro analysis with risk scoring across all 42 indicators.
+            Get daily AI-powered macro analysis with risk scoring across all 43 indicators.
           </p>
           <Link href="/pricing">
             <Button size="sm">Upgrade to Pulse — $6.99/mo</Button>
@@ -96,9 +97,12 @@ export function RecessionRiskBanner({ assessment: initialAssessment, hasSubscrip
   }
 
   return (
-    <div className={`p-6 bg-gradient-to-r ${config.bg} bg-pulse-card border ${config.border} transition-all`}>
-      <div className="flex flex-col sm:flex-row gap-6">
-        <div className="flex flex-col items-center gap-2">
+    <div className={`bg-gradient-to-r ${config.bg} bg-pulse-card border ${config.border} transition-all`}>
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full text-left p-6 flex flex-col sm:flex-row gap-6 cursor-pointer"
+      >
+        <div className="flex flex-col items-center gap-2 flex-shrink-0">
           <RiskGauge score={assessment.score} color={config.color} />
           <span
             className="text-xs font-bold tracking-widest"
@@ -109,7 +113,7 @@ export function RecessionRiskBanner({ assessment: initialAssessment, hasSubscrip
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-3 mb-2">
             <h2 className="text-lg font-bold text-white">Overall Recession Risk</h2>
             <span className="text-xs text-pulse-muted">
               {new Date(assessment.assessment_date + "T00:00:00").toLocaleDateString("en-US", {
@@ -118,36 +122,49 @@ export function RecessionRiskBanner({ assessment: initialAssessment, hasSubscrip
                 year: "numeric",
               })}
             </span>
+            <ChevronDown
+              className={`h-4 w-4 text-pulse-muted ml-auto flex-shrink-0 transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+            />
           </div>
 
-          <p className="text-sm text-pulse-text leading-relaxed mb-4">
-            {assessment.summary}
-          </p>
-
-          {assessment.key_factors.length > 0 && (
-            <ul className="space-y-1.5 mb-4">
-              {assessment.key_factors.map((factor, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-pulse-text">
-                  <span className="mt-1.5 w-1.5 h-1.5 flex-shrink-0" style={{ backgroundColor: config.color }} />
-                  {factor}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {assessment.outlook && (
-            <p className="text-xs text-pulse-muted italic">
-              Outlook: {assessment.outlook}
+          {!expanded && (
+            <p className="text-sm text-pulse-text leading-relaxed line-clamp-2">
+              {assessment.summary}
             </p>
           )}
 
-          <div className="mt-3 pt-3 border-t border-pulse-border/50 flex items-center gap-2">
-            <span className="text-[10px] text-pulse-muted">
-              AI-powered macro analysis
-            </span>
-          </div>
+          {expanded && (
+            <div className="animate-in fade-in duration-200">
+              <p className="text-sm text-pulse-text leading-relaxed mb-4">
+                {assessment.summary}
+              </p>
+
+              {assessment.key_factors.length > 0 && (
+                <ul className="space-y-1.5 mb-4">
+                  {assessment.key_factors.map((factor, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-pulse-text">
+                      <span className="mt-1.5 w-1.5 h-1.5 flex-shrink-0" style={{ backgroundColor: config.color }} />
+                      {factor}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {assessment.outlook && (
+                <p className="text-xs text-pulse-muted italic">
+                  Outlook: {assessment.outlook}
+                </p>
+              )}
+
+              <div className="mt-3 pt-3 border-t border-pulse-border/50 flex items-center gap-2">
+                <span className="text-[10px] text-pulse-muted">
+                  AI-powered macro analysis
+                </span>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      </button>
     </div>
   );
 }

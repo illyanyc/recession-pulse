@@ -9,7 +9,8 @@ import { Card } from "@/components/ui/Card";
 import { Activity, Bell, Phone, Mail, Save, ArrowLeft, BellOff } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/lib/toast-context";
-import type { UserProfile } from "@/types";
+import type { UserProfile, Subscription } from "@/types";
+import { SubscriptionStatus } from "@/components/dashboard/SubscriptionStatus";
 
 function normalizePhoneE164(raw: string): string {
   const digits = raw.replace(/\D/g, "");
@@ -42,6 +43,7 @@ export function SettingsContent() {
   const [fullName, setFullName] = useState("");
   const [smsEnabled, setSmsEnabled] = useState(true);
   const [emailEnabled, setEmailEnabled] = useState(true);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const { notificationsEnabled, setNotificationsEnabled } = useToast();
 
   useEffect(() => {
@@ -64,6 +66,14 @@ export function SettingsContent() {
         setFullName(data.full_name || "");
         setSmsEnabled(data.sms_enabled);
         setEmailEnabled(data.email_alerts_enabled);
+
+        const { data: sub } = await supabase
+          .from("subscriptions")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .single();
+        setSubscription(sub as Subscription | null);
       }
       setLoading(false);
     }
@@ -143,6 +153,9 @@ export function SettingsContent() {
             </div>
           </Card>
 
+          {/* Subscription */}
+          {profile && <SubscriptionStatus profile={profile} subscription={subscription} />}
+
           {/* Phone / SMS */}
           <Card>
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -172,6 +185,9 @@ export function SettingsContent() {
                 </div>
                 <button
                   type="button"
+                  role="switch"
+                  aria-checked={smsEnabled}
+                  aria-label="SMS alerts"
                   onClick={() => setSmsEnabled(!smsEnabled)}
                   className={`relative w-12 h-6 rounded-full transition-colors ${
                     smsEnabled ? "bg-pulse-green" : "bg-pulse-border"
@@ -201,6 +217,9 @@ export function SettingsContent() {
                 </div>
                 <button
                   type="button"
+                  role="switch"
+                  aria-checked={emailEnabled}
+                  aria-label="Email alerts"
                   onClick={() => setEmailEnabled(!emailEnabled)}
                   className={`relative w-12 h-6 rounded-full transition-colors ${
                     emailEnabled ? "bg-pulse-green" : "bg-pulse-border"
@@ -239,6 +258,9 @@ export function SettingsContent() {
                 </div>
                 <button
                   type="button"
+                  role="switch"
+                  aria-checked={notificationsEnabled}
+                  aria-label="In-app notifications"
                   onClick={() => setNotificationsEnabled(!notificationsEnabled)}
                   className={`relative w-12 h-6 rounded-full transition-colors ${
                     notificationsEnabled ? "bg-pulse-green" : "bg-pulse-border"

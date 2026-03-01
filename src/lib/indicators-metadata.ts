@@ -774,6 +774,27 @@ export const INDICATORS_SEO: Record<string, IndicatorSEO> = {
     historicalContext:
       "Published by the Richmond Fed, the SOS addresses key limitations of the original Sahm Rule including declining CPS survey response rates and confounding labor supply factors from immigration changes.",
   },
+  "silver-gold-ratio": {
+    slug: "silver-gold-ratio",
+    title: "Gold-to-Silver Ratio — Recession Fear Gauge",
+    shortName: "Gold/Silver Ratio",
+    metaDescription:
+      "Track the gold-to-silver ratio in real time. When this ratio spikes above 80, it signals extreme fear and flight to safety — a classic recession warning sign.",
+    keywords: [
+      "gold silver ratio",
+      "gold to silver ratio",
+      "silver gold ratio recession",
+      "gold silver ratio 2026",
+      "precious metals recession indicator",
+      "flight to safety indicator",
+    ],
+    whatIsIt:
+      "The gold-to-silver ratio measures how many ounces of silver it takes to buy one ounce of gold. It is calculated by dividing the gold price per troy ounce by the silver price per troy ounce. A rising ratio indicates investors are favoring gold (a pure safe-haven asset) over silver (which has significant industrial demand).",
+    whyItMatters:
+      "When the gold-to-silver ratio spikes above 80, it historically signals extreme risk aversion and flight to safety. During the 2008 financial crisis, the ratio surged above 80. During COVID-19 in March 2020, it briefly hit 125 — the highest level in modern history. A declining ratio suggests improving industrial demand and economic confidence.",
+    historicalContext:
+      "The long-term average gold-to-silver ratio is approximately 65. During periods of economic expansion, industrial silver demand pushes the ratio lower (50–65). During recessions and financial crises, the ratio spikes as investors flee to gold. The ratio's mean-reverting nature makes extreme readings particularly informative for cycle timing.",
+  },
 };
 
 export const ALL_INDICATOR_SLUGS = Object.keys(INDICATORS_SEO);

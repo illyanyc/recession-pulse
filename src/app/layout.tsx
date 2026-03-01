@@ -18,11 +18,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://recessionpulse.com"),
   title: {
-    default: "RecessionPulse — Track 42 Recession Indicators Free",
+    default: "RecessionPulse — Track 43 Recession Indicators Free",
     template: "%s | RecessionPulse",
   },
   description:
-    "Track 42 recession & macro indicators free: Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI & more. SMS alerts from $6.99/mo.",
+    "Track 43 recession & macro indicators free: Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI & more. SMS alerts from $6.99/mo.",
   keywords: [
     "recession indicators",
     "recession tracker",
@@ -78,21 +78,21 @@ export const metadata: Metadata = {
     siteName: "RecessionPulse",
     title: "RecessionPulse — Think Like a Quant. Prepare for What's Next.",
     description:
-      "42 recession & macro indicators tracked free. Sahm Rule, yield curves, VIX, JOLTS, GDPNow & more. SMS alerts from $6.99/mo.",
+      "43 recession & macro indicators tracked free. Sahm Rule, yield curves, VIX, JOLTS, GDPNow & more. SMS alerts from $6.99/mo.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "RecessionPulse — 42 Recession Indicators Dashboard",
+        alt: "RecessionPulse — 43 Recession Indicators Dashboard",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "RecessionPulse — 42 Recession Indicators, Free Dashboard",
+    title: "RecessionPulse — 43 Recession Indicators, Free Dashboard",
     description:
-      "Track 42 recession indicators free. Sahm Rule, yield curves, VIX, JOLTS, building permits & more. SMS alerts from $6.99/mo.",
+      "Track 43 recession indicators free. Sahm Rule, yield curves, VIX, JOLTS, building permits & more. SMS alerts from $6.99/mo.",
     images: ["/og-image.png"],
   },
   alternates: {

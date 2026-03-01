@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { rateLimit } from "@/lib/rate-limit";
 
 const subscribeSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
 export async function POST(request: Request) {
+  const rl = await rateLimit(request, "newsletter");
+  if (!rl.success) return rl.response!;
+
   try {
     const body = await request.json();
     const { email } = subscribeSchema.parse(body);

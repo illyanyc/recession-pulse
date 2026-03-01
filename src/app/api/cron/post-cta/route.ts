@@ -52,9 +52,9 @@ async function postScreenerHighlight() {
   const supabase = createServiceClient();
 
   const { data: stocks } = await supabase
-    .from("stock_screens")
-    .select("ticker, name, pe_ratio, rsi, sector")
-    .order("created_at", { ascending: false })
+    .from("stock_signals")
+    .select("ticker, company_name, forward_pe, rsi_14, sector")
+    .order("screened_at", { ascending: false })
     .limit(10);
 
   if (!stocks || stocks.length === 0) {
@@ -63,9 +63,9 @@ async function postScreenerHighlight() {
 
   const formatted = stocks.slice(0, 5).map((s) => ({
     ticker: s.ticker,
-    name: s.name || s.ticker,
-    pe: s.pe_ratio ?? 0,
-    rsi: s.rsi ?? 0,
+    name: s.company_name || s.ticker,
+    pe: s.forward_pe ?? 0,
+    rsi: s.rsi_14 ?? 0,
     sector: s.sector || "Unknown",
   }));
 

@@ -14,6 +14,14 @@ import type { RecessionIndicator, RecessionRiskAssessment, StockSignal, Subscrip
 
 type ActionStatus = "idle" | "loading" | "success" | "error";
 
+const STEP_LABELS: Record<string, string> = {
+  indicators: "Fetching indicators...",
+  stocks: "Screening stocks...",
+  risk: "AI analyzing recession risk...",
+  caching: "Caching results...",
+  summaries: "Generating summaries...",
+};
+
 interface RefreshStatusPayload {
   status: "idle" | "processing" | "success" | "failed";
   step?: string;
@@ -62,14 +70,6 @@ export function DashboardContent({
     };
   }, []);
 
-  const stepLabels: Record<string, string> = {
-    indicators: "Fetching indicators...",
-    stocks: "Screening stocks...",
-    risk: "AI analyzing recession risk...",
-    caching: "Caching results...",
-    summaries: "Generating summaries...",
-  };
-
   const pollStatus = useCallback(() => {
     if (pollRef.current) clearInterval(pollRef.current);
 
@@ -81,7 +81,7 @@ export function DashboardContent({
 
         if (data.status === "processing") {
           if (loadingToastId.current) removeToast(loadingToastId.current);
-          loadingToastId.current = addToast("loading", data.step ? stepLabels[data.step] || data.message || "Processing..." : "Processing...");
+          loadingToastId.current = addToast("loading", data.step ? STEP_LABELS[data.step] || data.message || "Processing..." : "Processing...");
         } else if (data.status === "success") {
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
@@ -342,7 +342,7 @@ const SAMPLE_INDICATORS: RecessionIndicator[] = [
   { id: "9", slug: "jolts-quits-rate", name: "JOLTS Quits Rate", latest_value: "2.0%", trigger_level: "<2.0% = workers afraid", status: "warning", status_text: "Below pre-pandemic", signal: "Workers frozen — at pre-pandemic floor", signal_emoji: "WARNING", category: "primary", updated_at: new Date().toISOString() },
   { id: "10", slug: "temp-help-services", name: "Temporary Help Services", latest_value: "2,750K", trigger_level: "Declining = earliest labor signal", status: "warning", status_text: "Declining", signal: "Temp jobs falling — employers cutting flex labor", signal_emoji: "WARNING", category: "primary", updated_at: new Date().toISOString() },
   { id: "11", slug: "ny-fed-recession-prob", name: "NY Fed Recession Probability", latest_value: "18.8%", trigger_level: ">50% preceded every recession", status: "watch", status_text: "Moderate", signal: "Below trigger but rising", signal_emoji: "WATCH", category: "primary", updated_at: new Date().toISOString() },
-  { id: "12", slug: "sos-recession", name: "SOS Recession Indicator", latest_value: "0.12", trigger_level: "Triggered = recession signal", status: "watch", status_text: "Elevated", signal: "Near trigger — watch weekly claims", signal_emoji: "WATCH", category: "primary", updated_at: new Date().toISOString() },
+  { id: "12", slug: "sos-recession", name: "SOS Recession Indicator", latest_value: "1.20", trigger_level: "26-wk avg rises 0.2+ ppts above 52-wk low", status: "safe", status_text: "Low insured unemployment", signal: "Low insured unemployment", signal_emoji: "SAFE", category: "primary", updated_at: new Date().toISOString() },
   // Secondary
   { id: "13", slug: "initial-claims", name: "Initial Jobless Claims", latest_value: "230K", trigger_level: ">300K sustained", status: "safe", status_text: "Healthy", signal: "Claims stable", signal_emoji: "SAFE", category: "secondary", updated_at: new Date().toISOString() },
   { id: "14", slug: "consumer-sentiment", name: "Consumer Sentiment (UMich)", latest_value: "64.7", trigger_level: "<60 = recessionary", status: "warning", status_text: "Weak", signal: "Below average — consumers pessimistic", signal_emoji: "WARNING", category: "secondary", updated_at: new Date().toISOString() },
@@ -376,4 +376,5 @@ const SAMPLE_INDICATORS: RecessionIndicator[] = [
   { id: "36", slug: "gdpnow", name: "Atlanta Fed GDPNow", latest_value: "1.8%", trigger_level: "<0% = real-time recession", status: "watch", status_text: "Below trend", signal: "Tracking below consensus", signal_emoji: "WATCH", category: "realtime", updated_at: new Date().toISOString() },
   { id: "37", slug: "copper-gold-ratio", name: "Copper-to-Gold Ratio", latest_value: "0.00077", trigger_level: "<0.00100 = industrial weakness", status: "danger", status_text: "50-year low", signal: "Below 2008 crisis levels", signal_emoji: "DANGER", category: "realtime", updated_at: new Date().toISOString() },
   { id: "38", slug: "freight-index", name: "Freight Transportation Index", latest_value: "118.2", trigger_level: "Declining = slowing activity", status: "watch", status_text: "Moderate", signal: "Freight below peak — goods slowing", signal_emoji: "WATCH", category: "realtime", updated_at: new Date().toISOString() },
+  { id: "39", slug: "silver-gold-ratio", name: "Gold-to-Silver Ratio", latest_value: "88.5", trigger_level: ">80 = extreme fear", status: "warning", status_text: "Elevated fear", signal: "Gold heavily favored over silver — risk aversion", signal_emoji: "WARNING", category: "market", updated_at: new Date().toISOString() },
 ];

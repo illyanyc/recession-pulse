@@ -54,6 +54,7 @@ const FALLBACK_INDICATORS: IndicatorRow[] = [
   // Realtime
   { slug: "freight-index", name: "Freight Index", value: "118.2", trigger: "Declining", status: "watch", statusText: "Moderate", signal: "Freight mixed", category: "realtime" },
   { slug: "gdpnow", name: "GDPNow", value: "2.1%", trigger: "<0%", status: "watch", statusText: "Slowing", signal: "Down from 2.8%", category: "realtime" },
+  { slug: "silver-gold-ratio", name: "Gold/Silver Ratio", value: "88.5", trigger: ">80", status: "warning", statusText: "Elevated", signal: "Flight to gold", category: "market" },
 ];
 
 const FREE_SLUGS = new Set(["sahm-rule", "yield-curve-2s10s", "vix"]);

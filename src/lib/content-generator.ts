@@ -59,6 +59,7 @@ interface HistoricalReading {
   slug: string;
   name: string;
   latest_value: string;
+  numeric_value?: number;
   status: string;
   signal: string;
   reading_date: string;
@@ -98,7 +99,7 @@ export async function generateRecessionRiskAssessment(
       {
         role: "system",
         content: `You are a senior macro-economic risk analyst at a top quantitative research firm.
-Analyze the provided recession indicators (current + 7-day history) and produce a comprehensive risk assessment.
+Analyze the provided recession indicators (current + 90-day history) and produce a comprehensive risk assessment.
 
 Return a JSON object with EXACTLY these fields:
 {
@@ -117,7 +118,7 @@ Scoring guide:
 - 81-100: Critical — recession imminent or already underway
 
 Be rigorous. Weight primary indicators (Sahm Rule, yield curve, LEI, ISM PMI) more heavily.
-Consider the direction of travel from the 7-day history — worsening trends increase the score.
+Consider the direction of travel from the 90-day history — worsening trends increase the score.
 Do NOT hedge excessively — give a clear, actionable score.`,
       },
       {
@@ -127,7 +128,7 @@ Do NOT hedge excessively — give a clear, actionable score.`,
 CURRENT INDICATOR READINGS:
 ${currentBlock}
 
-7-DAY HISTORY:
+90-DAY HISTORY:
 ${historyBlock}
 
 Produce the recession risk assessment JSON.`,
@@ -162,15 +163,6 @@ Produce the recession risk assessment JSON.`,
   };
 }
 
-interface HistoricalReading {
-  slug: string;
-  name: string;
-  latest_value: string;
-  status: string;
-  signal: string;
-  reading_date: string;
-}
-
 function buildHistoryBlock(history: HistoricalReading[]): string {
   const bySlug = new Map<string, HistoricalReading[]>();
   for (const h of history) {
@@ -179,10 +171,12 @@ function buildHistoryBlock(history: HistoricalReading[]): string {
     bySlug.set(h.slug, arr);
   }
   return Array.from(bySlug.entries())
-    .slice(0, 15)
     .map(([slug, readings]) => {
       const sorted = readings.sort((a, b) => a.reading_date.localeCompare(b.reading_date));
-      const trail = sorted.map((r) => `  ${r.reading_date}: ${r.latest_value} (${r.status})`).join("\n");
+      const trail = sorted.map((r) => {
+        const numStr = r.numeric_value != null ? ` [raw: ${r.numeric_value}]` : "";
+        return `  ${r.reading_date}: ${r.latest_value} (${r.status})${numStr}`;
+      }).join("\n");
       return `${slug}:\n${trail}`;
     })
     .join("\n\n");
@@ -199,7 +193,7 @@ export async function generateRiskBlogPost(
     .join("\n");
 
   const historySection = history?.length
-    ? `\n\n7-DAY INDICATOR HISTORY (use this to analyze trends and weekly movement):\n${buildHistoryBlock(history)}`
+    ? `\n\n90-DAY INDICATOR HISTORY (use this for comprehensive trend analysis):\n${buildHistoryBlock(history)}`
     : "";
 
   const MODEL = "gpt-5.2";
@@ -211,8 +205,9 @@ export async function generateRiskBlogPost(
       {
         role: "system",
         content: `You are a macro-economic analyst writing a daily recession risk update for RecessionPulse.com.
-Write a comprehensive, data-driven blog post (800-1200 words) in Markdown.
+Write a comprehensive, data-driven blog post (1000-1500 words) in Markdown.
 You have access to web search — USE IT to find the latest economic news, Fed statements, jobs data, and market developments from the past 48 hours to enrich your analysis.
+You also have up to 90 days of historical indicator data — USE IT to identify meaningful trends, inflection points, and the direction of travel for each indicator.
 
 Structure your article:
 ## Recession Risk Score: [score]/100 — [LEVEL]
@@ -221,20 +216,27 @@ Opening verdict paragraph with the score and what it means.
 ## Key Drivers
 The 4-6 most important factors, each with specific data points.
 
-## This Week's Indicator Trends
-Analyze how indicators moved over the past 7 days. Call out significant changes.
+## 90-Day Indicator Trends
+Analyze how indicators have moved over the past 90 days. Identify significant trend changes, accelerations, or reversals. Compare current readings to where they were 30, 60, and 90 days ago.
 
 ## Latest Economic Developments
 Synthesize the latest news from your web search — Fed decisions, jobs data, GDP, market movements.
 
+## Near-Term Outlook (Next 30 Days)
+What to expect in the next month. Upcoming data releases, FOMC meetings, earnings seasons, and potential catalysts that could shift the risk score.
+
+## Long-Term Outlook (3-6 Months)
+Broader structural analysis. Are the underlying macro trends improving or deteriorating? What does the 90-day trajectory suggest about where the economy is headed? Reference historical parallels where applicable.
+
 ## What to Watch
-Forward-looking section on upcoming data releases and potential catalysts.
+Specific upcoming events, data releases, and thresholds that could move the needle.
 
 Guidelines:
 - Use ## headings, **bold** for emphasis, bullet points for lists
 - Be direct and actionable. No disclaimers.
 - Reference specific numbers, dates, and sources from web search
-- Compare this week's data to last week where possible`,
+- Use the 90-day history to quantify trends (e.g. "up 0.3 points over the past 90 days")
+- Compare current readings to 30/60/90-day-ago levels where meaningful`,
       },
       {
         role: "user",

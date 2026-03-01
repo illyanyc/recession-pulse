@@ -7,6 +7,7 @@ import { Footer } from "@/components/landing/Footer";
 import { ShareButtons } from "@/components/shared/ShareButtons";
 import { NewsletterSignup } from "@/components/shared/NewsletterSignup";
 import { Calendar, ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
+import { markdownToHtml } from "@/lib/markdown";
 
 export const revalidate = 3600;
 
@@ -107,6 +108,8 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   if (!post) notFound();
 
+  const htmlContent = await markdownToHtml(post.content);
+
   const articleLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -189,7 +192,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               prose-li:text-pulse-text
               prose-code:text-pulse-green prose-code:bg-pulse-card prose-code:px-1 prose-code:rounded
               prose-hr:border-pulse-border"
-            dangerouslySetInnerHTML={{ __html: markdownToHtml(post.content) }}
+            dangerouslySetInnerHTML={{ __html: htmlContent }}
           />
 
           {/* Share */}
@@ -258,34 +261,4 @@ export default async function BlogPostPage({ params }: PageProps) {
       <Footer />
     </>
   );
-}
-
-function markdownToHtml(md: string): string {
-  let html = md;
-  html = html.replace(/^### (.+)$/gm, "<h3>$1</h3>");
-  html = html.replace(/^## (.+)$/gm, "<h2>$1</h2>");
-  html = html.replace(/^# (.+)$/gm, "<h1>$1</h1>");
-  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
-  html = html.replace(/`(.+?)`/g, "<code>$1</code>");
-  html = html.replace(/^- (.+)$/gm, "<li>$1</li>");
-  html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`);
-  html = html.replace(/^---$/gm, "<hr />");
-  html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
-  const paragraphs = html.split(/\n\n+/);
-  html = paragraphs
-    .map((p) => {
-      const trimmed = p.trim();
-      if (!trimmed) return "";
-      if (
-        trimmed.startsWith("<h") ||
-        trimmed.startsWith("<ul") ||
-        trimmed.startsWith("<hr") ||
-        trimmed.startsWith("<ol")
-      )
-        return trimmed;
-      return `<p>${trimmed}</p>`;
-    })
-    .join("\n");
-  return html;
 }

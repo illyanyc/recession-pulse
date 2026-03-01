@@ -71,20 +71,31 @@ export default async function IndicatorPage({ params }: PageProps) {
   const seo = getIndicatorSEO(slug);
   if (!seo) notFound();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let latest: any = null;
+  let latest: {
+    status: string;
+    status_text?: string;
+    latest_value: string;
+    signal_emoji?: string;
+    signal?: string;
+    reading_date: string;
+    trigger_level?: string;
+  } | null = null;
   let history: { date: string; value: number }[] = [];
   let aiSummary: string | null = null;
 
   try {
     const supabase = createServiceClient();
 
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    const cutoff = ninetyDaysAgo.toISOString().split("T")[0];
+
     const { data: readings } = await supabase
       .from("indicator_readings")
       .select("*")
       .eq("slug", slug)
-      .order("reading_date", { ascending: false })
-      .limit(90);
+      .gte("reading_date", cutoff)
+      .order("reading_date", { ascending: false });
 
     latest = readings?.[0] ?? null;
     history = readings

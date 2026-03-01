@@ -24,7 +24,7 @@ interface StockSignalSnapshot {
   ticker: string;
   company_name: string;
   signal_type: string;
-  pe_ratio?: number;
+  forward_pe?: number;
   dividend_yield?: number;
   rsi_14?: number;
   market_cap?: number;
@@ -34,6 +34,7 @@ interface HistoricalReading {
   slug: string;
   name: string;
   latest_value: string;
+  numeric_value?: number;
   status: string;
   signal: string;
   reading_date: string;
@@ -113,7 +114,10 @@ function buildHistoryBlock(history: HistoricalReading[]): string {
   return Array.from(bySlug.entries())
     .map(([slug, readings]) => {
       const sorted = readings.sort((a, b) => a.reading_date.localeCompare(b.reading_date));
-      const trail = sorted.map((r) => `  ${r.reading_date}: ${r.latest_value} (${r.status})`).join("\n");
+      const trail = sorted.map((r) => {
+        const numStr = r.numeric_value != null ? ` [raw: ${r.numeric_value}]` : "";
+        return `  ${r.reading_date}: ${r.latest_value} (${r.status})${numStr}`;
+      }).join("\n");
       return `${slug}:\n${trail}`;
     })
     .join("\n\n");
@@ -125,7 +129,7 @@ function buildStockBlock(stocks: StockSignalSnapshot[]): string {
     .slice(0, 20)
     .map((s) => {
       const parts = [`$${s.ticker} (${s.company_name}): ${s.signal_type}`];
-      if (s.pe_ratio) parts.push(`P/E: ${s.pe_ratio.toFixed(1)}`);
+      if (s.forward_pe) parts.push(`P/E: ${s.forward_pe.toFixed(1)}`);
       if (s.dividend_yield) parts.push(`Yield: ${(s.dividend_yield * 100).toFixed(2)}%`);
       if (s.rsi_14) parts.push(`RSI: ${s.rsi_14.toFixed(1)}`);
       return `- ${parts.join(" | ")}`;
@@ -150,7 +154,7 @@ export async function runAgenticRiskAssessment(
 CURRENT RECESSION INDICATOR READINGS (from RecessionPulse tracker):
 ${buildIndicatorBlock(indicators)}
 
-7-DAY INDICATOR HISTORY:
+90-DAY INDICATOR HISTORY (use to identify trends, inflection points, and direction of travel):
 ${buildHistoryBlock(history)}
 
 CURRENT STOCK SCREENER SIGNALS (value/oversold picks):

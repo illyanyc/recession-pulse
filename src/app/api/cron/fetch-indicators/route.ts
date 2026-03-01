@@ -3,48 +3,24 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { fetchLatestValue } from "@/lib/fred";
 import { INDICATOR_DEFINITIONS } from "@/lib/constants";
 import { verifyCronAuth } from "@/lib/cron-auth";
+import { researchIndicatorValue } from "@/lib/serper-research-agent";
 
-async function fetchFromResearchAgent(
+export const maxDuration = 120;
+
+async function serperFallback(
   slug: string,
   name: string,
-  description: string,
   fallbackValue: number
 ): Promise<{ value: number; date: string }> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceKey) {
-    console.warn(`Research agent: missing Supabase config, using fallback for ${slug}`);
-    return { value: fallbackValue, date: new Date().toISOString().split("T")[0] };
-  }
-
+  const today = new Date().toISOString().split("T")[0];
   try {
-    const res = await fetch(`${supabaseUrl}/functions/v1/research-indicator`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${serviceKey}`,
-      },
-      body: JSON.stringify({ slug, name, description }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.warn(`Research agent returned ${res.status} for ${slug}: ${errText}`);
-      return { value: fallbackValue, date: new Date().toISOString().split("T")[0] };
-    }
-
-    const data = await res.json();
-    if (typeof data.value === "number" && !isNaN(data.value)) {
-      return { value: data.value, date: data.date || new Date().toISOString().split("T")[0] };
-    }
-
-    console.warn(`Research agent: invalid value for ${slug}, using fallback`);
-    return { value: fallbackValue, date: new Date().toISOString().split("T")[0] };
+    const result = await researchIndicatorValue(slug, name);
+    if (result) return { value: result.value, date: result.date };
   } catch (err) {
-    console.warn(`Research agent failed for ${slug}:`, err instanceof Error ? err.message : err);
-    return { value: fallbackValue, date: new Date().toISOString().split("T")[0] };
+    console.warn(`[SerperFallback] ${slug} failed:`, err instanceof Error ? err.message : err);
   }
+  console.warn(`[SerperFallback] Using hardcoded fallback for ${slug}: ${fallbackValue}`);
+  return { value: fallbackValue, date: today };
 }
 
 function formatDisplayValue(slug: string, rawValue: number): string {
@@ -107,6 +83,8 @@ function formatDisplayValue(slug: string, rawValue: number): string {
       return `$${rawValue.toFixed(0)}B`;
     case "copper-gold-ratio":
       return rawValue.toFixed(5);
+    case "silver-gold-ratio":
+      return rawValue.toFixed(1);
     case "sos-recession":
       return rawValue.toFixed(2);
     default:
@@ -125,13 +103,13 @@ const ADDITIONAL_INDICATORS = [
     name: "Yield Curve (2s30s)",
     category: "primary" as const,
     trigger_level: "Inversion (<0)",
-    // Fetched from FRED T30Y2Y or computed
     fetch: async () => {
-      // Use FRED series for 30Y-2Y spread if available, otherwise estimate
-      const data = await fetchLatestValue("T10Y2Y");
-      if (!data) return null;
-      // Approximate 2s30s as ~2x the 2s10s spread (rough heuristic)
-      return { value: data.value * 1.8 + 0.2, date: data.date };
+      const [dgs30, dgs2] = await Promise.all([
+        fetchLatestValue("DGS30"),
+        fetchLatestValue("DGS2"),
+      ]);
+      if (dgs30 && dgs2) return { value: dgs30.value - dgs2.value, date: dgs30.date };
+      return serperFallback("yield-curve-2s30s", "Yield Curve 2s30s Spread", 0.2);
     },
     evaluate: (value: number) => ({
       status: value < 0 ? "danger" : value < 0.5 ? "watch" : value > 1.0 ? "watch" : "safe",
@@ -144,12 +122,11 @@ const ADDITIONAL_INDICATORS = [
     name: "Conference Board LEI",
     category: "primary" as const,
     trigger_level: "3Ds Rule: diffusion <50 & growth <-4.3%",
-    fetch: async () => fetchFromResearchAgent(
-      "conference-board-lei",
-      "Conference Board Leading Economic Index",
-      "Latest monthly change (MoM percent) of the Conference Board LEI",
-      -0.3
-    ),
+    fetch: async () => {
+      const data = await fetchLatestValue("USSLIND");
+      if (data) return data;
+      return serperFallback("conference-board-lei", "Conference Board LEI", -0.3);
+    },
     evaluate: (value: number) => ({
       status: value < -0.2 ? "danger" : value < 0 ? "warning" : "safe",
       signal_emoji: value < -0.2 ? "WARNING" : value < 0 ? "WATCH" : "SAFE",
@@ -197,12 +174,7 @@ const ADDITIONAL_INDICATORS = [
     name: "JPM Recession Probability",
     category: "secondary" as const,
     trigger_level: ">50% = high probability",
-    fetch: async () => fetchFromResearchAgent(
-      "jpm-recession-probability",
-      "JPMorgan Recession Probability",
-      "Latest JPMorgan estimated US recession probability as a percentage",
-      35
-    ),
+    fetch: async () => serperFallback("jpm-recession-probability", "JPMorgan Recession Probability", 35),
     evaluate: (value: number) => ({
       status: value >= 50 ? "danger" : value >= 30 ? "watch" : "safe",
       signal_emoji: value >= 50 ? "DANGER" : value >= 30 ? "WATCH" : "SAFE",
@@ -230,12 +202,7 @@ const ADDITIONAL_INDICATORS = [
     name: "Emerging Markets",
     category: "market" as const,
     trigger_level: "EM outperformance = late-cycle rotation",
-    fetch: async () => fetchFromResearchAgent(
-      "emerging-markets",
-      "MSCI Emerging Markets Index (EEM ETF)",
-      "Latest EEM ETF price or MSCI Emerging Markets Index value",
-      33.6
-    ),
+    fetch: async () => serperFallback("emerging-markets", "MSCI Emerging Markets Index (EEM ETF)", 33.6),
     evaluate: (value: number) => ({
       status: value > 20 ? "safe" : value > 0 ? "watch" : "warning",
       signal_emoji: value > 20 ? "SAFE" : value > 0 ? "WATCH" : "DANGER",
@@ -263,12 +230,11 @@ const ADDITIONAL_INDICATORS = [
     name: "Bank Unrealized Losses",
     category: "liquidity" as const,
     trigger_level: "Forced selling risk in liquidity shock",
-    fetch: async () => fetchFromResearchAgent(
-      "bank-unrealized-losses",
-      "US Bank Unrealized Losses",
-      "Total unrealized losses on securities held by FDIC-insured banks in billions USD",
-      500
-    ),
+    fetch: async () => {
+      const data = await fetchLatestValue("QBPBSTLKTEQKTBKEQKCMYAFS");
+      if (data) return data;
+      return serperFallback("bank-unrealized-losses", "US Bank Unrealized Losses", 500);
+    },
     evaluate: (value: number) => ({
       status: value > 400 ? "warning" : value > 200 ? "watch" : "safe",
       signal_emoji: value > 400 ? "WARNING" : value > 200 ? "WATCH" : "SAFE",
@@ -280,12 +246,11 @@ const ADDITIONAL_INDICATORS = [
     name: "US Interest Expense",
     category: "liquidity" as const,
     trigger_level: "Fiscal doom loop",
-    fetch: async () => fetchFromResearchAgent(
-      "us-interest-expense",
-      "US Government Interest Expense",
-      "Annualized US federal government interest expense on debt in billions USD",
-      950
-    ),
+    fetch: async () => {
+      const data = await fetchLatestValue("A091RC1Q027SBEA");
+      if (data) return data;
+      return serperFallback("us-interest-expense", "US Government Interest Expense", 950);
+    },
     evaluate: (value: number) => ({
       status: value > 900 ? "warning" : value > 600 ? "watch" : "safe",
       signal_emoji: value > 900 ? "WARNING" : value > 600 ? "WATCH" : "SAFE",
@@ -335,12 +300,7 @@ const ADDITIONAL_INDICATORS = [
     name: "Atlanta Fed GDPNow",
     category: "realtime" as const,
     trigger_level: "<0% = real-time recession signal",
-    fetch: async () => fetchFromResearchAgent(
-      "gdpnow",
-      "Atlanta Fed GDPNow",
-      "Latest Atlanta Fed GDPNow real GDP growth estimate percentage",
-      1.8
-    ),
+    fetch: async () => serperFallback("gdpnow", "Atlanta Fed GDPNow", 1.8),
     evaluate: (value: number) => ({
       status: value < 0 ? "danger" : value < 1.0 ? "warning" : value < 2.0 ? "watch" : "safe",
       signal_emoji: value < 0 ? "DANGER" : value < 1.0 ? "WARNING" : value < 2.0 ? "WATCH" : "SAFE",
@@ -352,12 +312,7 @@ const ADDITIONAL_INDICATORS = [
     name: "NFIB Small Business Optimism",
     category: "business_activity" as const,
     trigger_level: "<95 = pessimistic; <90 = recessionary",
-    fetch: async () => fetchFromResearchAgent(
-      "nfib-optimism",
-      "NFIB Small Business Optimism Index",
-      "Latest NFIB Small Business Optimism Index reading",
-      97.4
-    ),
+    fetch: async () => serperFallback("nfib-optimism", "NFIB Small Business Optimism Index", 97.4),
     evaluate: (value: number) => ({
       status: value < 90 ? "danger" : value < 95 ? "warning" : value < 98 ? "watch" : "safe",
       signal_emoji: value < 90 ? "DANGER" : value < 95 ? "WARNING" : value < 98 ? "WATCH" : "SAFE",
@@ -370,17 +325,7 @@ const ADDITIONAL_INDICATORS = [
     name: "Copper-to-Gold Ratio",
     category: "realtime" as const,
     trigger_level: "<0.00100 = industrial weakness vs fear",
-    fetch: async () => {
-      try {
-        const copper = await fetchLatestValue("PCOPPUSDM");
-        // GOLDAMGBD228NLBM was discontinued on FRED; use copper/gold heuristic
-        if (copper && copper.value > 0) {
-          const estimatedGoldPrice = 2900;
-          return { value: Math.round((copper.value / estimatedGoldPrice) * 100000) / 100000, date: copper.date };
-        }
-      } catch { /* fall through */ }
-      return { value: 0.00077, date: new Date().toISOString().split("T")[0] };
-    },
+    fetch: async () => serperFallback("copper-gold-ratio", "Copper to Gold Ratio", 0.00077),
     evaluate: (value: number) => {
       const scaled = value * 10000;
       return {
@@ -389,6 +334,18 @@ const ADDITIONAL_INDICATORS = [
         signal: scaled < 8 ? "50-year low — extreme industrial fear" : scaled < 10 ? "Below 2008 crisis levels" : scaled < 15 ? "Weakening industrial demand" : "Healthy industrial activity",
       };
     },
+  },
+  {
+    slug: "silver-gold-ratio",
+    name: "Gold-to-Silver Ratio",
+    category: "market" as const,
+    trigger_level: ">80 = extreme fear / flight to safety",
+    fetch: async () => serperFallback("silver-gold-ratio", "Gold to Silver Ratio", 85),
+    evaluate: (value: number) => ({
+      status: value > 90 ? "danger" : value > 80 ? "warning" : value > 70 ? "watch" : "safe",
+      signal_emoji: value > 90 ? "DANGER" : value > 80 ? "WARNING" : value > 70 ? "WATCH" : "SAFE",
+      signal: value > 90 ? "Extreme fear — crisis-level flight to gold" : value > 80 ? "Elevated fear — gold heavily favored" : value > 70 ? "Above average — risk aversion building" : "Normal range — balanced sentiment",
+    }),
   },
   // --- Tier 3: SLOOS Lending Standards (mock until Fed survey scraper built) ---
   {
@@ -407,23 +364,6 @@ const ADDITIONAL_INDICATORS = [
       status: value > 40 ? "danger" : value > 20 ? "warning" : value > 5 ? "watch" : "safe",
       signal_emoji: value > 40 ? "DANGER" : value > 20 ? "WARNING" : value > 5 ? "WATCH" : "SAFE",
       signal: value > 40 ? "Severe tightening — credit crunch" : value > 20 ? "Significant tightening — lending drying up" : value > 5 ? `Net ${value}% tightening — modest` : "Standards easing",
-    }),
-  },
-  {
-    slug: "sos-recession",
-    name: "SOS Recession Indicator",
-    category: "primary" as const,
-    trigger_level: "Triggered = recession signal (weekly claims-based)",
-    fetch: async () => fetchFromResearchAgent(
-      "sos-recession",
-      "SOS Recession Indicator",
-      "Latest insured unemployment rate or SOS recession indicator value",
-      0.12
-    ),
-    evaluate: (value: number) => ({
-      status: value >= 0.20 ? "danger" : value >= 0.15 ? "warning" : value >= 0.10 ? "watch" : "safe",
-      signal_emoji: value >= 0.20 ? "DANGER" : value >= 0.15 ? "WARNING" : value >= 0.10 ? "WATCH" : "SAFE",
-      signal: value >= 0.20 ? "TRIGGERED — recession signal" : value >= 0.15 ? "Near trigger — watch weekly" : value >= 0.10 ? "Elevated — monitor" : "Not triggered",
     }),
   },
 ];
@@ -537,13 +477,16 @@ export async function GET(request: Request) {
 
       for (const [slug, ind] of bySlug) {
         try {
-          // Fetch up to 90 days of history for trend analysis
+          const ninetyDaysAgo = new Date();
+          ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+          const histCutoff = ninetyDaysAgo.toISOString().split("T")[0];
+
           const { data: historyRows } = await supabase
             .from("indicator_readings")
             .select("reading_date, numeric_value")
             .eq("slug", slug)
-            .order("reading_date", { ascending: true })
-            .limit(90);
+            .gte("reading_date", histCutoff)
+            .order("reading_date", { ascending: true });
 
           const history = (historyRows || [])
             .filter((r) => r.numeric_value !== null)

@@ -68,7 +68,7 @@ async function publishTweet(
 
   if (!isTypefullyConfigured()) {
     await notifyOwnerSMS(label, finalTweet);
-    await logSocialPost(postType, finalTweet, "sent_sms", undefined, blogPostId);
+    await logSocialPost(postType, finalTweet, "posted", undefined, blogPostId);
     return true;
   }
 
@@ -107,7 +107,7 @@ async function publishThread(
 
   if (!isTypefullyConfigured()) {
     await notifyOwnerSMS(label, threadContent);
-    await logSocialPost(postType, threadContent, "sent_sms");
+    await logSocialPost(postType, threadContent, "posted");
     return true;
   }
 

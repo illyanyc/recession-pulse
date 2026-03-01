@@ -147,7 +147,7 @@ export async function POST() {
             ticker: String(s.ticker || ""),
             company_name: String(s.company_name || ""),
             signal_type: String(s.signal_type || ""),
-            pe_ratio: Number(s.pe_ratio) || undefined,
+            forward_pe: Number(s.forward_pe) || undefined,
             dividend_yield: Number(s.dividend_yield) || undefined,
             rsi_14: Number(s.rsi_14) || undefined,
             market_cap: Number(s.market_cap) || undefined,

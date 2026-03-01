@@ -337,6 +337,18 @@ export const INDICATOR_DEFINITIONS = [
     }),
   },
   {
+    slug: "silver-gold-ratio",
+    name: "Gold-to-Silver Ratio",
+    fred_series: "",
+    category: "market" as const,
+    trigger_description: ">80 = extreme fear / flight to safety",
+    evaluate: (value: number) => ({
+      status: value > 90 ? "danger" : value > 80 ? "warning" : value > 70 ? "watch" : "safe",
+      signal_emoji: value > 90 ? "DANGER" : value > 80 ? "WARNING" : value > 70 ? "WATCH" : "SAFE",
+      signal: value > 90 ? "Extreme fear — crisis-level flight to gold" : value > 80 ? "Elevated fear — gold heavily favored over silver" : value > 70 ? "Above average — risk aversion building" : "Normal range — balanced sentiment",
+    }),
+  },
+  {
     slug: "ny-fed-recession-prob",
     name: "NY Fed Recession Probability",
     fred_series: "T10Y3M",

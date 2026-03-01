@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/resend";
+import { rateLimit } from "@/lib/rate-limit";
 
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL || "support@recessionpulse.com";
 
 const VALID_TYPES = ["bug", "suggestion", "question", "other"] as const;
 
 export async function POST(request: Request) {
+  const rl = await rateLimit(request, "contact");
+  if (!rl.success) return rl.response!;
+
   try {
     const body = await request.json();
     const { name, email, type, message } = body as {

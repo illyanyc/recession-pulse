@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getRiskAssessment } from "@/lib/redis";
+import { rateLimit } from "@/lib/rate-limit";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const rl = await rateLimit(request, "api");
+  if (!rl.success) return rl.response!;
+
   try {
     const cached = await getRiskAssessment();
     if (cached) return NextResponse.json(cached);
