@@ -8,6 +8,12 @@ export const maxDuration = 300;
 
 const BACKFILL_LIMIT = 90;
 
+function getEvaluation(slug: string, value: number) {
+  const def = INDICATOR_DEFINITIONS.find((d) => d.slug === slug);
+  if (def) return def.evaluate(value);
+  return { status: "watch" as const, signal_emoji: "WATCH", signal: "Historical backfill" };
+}
+
 // Slugs handled by ADDITIONAL_FRED_INDICATORS with custom transforms — skip in the main INDICATOR_DEFINITIONS loop
 const SKIP_FROM_DEFINITIONS = new Set(["ny-fed-recession-prob"]);
 
@@ -51,13 +57,14 @@ const COMPUTED_FRED_INDICATORS = [
 ];
 
 // Indicators that only exist via agentic web search
+// granularity: "monthly" = 1 point per month, "weekly" = 1 point per week
 const AGENTIC_BACKFILL_INDICATORS = [
-  { slug: "nfib-optimism", name: "NFIB Small Business Optimism Index", category: "business_activity", months: 24 },
-  { slug: "gdpnow", name: "Atlanta Fed GDPNow", category: "realtime", months: 12 },
-  { slug: "jpm-recession-probability", name: "JPMorgan Recession Probability", category: "secondary", months: 12 },
-  { slug: "emerging-markets", name: "MSCI Emerging Markets Index (EEM)", category: "market", months: 12 },
-  { slug: "copper-gold-ratio", name: "Copper to Gold Ratio", category: "realtime", months: 12 },
-  { slug: "silver-gold-ratio", name: "Gold to Silver Ratio", category: "market", months: 12 },
+  { slug: "nfib-optimism", name: "NFIB Small Business Optimism Index", category: "business_activity", months: 24, granularity: "monthly" as const },
+  { slug: "gdpnow", name: "Atlanta Fed GDPNow", category: "realtime", months: 12, granularity: "monthly" as const },
+  { slug: "jpm-recession-probability", name: "JPMorgan Recession Probability", category: "secondary", months: 12, granularity: "monthly" as const },
+  { slug: "emerging-markets", name: "MSCI Emerging Markets Index (EEM)", category: "market", months: 12, granularity: "monthly" as const },
+  { slug: "copper-gold-ratio", name: "Copper to Gold Ratio", category: "realtime", months: 6, granularity: "weekly" as const },
+  { slug: "silver-gold-ratio", name: "Gold to Silver Ratio", category: "market", months: 6, granularity: "weekly" as const },
 ];
 
 function formatDisplayValue(slug: string, rawValue: number): string {
@@ -269,37 +276,78 @@ export async function POST(request: Request) {
     const errors: string[] = [];
 
     const now = new Date();
-    for (let i = 0; i < indicator.months; i++) {
-      const target = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthLabel = target.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-      const dateStr = target.toISOString().split("T")[0];
 
-      try {
-        const result = await researchIndicatorValue(indicator.slug, indicator.name, monthLabel);
-        if (!result) {
-          errors.push(`${monthLabel}: no result`);
-          continue;
+    if (indicator.granularity === "weekly") {
+      const totalWeeks = indicator.months * 4;
+      for (let w = 0; w < totalWeeks; w++) {
+        const target = new Date(now);
+        target.setDate(target.getDate() - w * 7);
+        const weekLabel = target.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+        const dateStr = target.toISOString().split("T")[0];
+
+        try {
+          const result = await researchIndicatorValue(indicator.slug, indicator.name, weekLabel);
+          if (!result) {
+            errors.push(`${weekLabel}: no result`);
+            continue;
+          }
+
+          const readingDate = result.date || dateStr;
+          const evalResult = getEvaluation(indicator.slug, result.value);
+          const { error } = await supabase.from("indicator_readings").upsert(
+            {
+              slug: indicator.slug,
+              name: indicator.name,
+              latest_value: formatDisplayValue(indicator.slug, result.value),
+              numeric_value: result.value,
+              status: evalResult.status,
+              status_text: evalResult.signal,
+              signal: evalResult.signal,
+              signal_emoji: evalResult.signal_emoji,
+              category: indicator.category,
+              reading_date: readingDate,
+            },
+            { onConflict: "slug,reading_date" }
+          );
+          if (!error) inserted++;
+        } catch (err) {
+          errors.push(`${weekLabel}: ${err instanceof Error ? err.message : "Unknown"}`);
         }
+      }
+    } else {
+      for (let i = 0; i < indicator.months; i++) {
+        const target = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthLabel = target.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+        const dateStr = target.toISOString().split("T")[0];
 
-        const readingDate = result.date || dateStr;
-        const { error } = await supabase.from("indicator_readings").upsert(
-          {
-            slug: indicator.slug,
-            name: indicator.name,
-            latest_value: formatDisplayValue(indicator.slug, result.value),
-            numeric_value: result.value,
-            status: "watch",
-            status_text: `Backfill (${result.confidence})`,
-            signal: `Backfill via Serper (${result.confidence})`,
-            signal_emoji: "WATCH",
-            category: indicator.category,
-            reading_date: readingDate,
-          },
-          { onConflict: "slug,reading_date" }
-        );
-        if (!error) inserted++;
-      } catch (err) {
-        errors.push(`${monthLabel}: ${err instanceof Error ? err.message : "Unknown"}`);
+        try {
+          const result = await researchIndicatorValue(indicator.slug, indicator.name, monthLabel);
+          if (!result) {
+            errors.push(`${monthLabel}: no result`);
+            continue;
+          }
+
+          const readingDate = result.date || dateStr;
+          const evalResult = getEvaluation(indicator.slug, result.value);
+          const { error } = await supabase.from("indicator_readings").upsert(
+            {
+              slug: indicator.slug,
+              name: indicator.name,
+              latest_value: formatDisplayValue(indicator.slug, result.value),
+              numeric_value: result.value,
+              status: evalResult.status,
+              status_text: evalResult.signal,
+              signal: evalResult.signal,
+              signal_emoji: evalResult.signal_emoji,
+              category: indicator.category,
+              reading_date: readingDate,
+            },
+            { onConflict: "slug,reading_date" }
+          );
+          if (!error) inserted++;
+        } catch (err) {
+          errors.push(`${monthLabel}: ${err instanceof Error ? err.message : "Unknown"}`);
+        }
       }
     }
 
@@ -307,7 +355,7 @@ export async function POST(request: Request) {
       slug: indicator.slug,
       series: "serper-agent",
       inserted,
-      error: errors.length > 0 ? `${errors.length} months failed` : undefined,
+      error: errors.length > 0 ? `${errors.length} periods failed` : undefined,
     });
   }
 
