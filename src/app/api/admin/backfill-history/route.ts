@@ -56,6 +56,14 @@ const COMPUTED_FRED_INDICATORS = [
   },
 ];
 
+// Cross-frequency computed FRED indicators (e.g. daily index / quarterly GDP)
+// Uses the closest available index value for each quarterly GDP date
+const RATIO_FRED_INDICATORS = [
+  { slug: "sp500-to-gdp", name: "S&P 500 / GDP Ratio", category: "market", numeratorSeries: "SP500", denominatorSeries: "GDP" },
+  { slug: "djia-to-gdp", name: "Dow Jones / GDP Ratio", category: "market", numeratorSeries: "DJIA", denominatorSeries: "GDP" },
+  { slug: "nasdaq-to-gdp", name: "NASDAQ / GDP Ratio", category: "market", numeratorSeries: "NASDAQCOM", denominatorSeries: "GDP" },
+];
+
 // Indicators that only exist via agentic web search
 // granularity: "monthly" = 1 point per month, "weekly" = 1 point per week
 const AGENTIC_BACKFILL_INDICATORS = [
@@ -65,6 +73,9 @@ const AGENTIC_BACKFILL_INDICATORS = [
   { slug: "emerging-markets", name: "MSCI Emerging Markets Index (EEM)", category: "market", months: 12, granularity: "monthly" as const },
   { slug: "copper-gold-ratio", name: "Copper to Gold Ratio", category: "realtime", months: 6, granularity: "weekly" as const },
   { slug: "silver-gold-ratio", name: "Gold to Silver Ratio", category: "market", months: 6, granularity: "weekly" as const },
+  { slug: "sp500-pe-ratio", name: "S&P 500 P/E Ratio", category: "market", months: 12, granularity: "monthly" as const },
+  { slug: "djia-pe-ratio", name: "Dow Jones P/E Ratio", category: "market", months: 12, granularity: "monthly" as const },
+  { slug: "nasdaq-pe-ratio", name: "NASDAQ P/E Ratio", category: "market", months: 12, granularity: "monthly" as const },
 ];
 
 function formatDisplayValue(slug: string, rawValue: number): string {
@@ -104,6 +115,17 @@ function formatDisplayValue(slug: string, rawValue: number): string {
     case "copper-gold-ratio": return rawValue.toFixed(5);
     case "silver-gold-ratio": return rawValue.toFixed(1);
     case "sos-recession": return rawValue.toFixed(2);
+    case "us-national-debt": return `$${(rawValue / 1e6).toFixed(1)}T`;
+    case "debt-to-gdp": return `${rawValue.toFixed(0)}%`;
+    case "sp500":
+    case "djia":
+    case "nasdaq": return rawValue.toFixed(0);
+    case "sp500-to-gdp":
+    case "nasdaq-to-gdp": return rawValue.toFixed(4);
+    case "djia-to-gdp": return rawValue.toFixed(3);
+    case "sp500-pe-ratio":
+    case "djia-pe-ratio":
+    case "nasdaq-pe-ratio": return `${rawValue.toFixed(1)}x`;
     default:
       if (Math.abs(rawValue) >= 10000) return rawValue.toLocaleString("en-US", { maximumFractionDigits: 0 });
       if (Math.abs(rawValue) >= 100) return rawValue.toFixed(1);
@@ -263,6 +285,71 @@ export async function POST(request: Request) {
       results.push({
         slug: indicator.slug,
         series: `${indicator.seriesA}/${indicator.seriesB}`,
+        inserted: 0,
+        error: error instanceof Error ? error.message : "Unknown",
+      });
+    }
+  }
+
+  // Backfill cross-frequency FRED ratio indicators (e.g. SP500/GDP)
+  for (const indicator of RATIO_FRED_INDICATORS) {
+    if (targetSlug && indicator.slug !== targetSlug) continue;
+    try {
+      const [numeratorObs, denominatorObs] = await Promise.all([
+        fetchFredSeries(indicator.numeratorSeries, BACKFILL_LIMIT),
+        fetchFredSeries(indicator.denominatorSeries, BACKFILL_LIMIT),
+      ]);
+
+      const numMap = new Map<string, number>();
+      for (const obs of numeratorObs) {
+        if (obs.value !== ".") numMap.set(obs.date, parseFloat(obs.value));
+      }
+      const numDates = [...numMap.keys()].sort();
+
+      let inserted = 0;
+      for (const obs of denominatorObs) {
+        if (obs.value === ".") continue;
+        const denomVal = parseFloat(obs.value);
+        if (isNaN(denomVal) || denomVal === 0) continue;
+
+        let numVal: number | undefined;
+        if (numMap.has(obs.date)) {
+          numVal = numMap.get(obs.date)!;
+        } else {
+          const closest = numDates.reduce((prev, curr) =>
+            Math.abs(new Date(curr).getTime() - new Date(obs.date).getTime()) <
+            Math.abs(new Date(prev).getTime() - new Date(obs.date).getTime())
+              ? curr : prev
+          );
+          numVal = numMap.get(closest);
+        }
+        if (numVal === undefined || isNaN(numVal)) continue;
+
+        const ratio = numVal / denomVal;
+        const evalResult = getEvaluation(indicator.slug, ratio);
+        const { error } = await supabase.from("indicator_readings").upsert(
+          {
+            slug: indicator.slug,
+            name: indicator.name,
+            latest_value: formatDisplayValue(indicator.slug, ratio),
+            numeric_value: ratio,
+            status: evalResult.status,
+            status_text: evalResult.signal,
+            signal: evalResult.signal,
+            signal_emoji: evalResult.signal_emoji,
+            category: indicator.category,
+            reading_date: obs.date,
+          },
+          { onConflict: "slug,reading_date" }
+        );
+        if (!error) inserted++;
+      }
+
+      results.push({ slug: indicator.slug, series: `${indicator.numeratorSeries}/${indicator.denominatorSeries}`, inserted });
+    } catch (error) {
+      results.push({
+        slug: indicator.slug,
+        series: `${indicator.numeratorSeries}/${indicator.denominatorSeries}`,
         inserted: 0,
         error: error instanceof Error ? error.message : "Unknown",
       });

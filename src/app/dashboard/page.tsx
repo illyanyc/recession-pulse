@@ -21,25 +21,31 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
-  // Fetch latest indicators (need enough rows to cover all slugs with history)
+  // Fetch enough rows to get at least 2 readings per slug for daily change
   const { data: indicators } = await supabase
     .from("indicator_readings")
     .select("*")
     .order("reading_date", { ascending: false })
-    .limit(200);
+    .limit(500);
 
-  // Deduplicate by slug (get latest per indicator)
-  const latestIndicators = indicators
-    ? Object.values(
-        indicators.reduce(
-          (acc: Record<string, typeof indicators[0]>, ind) => {
-            if (!acc[ind.slug]) acc[ind.slug] = ind;
-            return acc;
-          },
-          {}
-        )
-      )
-    : [];
+  // Group by slug: latest + previous reading to compute daily change
+  const slugMap: Record<string, (typeof indicators extends (infer T)[] | null ? T : never)[]> = {};
+  for (const ind of indicators ?? []) {
+    if (!slugMap[ind.slug]) slugMap[ind.slug] = [];
+    if (slugMap[ind.slug].length < 2) slugMap[ind.slug].push(ind);
+  }
+
+  const MAX_REASONABLE_PCT_CHANGE = 200;
+  const latestIndicators = Object.values(slugMap).map((readings) => {
+    const latest = readings[0];
+    const prev = readings[1];
+    let daily_change_pct: number | null = null;
+    if (prev && latest.numeric_value != null && prev.numeric_value != null && prev.numeric_value !== 0) {
+      const raw = ((latest.numeric_value - prev.numeric_value) / Math.abs(prev.numeric_value)) * 100;
+      daily_change_pct = Math.abs(raw) > MAX_REASONABLE_PCT_CHANGE ? null : raw;
+    }
+    return { ...latest, daily_change_pct };
+  });
 
   // Fetch subscription
   const { data: subscription } = await supabase

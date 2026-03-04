@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const VALID_VIEW_MODES = ["grid", "list"];
+const VALID_VIEW_MODES = ["heatmap", "table", "charts", "grid", "list"];
 const VALID_CARD_MODES = ["card", "chart"];
 
 export async function PATCH(request: Request) {

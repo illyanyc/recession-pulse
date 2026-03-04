@@ -413,6 +413,145 @@ export const INDICATOR_DEFINITIONS = [
       signal: value < 110 ? "Freight in decline — goods economy weakening" : value < 115 ? "Below trend" : value < 120 ? "Moderate — monitor" : "Freight activity healthy",
     }),
   },
+  // ── Debt & Fiscal ──
+  {
+    slug: "us-national-debt",
+    name: "Total US National Debt",
+    fred_series: "GFDEBTN",
+    category: "liquidity" as const,
+    trigger_description: "Rising debt constrains fiscal policy response to recession",
+    evaluate: (value: number) => {
+      const t = value / 1e6;
+      return {
+        status: t > 35 ? "danger" : t > 30 ? "warning" : t > 25 ? "watch" : "safe",
+        signal_emoji: t > 35 ? "DANGER" : t > 30 ? "WARNING" : t > 25 ? "WATCH" : "SAFE",
+        signal: t > 35 ? `$${t.toFixed(1)}T — fiscal space severely constrained` : t > 30 ? `$${t.toFixed(1)}T — elevated debt burden` : t > 25 ? `$${t.toFixed(1)}T — rising — monitor` : `$${t.toFixed(1)}T — manageable`,
+      };
+    },
+  },
+  {
+    slug: "debt-to-gdp",
+    name: "US Debt-to-GDP Ratio",
+    fred_series: "GFDEGDQ188S",
+    category: "liquidity" as const,
+    trigger_description: ">120% = Japan-level debt burden, constrains policy",
+    evaluate: (value: number) => ({
+      status: value > 130 ? "danger" : value > 120 ? "warning" : value > 100 ? "watch" : "safe",
+      signal_emoji: value > 130 ? "DANGER" : value > 120 ? "WARNING" : value > 100 ? "WATCH" : "SAFE",
+      signal: value > 130 ? `${value.toFixed(0)}% — unsustainable trajectory` : value > 120 ? `${value.toFixed(0)}% — exceeds GDP — fiscal risk` : value > 100 ? `${value.toFixed(0)}% — elevated — monitor trend` : `${value.toFixed(0)}% — sustainable range`,
+    }),
+  },
+  // ── Market Indices ──
+  {
+    slug: "sp500",
+    name: "S&P 500",
+    fred_series: "SP500",
+    category: "market" as const,
+    trigger_description: ">20% drawdown from peak = bear market",
+    evaluate: (value: number) => ({
+      status: value < 4000 ? "danger" : value < 4500 ? "warning" : value < 5000 ? "watch" : "safe",
+      signal_emoji: value < 4000 ? "DANGER" : value < 4500 ? "WARNING" : value < 5000 ? "WATCH" : "SAFE",
+      signal: value < 4000 ? "Bear market territory" : value < 4500 ? "Correction — risk-off" : value < 5000 ? "Below recent highs" : `${value.toFixed(0)} — near highs`,
+    }),
+  },
+  {
+    slug: "djia",
+    name: "Dow Jones Industrial Average",
+    fred_series: "DJIA",
+    category: "market" as const,
+    trigger_description: ">20% drawdown from peak = bear market",
+    evaluate: (value: number) => ({
+      status: value < 30000 ? "danger" : value < 35000 ? "warning" : value < 40000 ? "watch" : "safe",
+      signal_emoji: value < 30000 ? "DANGER" : value < 35000 ? "WARNING" : value < 40000 ? "WATCH" : "SAFE",
+      signal: value < 30000 ? "Bear market — deep correction" : value < 35000 ? "Significant drawdown" : value < 40000 ? "Below recent highs" : `${(value/1000).toFixed(1)}K — near highs`,
+    }),
+  },
+  {
+    slug: "nasdaq",
+    name: "NASDAQ Composite",
+    fred_series: "NASDAQCOM",
+    category: "market" as const,
+    trigger_description: ">20% drawdown from peak = bear market",
+    evaluate: (value: number) => ({
+      status: value < 12000 ? "danger" : value < 14000 ? "warning" : value < 16000 ? "watch" : "safe",
+      signal_emoji: value < 12000 ? "DANGER" : value < 14000 ? "WARNING" : value < 16000 ? "WATCH" : "SAFE",
+      signal: value < 12000 ? "Bear market — tech selloff" : value < 14000 ? "Correction territory" : value < 16000 ? "Below recent highs" : `${(value/1000).toFixed(1)}K — near highs`,
+    }),
+  },
+  // ── Market-to-GDP (Buffett Indicator variants) ──
+  {
+    slug: "sp500-to-gdp",
+    name: "S&P 500 / GDP Ratio",
+    fred_series: "",
+    category: "market" as const,
+    trigger_description: ">0.20 = historically overvalued (Buffett Indicator variant)",
+    evaluate: (value: number) => ({
+      status: value > 0.25 ? "danger" : value > 0.20 ? "warning" : value > 0.15 ? "watch" : "safe",
+      signal_emoji: value > 0.25 ? "DANGER" : value > 0.20 ? "WARNING" : value > 0.15 ? "WATCH" : "SAFE",
+      signal: value > 0.25 ? "Extreme overvaluation vs economy" : value > 0.20 ? "Elevated — markets outpacing GDP" : value > 0.15 ? "Above average" : "Fair value relative to GDP",
+    }),
+  },
+  {
+    slug: "djia-to-gdp",
+    name: "Dow Jones / GDP Ratio",
+    fred_series: "",
+    category: "market" as const,
+    trigger_description: ">1.5 = markets significantly outpacing economy",
+    evaluate: (value: number) => ({
+      status: value > 1.8 ? "danger" : value > 1.5 ? "warning" : value > 1.2 ? "watch" : "safe",
+      signal_emoji: value > 1.8 ? "DANGER" : value > 1.5 ? "WARNING" : value > 1.2 ? "WATCH" : "SAFE",
+      signal: value > 1.8 ? "Extreme overvaluation" : value > 1.5 ? "Elevated vs GDP" : value > 1.2 ? "Above average" : "Fair relative to GDP",
+    }),
+  },
+  {
+    slug: "nasdaq-to-gdp",
+    name: "NASDAQ / GDP Ratio",
+    fred_series: "",
+    category: "market" as const,
+    trigger_description: ">0.65 = tech valuations disconnected from economy",
+    evaluate: (value: number) => ({
+      status: value > 0.75 ? "danger" : value > 0.65 ? "warning" : value > 0.50 ? "watch" : "safe",
+      signal_emoji: value > 0.75 ? "DANGER" : value > 0.65 ? "WARNING" : value > 0.50 ? "WATCH" : "SAFE",
+      signal: value > 0.75 ? "Extreme tech overvaluation" : value > 0.65 ? "Elevated — tech frothy" : value > 0.50 ? "Above average" : "Fair value",
+    }),
+  },
+  // ── P/E Ratios ──
+  {
+    slug: "sp500-pe-ratio",
+    name: "S&P 500 P/E Ratio",
+    fred_series: "",
+    category: "market" as const,
+    trigger_description: ">25 = historically expensive, >30 = bubble territory",
+    evaluate: (value: number) => ({
+      status: value > 30 ? "danger" : value > 25 ? "warning" : value > 20 ? "watch" : "safe",
+      signal_emoji: value > 30 ? "DANGER" : value > 25 ? "WARNING" : value > 20 ? "WATCH" : "SAFE",
+      signal: value > 30 ? "Bubble-level valuations" : value > 25 ? "Historically expensive" : value > 20 ? "Above long-term average (16.5)" : `${value.toFixed(1)}x — fair value`,
+    }),
+  },
+  {
+    slug: "djia-pe-ratio",
+    name: "Dow Jones P/E Ratio",
+    fred_series: "",
+    category: "market" as const,
+    trigger_description: ">22 = expensive, mean ~16x",
+    evaluate: (value: number) => ({
+      status: value > 25 ? "danger" : value > 22 ? "warning" : value > 18 ? "watch" : "safe",
+      signal_emoji: value > 25 ? "DANGER" : value > 22 ? "WARNING" : value > 18 ? "WATCH" : "SAFE",
+      signal: value > 25 ? "Significantly overvalued" : value > 22 ? "Above historical average" : value > 18 ? "Slightly elevated" : `${value.toFixed(1)}x — reasonable`,
+    }),
+  },
+  {
+    slug: "nasdaq-pe-ratio",
+    name: "NASDAQ P/E Ratio",
+    fred_series: "",
+    category: "market" as const,
+    trigger_description: ">35 = richly valued, >50 = dot-com territory",
+    evaluate: (value: number) => ({
+      status: value > 45 ? "danger" : value > 35 ? "warning" : value > 25 ? "watch" : "safe",
+      signal_emoji: value > 45 ? "DANGER" : value > 35 ? "WARNING" : value > 25 ? "WATCH" : "SAFE",
+      signal: value > 45 ? "Dot-com level valuations" : value > 35 ? "Tech priced for perfection" : value > 25 ? "Above average" : `${value.toFixed(1)}x — reasonable for growth`,
+    }),
+  },
 ] as const;
 
 export const TOTAL_INDICATORS = INDICATOR_DEFINITIONS.length;
@@ -425,6 +564,7 @@ export const TOTAL_INDICATORS = INDICATOR_DEFINITIONS.length;
 const DAILY_INDICATORS = new Set([
   "vix", "yield-curve-2s10s", "yield-curve-2s30s", "ny-fed-recession-prob",
   "credit-spreads", "dxy-dollar-index", "on-rrp-facility",
+  "sp500", "djia", "nasdaq",
 ]);
 
 const WEEKLY_INDICATORS = new Set([
@@ -435,6 +575,9 @@ const WEEKLY_INDICATORS = new Set([
 const QUARTERLY_INDICATORS = new Set([
   "gdp-growth", "corporate-profits", "debt-service-ratio",
   "credit-card-delinquency", "sloos-lending",
+  "us-national-debt", "debt-to-gdp",
+  "sp500-to-gdp", "djia-to-gdp", "nasdaq-to-gdp",
+  "sp500-pe-ratio", "djia-pe-ratio", "nasdaq-pe-ratio",
 ]);
 
 export function getChartLimit(slug: string): number {

@@ -7,8 +7,9 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { StockListRow } from "./StockListRow";
 import { StockModal } from "./StockModal";
-import type { StockSignal } from "@/types";
-import type { ViewMode, CardDisplayMode } from "@/types";
+import type { StockSignal, CardDisplayMode } from "@/types";
+
+type StockViewMode = "grid" | "list";
 import { formatNumber } from "@/lib/utils";
 import Link from "next/link";
 import {
@@ -37,7 +38,7 @@ function savePref(key: string, value: string) {
 
 export function StockScreener({ signals, isPro }: StockScreenerProps) {
   const [selectedStock, setSelectedStock] = useState<StockSignal | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [viewMode, setViewMode] = useState<StockViewMode>("grid");
   const [cardDisplayMode, setCardDisplayMode] = useState<CardDisplayMode>("card");
 
 
@@ -62,7 +63,7 @@ export function StockScreener({ signals, isPro }: StockScreenerProps) {
   const oversoldPicks = signals.filter((s) => s.signal_type === "oversold_growth");
   const defensivePicks = signals.filter((s) => s.signal_type === "defensive");
 
-  const toggleViewMode = (mode: ViewMode) => {
+  const toggleViewMode = (mode: StockViewMode) => {
     setViewMode(mode);
   };
 

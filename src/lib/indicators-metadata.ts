@@ -795,6 +795,160 @@ export const INDICATORS_SEO: Record<string, IndicatorSEO> = {
     historicalContext:
       "The long-term average gold-to-silver ratio is approximately 65. During periods of economic expansion, industrial silver demand pushes the ratio lower (50–65). During recessions and financial crises, the ratio spikes as investors flee to gold. The ratio's mean-reverting nature makes extreme readings particularly informative for cycle timing.",
   },
+  "us-national-debt": {
+    slug: "us-national-debt",
+    title: "Total US National Debt — Federal Debt Tracker",
+    shortName: "US National Debt",
+    metaDescription:
+      "Track the total US national debt in real time. Rising federal debt constrains fiscal policy options during recessions and signals long-term economic risk.",
+    keywords: ["US national debt", "federal debt total", "US government debt", "national debt tracker 2026", "debt recession indicator"],
+    whatIsIt:
+      "Total US National Debt (FRED: GFDEBTN) measures the total outstanding public debt of the federal government, including debt held by the public and intragovernmental holdings. It is reported quarterly in millions of dollars.",
+    whyItMatters:
+      "When debt levels are high, the government has less fiscal room to respond to recessions with stimulus. High debt also leads to rising interest expense, crowding out other spending. Debt above $30T+ constrains policy flexibility.",
+    historicalContext:
+      "US national debt surpassed $30T in 2022 and has continued climbing. During COVID, debt surged from $23T to $28T in a single year. Historical comparisons show debt-to-GDP matters more than the absolute number, but the trajectory signals fiscal sustainability risk.",
+  },
+  "debt-to-gdp": {
+    slug: "debt-to-gdp",
+    title: "US Debt-to-GDP Ratio — Fiscal Health Indicator",
+    shortName: "Debt/GDP Ratio",
+    metaDescription:
+      "Track the US Debt-to-GDP ratio. When this exceeds 120%, it indicates Japan-level debt burden and constrained fiscal policy — a key recession preparedness metric.",
+    keywords: ["debt to GDP ratio", "US debt GDP", "fiscal sustainability", "government debt ratio 2026", "debt burden indicator"],
+    whatIsIt:
+      "The Debt-to-GDP ratio (FRED: GFDEGDQ188S) expresses total federal debt as a percentage of gross domestic product. It answers: 'How large is the debt relative to the economy's ability to service it?'",
+    whyItMatters:
+      "A ratio above 100% means the government owes more than the entire economy produces in a year. Above 120%, historical evidence shows diminished GDP growth and reduced fiscal flexibility to fight recessions.",
+    historicalContext:
+      "The US Debt-to-GDP ratio was around 60% before 2008, surged to 100% after the financial crisis, and crossed 120% during COVID. Japan's ratio exceeding 250% serves as a cautionary example of prolonged high debt.",
+  },
+  "sp500": {
+    slug: "sp500",
+    title: "S&P 500 Index — Stock Market Recession Indicator",
+    shortName: "S&P 500",
+    metaDescription:
+      "Track the S&P 500 index in real time. Bear markets (20%+ decline) have preceded or coincided with every US recession since 1950.",
+    keywords: ["S&P 500", "SP500 index", "stock market recession", "S&P 500 tracker 2026", "bear market indicator"],
+    whatIsIt:
+      "The S&P 500 is a stock market index tracking the performance of 500 of the largest companies listed on US stock exchanges. It is widely regarded as the best single gauge of large-cap US equities.",
+    whyItMatters:
+      "The S&P 500 is a leading indicator — markets tend to decline 6-12 months before recessions begin. A 20%+ drawdown from peak defines a bear market, which has coincided with every post-war recession.",
+    historicalContext:
+      "The S&P 500 fell 57% during the 2008 crisis, 34% during COVID (March 2020), and over 25% in 2022. Post-WWII, the average bear market drawdown is ~33%. Current levels near all-time highs make it a key metric to watch for reversal signals.",
+  },
+  "djia": {
+    slug: "djia",
+    title: "Dow Jones Industrial Average — Blue-Chip Recession Gauge",
+    shortName: "Dow Jones",
+    metaDescription:
+      "Track the Dow Jones Industrial Average. This 30-stock blue-chip index signals broad industrial health and has historically preceded economic downturns.",
+    keywords: ["Dow Jones", "DJIA", "Dow Jones recession", "industrial average 2026", "blue chip stocks recession"],
+    whatIsIt:
+      "The Dow Jones Industrial Average (DJIA) is a price-weighted index of 30 prominent US companies. It is one of the oldest and most-watched stock market indicators in the world.",
+    whyItMatters:
+      "As a barometer of industrial and blue-chip corporate health, DJIA declines signal weakening economic confidence. Its composition of mature companies makes it particularly relevant for assessing cyclical risk.",
+    historicalContext:
+      "The DJIA fell below 7,000 during the 2008 crisis from a peak of 14,000. It crashed to 18,500 during COVID from 29,500. The index crossing 40,000 in 2024 represents a significant valuation milestone.",
+  },
+  "nasdaq": {
+    slug: "nasdaq",
+    title: "NASDAQ Composite — Tech & Growth Recession Indicator",
+    shortName: "NASDAQ",
+    metaDescription:
+      "Track the NASDAQ Composite index. Tech-heavy and growth-oriented, NASDAQ is highly sensitive to interest rates and often leads economic cycle turns.",
+    keywords: ["NASDAQ composite", "NASDAQ index", "tech stocks recession", "NASDAQ 2026", "growth stocks indicator"],
+    whatIsIt:
+      "The NASDAQ Composite is a market-capitalization weighted index of over 3,000 stocks listed on the NASDAQ exchange, heavily weighted toward technology and growth companies.",
+    whyItMatters:
+      "NASDAQ is hyper-sensitive to interest rate expectations and risk appetite. Tech and growth stock selloffs often precede broader economic weakness as they signal reduced future growth expectations.",
+    historicalContext:
+      "NASDAQ fell 78% during the dot-com bust (2000-2002), 56% during 2008, and 33% in 2022. Its recovery speed often signals the market's growth outlook.",
+  },
+  "sp500-to-gdp": {
+    slug: "sp500-to-gdp",
+    title: "S&P 500 / GDP Ratio — Buffett Indicator Variant",
+    shortName: "S&P 500/GDP",
+    metaDescription:
+      "Track the S&P 500 to GDP ratio. This Buffett Indicator variant compares stock market levels to economic output — a key overvaluation warning signal.",
+    keywords: ["S&P 500 GDP ratio", "Buffett indicator", "market to GDP", "stock market overvaluation 2026", "market cap GDP"],
+    whatIsIt:
+      "The S&P 500/GDP ratio divides the S&P 500 index level by nominal GDP (in billions). It measures whether equity markets are growing faster than the underlying economy.",
+    whyItMatters:
+      "Warren Buffett called the total market cap/GDP ratio 'the best single measure of where valuations stand.' When markets significantly outpace GDP growth, it signals unsustainable valuations and heightened crash risk.",
+    historicalContext:
+      "This ratio was around 0.05 in the 1980s, peaked at 0.15 during the dot-com bubble, and has exceeded 0.20 in recent years as market growth has dramatically outpaced GDP growth.",
+  },
+  "djia-to-gdp": {
+    slug: "djia-to-gdp",
+    title: "Dow Jones / GDP Ratio — Industrial Valuation vs Economy",
+    shortName: "DJIA/GDP",
+    metaDescription:
+      "Track the Dow Jones to GDP ratio. This measures whether blue-chip valuations are disconnected from economic output — a key overvaluation signal.",
+    keywords: ["Dow Jones GDP ratio", "DJIA GDP", "market valuation economy", "Dow overvaluation 2026"],
+    whatIsIt:
+      "The DJIA/GDP ratio divides the Dow Jones Industrial Average by nominal GDP (in billions). It indicates whether blue-chip stock prices are proportional to economic output.",
+    whyItMatters:
+      "When the DJIA grows much faster than GDP, it signals that corporate valuations are disconnected from economic fundamentals, increasing the risk of a sharp correction.",
+    historicalContext:
+      "This ratio was below 0.5 through most of the 20th century, crossed 1.0 in the 2000s, and has climbed above 1.5 in recent years as both nominal GDP and market levels have risen.",
+  },
+  "nasdaq-to-gdp": {
+    slug: "nasdaq-to-gdp",
+    title: "NASDAQ / GDP Ratio — Tech Valuation vs Economy",
+    shortName: "NASDAQ/GDP",
+    metaDescription:
+      "Track the NASDAQ Composite to GDP ratio. When tech valuations disconnect from economic output, it signals speculative excess and heightened crash risk.",
+    keywords: ["NASDAQ GDP ratio", "tech valuation economy", "NASDAQ overvaluation 2026", "tech bubble indicator"],
+    whatIsIt:
+      "The NASDAQ/GDP ratio divides the NASDAQ Composite index by nominal GDP (in billions). Given NASDAQ's tech-heavy composition, this metric captures tech sector valuation relative to the real economy.",
+    whyItMatters:
+      "Tech has become a dominant share of the economy. When NASDAQ growth dramatically outpaces GDP, it echoes the dot-com bubble dynamics where tech valuations became completely detached from reality.",
+    historicalContext:
+      "During the dot-com bubble, NASDAQ hit 5,000 with GDP around $10T (ratio ~0.5). After the bust it crashed to 1,100. Current levels near 0.65+ represent historically elevated tech valuations relative to economic output.",
+  },
+  "sp500-pe-ratio": {
+    slug: "sp500-pe-ratio",
+    title: "S&P 500 P/E Ratio — Market Valuation Gauge",
+    shortName: "S&P 500 P/E",
+    metaDescription:
+      "Track the S&P 500 price-to-earnings ratio. A P/E above 25 signals expensive markets; above 30 historically precedes major corrections.",
+    keywords: ["S&P 500 PE ratio", "stock market PE", "price earnings ratio 2026", "market valuation", "S&P earnings"],
+    whatIsIt:
+      "The S&P 500 P/E ratio is the index price divided by trailing twelve month (TTM) earnings per share for all 500 companies. It shows how much investors pay per dollar of corporate earnings.",
+    whyItMatters:
+      "High P/E ratios mean investors are paying a premium for earnings, leaving little margin of safety. P/E above 25 has historically preceded below-average future returns; above 30 preceded major corrections.",
+    historicalContext:
+      "The long-term average S&P 500 P/E is ~16.5x. It reached 44x during the dot-com peak, fell to 10x in 2008, and has ranged 20-28x in recent years. Mean reversion from elevated P/E typically coincides with recessions.",
+  },
+  "djia-pe-ratio": {
+    slug: "djia-pe-ratio",
+    title: "Dow Jones P/E Ratio — Blue-Chip Earnings Valuation",
+    shortName: "DJIA P/E",
+    metaDescription:
+      "Track the Dow Jones P/E ratio. Elevated price-to-earnings for blue chips signals expensive valuations and reduced margin of safety for economic downturns.",
+    keywords: ["Dow Jones PE ratio", "DJIA PE", "Dow price earnings 2026", "blue chip valuation"],
+    whatIsIt:
+      "The DJIA P/E ratio measures the price of the 30 Dow components relative to their aggregate trailing earnings. It captures the valuation premium investors place on America's largest industrial companies.",
+    whyItMatters:
+      "Blue-chip P/E expansion beyond 22x historically signals over-optimism. During recessions, earnings contract while prices fall, causing P/E to spike before eventually contracting to more reasonable levels.",
+    historicalContext:
+      "The historical average DJIA P/E is around 15-16x. It reached ~25x before the 2008 crash and >20x before the 2020 COVID crash. Low single-digit P/Es marked generational buying opportunities.",
+  },
+  "nasdaq-pe-ratio": {
+    slug: "nasdaq-pe-ratio",
+    title: "NASDAQ P/E Ratio — Tech Earnings Valuation",
+    shortName: "NASDAQ P/E",
+    metaDescription:
+      "Track the NASDAQ Composite P/E ratio. Tech-sector P/E above 35 signals speculative excess; above 50 echoes dot-com bubble territory.",
+    keywords: ["NASDAQ PE ratio", "tech PE ratio", "NASDAQ price earnings 2026", "tech valuation", "dot-com bubble"],
+    whatIsIt:
+      "The NASDAQ P/E ratio measures the composite index price relative to the aggregate trailing earnings of its 3,000+ constituents. Given its tech-heavy composition, it captures the premium investors pay for technology growth.",
+    whyItMatters:
+      "NASDAQ companies typically command higher P/Es due to growth expectations. But when the ratio exceeds 35-40x, it signals that growth expectations may be unrealistic, creating vulnerability to earnings disappointments.",
+    historicalContext:
+      "During the dot-com bubble, NASDAQ P/E exceeded 100x for many companies, with the composite over 70x. It crashed 78% when earnings failed to materialize. Current levels around 30-35x are elevated but not extreme by post-2020 standards.",
+  },
 };
 
 export const ALL_INDICATOR_SLUGS = Object.keys(INDICATORS_SEO);

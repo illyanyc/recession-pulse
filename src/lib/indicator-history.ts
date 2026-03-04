@@ -22,9 +22,13 @@ function computeDirection(current: number, previous: number | null): TrendDirect
   return delta > 0 ? "up" : "down";
 }
 
+const MAX_REASONABLE_PCT_CHANGE = 200;
+
 function pctChange(current: number, previous: number | null): number | null {
   if (previous === null || previous === 0) return null;
-  return ((current - previous) / Math.abs(previous)) * 100;
+  const change = ((current - previous) / Math.abs(previous)) * 100;
+  if (Math.abs(change) > MAX_REASONABLE_PCT_CHANGE) return null;
+  return change;
 }
 
 /**

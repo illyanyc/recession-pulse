@@ -9,13 +9,13 @@ export function SMSPreview() {
             </h2>
             <p className="text-pulse-muted text-lg mb-8 leading-relaxed">
               Every morning at 7:15 AM ET, get a concise briefing with the signals that moved.
-              43 indicators distilled into one glance. <span className="text-white font-medium">Email briefings are free</span> — upgrade
+              54 indicators distilled into one glance. <span className="text-white font-medium">Email briefings are free</span> — upgrade
               to Pulse for SMS alerts + AI analysis.
             </p>
 
             <div className="space-y-4">
               {[
-                "43 indicators analyzed — only alerts surface",
+                "54 indicators analyzed — only alerts surface",
                 "Prioritized by severity — danger signals first",
                 "AI-generated context for each shift",
                 "One glance = full macro picture",

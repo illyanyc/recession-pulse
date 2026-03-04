@@ -66,7 +66,7 @@ const features = [
     icon: MessageSquare,
     title: "Daily Email Briefing (Free)",
     description:
-      "Concise, actionable morning email briefings with all 43 indicators. SMS alerts available on the Pulse plan.",
+      "Concise, actionable morning email briefings with all 54 indicators. SMS alerts available on the Pulse plan.",
   },
   {
     icon: Bell,
@@ -78,13 +78,13 @@ const features = [
     icon: Shield,
     title: "AI Risk Assessment (Pulse)",
     description:
-      "Multi-model recession risk score combining all 43 indicators into a single probability estimate. Available on Pulse and above.",
+      "Multi-model recession risk score combining all 54 indicators into a single probability estimate. Available on Pulse and above.",
   },
   {
     icon: Zap,
     title: "Real-Time Dashboard",
     description:
-      "All 43 indicators at a glance, organized by category. Financial-terminal aesthetic designed for quick daily check-ins. Free forever.",
+      "All 54 indicators at a glance, organized by category. Financial-terminal aesthetic designed for quick daily check-ins. Free forever.",
   },
 ];
 
@@ -94,7 +94,7 @@ export function Features() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            43 indicators. 8 categories.
+            54 indicators. 8 categories.
             <br />
             <span className="gradient-text">Zero noise.</span>
           </h2>

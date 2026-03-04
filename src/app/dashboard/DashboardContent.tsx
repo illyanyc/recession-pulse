@@ -230,8 +230,11 @@ export function DashboardContent({
         <h2 className="text-lg font-bold text-white mb-4">Recession Indicators</h2>
         <IndicatorGrid
           indicators={displayIndicators}
-          initialViewMode={profile?.dashboard_view_mode || "grid"}
-          initialCardDisplayMode={profile?.card_display_mode || "card"}
+          initialViewMode={
+            (profile?.dashboard_view_mode === "heatmap" || profile?.dashboard_view_mode === "table" || profile?.dashboard_view_mode === "charts")
+              ? profile.dashboard_view_mode
+              : "table"
+          }
         />
       </section>
 
@@ -377,4 +380,19 @@ const SAMPLE_INDICATORS: RecessionIndicator[] = [
   { id: "37", slug: "copper-gold-ratio", name: "Copper-to-Gold Ratio", latest_value: "0.00077", trigger_level: "<0.00100 = industrial weakness", status: "danger", status_text: "50-year low", signal: "Below 2008 crisis levels", signal_emoji: "DANGER", category: "realtime", updated_at: new Date().toISOString() },
   { id: "38", slug: "freight-index", name: "Freight Transportation Index", latest_value: "118.2", trigger_level: "Declining = slowing activity", status: "watch", status_text: "Moderate", signal: "Freight below peak — goods slowing", signal_emoji: "WATCH", category: "realtime", updated_at: new Date().toISOString() },
   { id: "39", slug: "silver-gold-ratio", name: "Gold-to-Silver Ratio", latest_value: "88.5", trigger_level: ">80 = extreme fear", status: "warning", status_text: "Elevated fear", signal: "Gold heavily favored over silver — risk aversion", signal_emoji: "WARNING", category: "market", updated_at: new Date().toISOString() },
+  // Debt & Fiscal
+  { id: "40", slug: "us-national-debt", name: "Total US National Debt", latest_value: "$36.2T", trigger_level: "Rising debt constrains fiscal policy", status: "danger", status_text: "Severely constrained", signal: "$36.2T — fiscal space severely constrained", signal_emoji: "DANGER", category: "liquidity", updated_at: new Date().toISOString() },
+  { id: "41", slug: "debt-to-gdp", name: "US Debt-to-GDP Ratio", latest_value: "124%", trigger_level: ">120% = Japan-level burden", status: "warning", status_text: "Exceeds GDP", signal: "124% — exceeds GDP — fiscal risk", signal_emoji: "WARNING", category: "liquidity", updated_at: new Date().toISOString() },
+  // Market Indices
+  { id: "42", slug: "sp500", name: "S&P 500", latest_value: "5,955", trigger_level: ">20% drawdown = bear market", status: "safe", status_text: "Near highs", signal: "5955 — near highs", signal_emoji: "SAFE", category: "market", updated_at: new Date().toISOString() },
+  { id: "43", slug: "djia", name: "Dow Jones Industrial Average", latest_value: "43,841", trigger_level: ">20% drawdown = bear market", status: "safe", status_text: "Near highs", signal: "43.8K — near highs", signal_emoji: "SAFE", category: "market", updated_at: new Date().toISOString() },
+  { id: "44", slug: "nasdaq", name: "NASDAQ Composite", latest_value: "18,847", trigger_level: ">20% drawdown = bear market", status: "safe", status_text: "Near highs", signal: "18.8K — near highs", signal_emoji: "SAFE", category: "market", updated_at: new Date().toISOString() },
+  // Market-to-GDP
+  { id: "45", slug: "sp500-to-gdp", name: "S&P 500 / GDP Ratio", latest_value: "0.2053", trigger_level: ">0.20 = overvalued", status: "warning", status_text: "Markets outpacing GDP", signal: "Markets outpacing GDP", signal_emoji: "WARNING", category: "market", updated_at: new Date().toISOString() },
+  { id: "46", slug: "djia-to-gdp", name: "Dow Jones / GDP Ratio", latest_value: "1.512", trigger_level: ">1.5 = outpacing economy", status: "warning", status_text: "Elevated vs GDP", signal: "Elevated vs GDP", signal_emoji: "WARNING", category: "market", updated_at: new Date().toISOString() },
+  { id: "47", slug: "nasdaq-to-gdp", name: "NASDAQ / GDP Ratio", latest_value: "0.6499", trigger_level: ">0.65 = tech frothy", status: "watch", status_text: "Above average", signal: "Above average", signal_emoji: "WATCH", category: "market", updated_at: new Date().toISOString() },
+  // P/E Ratios
+  { id: "48", slug: "sp500-pe-ratio", name: "S&P 500 P/E Ratio", latest_value: "26.5x", trigger_level: ">25 = expensive", status: "warning", status_text: "Historically expensive", signal: "Historically expensive", signal_emoji: "WARNING", category: "market", updated_at: new Date().toISOString() },
+  { id: "49", slug: "djia-pe-ratio", name: "Dow Jones P/E Ratio", latest_value: "21.8x", trigger_level: ">22 = expensive", status: "watch", status_text: "Slightly elevated", signal: "Slightly elevated", signal_emoji: "WATCH", category: "market", updated_at: new Date().toISOString() },
+  { id: "50", slug: "nasdaq-pe-ratio", name: "NASDAQ P/E Ratio", latest_value: "34.2x", trigger_level: ">35 = richly valued", status: "watch", status_text: "Above average", signal: "Above average", signal_emoji: "WATCH", category: "market", updated_at: new Date().toISOString() },
 ];

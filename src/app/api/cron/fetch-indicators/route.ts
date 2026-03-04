@@ -87,6 +87,23 @@ function formatDisplayValue(slug: string, rawValue: number): string {
       return rawValue.toFixed(1);
     case "sos-recession":
       return rawValue.toFixed(2);
+    case "us-national-debt":
+      return `$${(rawValue / 1e6).toFixed(1)}T`;
+    case "debt-to-gdp":
+      return `${rawValue.toFixed(0)}%`;
+    case "sp500":
+    case "djia":
+    case "nasdaq":
+      return rawValue.toFixed(0);
+    case "sp500-to-gdp":
+    case "nasdaq-to-gdp":
+      return rawValue.toFixed(4);
+    case "djia-to-gdp":
+      return rawValue.toFixed(3);
+    case "sp500-pe-ratio":
+    case "djia-pe-ratio":
+    case "nasdaq-pe-ratio":
+      return `${rawValue.toFixed(1)}x`;
     default:
       if (Math.abs(rawValue) >= 10000)
         return rawValue.toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -345,6 +362,92 @@ const ADDITIONAL_INDICATORS = [
       status: value > 90 ? "danger" : value > 80 ? "warning" : value > 70 ? "watch" : "safe",
       signal_emoji: value > 90 ? "DANGER" : value > 80 ? "WARNING" : value > 70 ? "WATCH" : "SAFE",
       signal: value > 90 ? "Extreme fear — crisis-level flight to gold" : value > 80 ? "Elevated fear — gold heavily favored" : value > 70 ? "Above average — risk aversion building" : "Normal range — balanced sentiment",
+    }),
+  },
+  // --- Market-to-GDP Ratios (computed: index / GDP in billions) ---
+  {
+    slug: "sp500-to-gdp",
+    name: "S&P 500 / GDP Ratio",
+    category: "market" as const,
+    trigger_level: ">0.20 = historically overvalued",
+    fetch: async () => {
+      const [sp, gdp] = await Promise.all([fetchLatestValue("SP500"), fetchLatestValue("GDP")]);
+      if (sp && gdp) return { value: sp.value / gdp.value, date: sp.date };
+      return serperFallback("sp500-to-gdp", "S&P 500 to GDP Ratio", 0.20);
+    },
+    evaluate: (value: number) => ({
+      status: value > 0.25 ? "danger" : value > 0.20 ? "warning" : value > 0.15 ? "watch" : "safe",
+      signal_emoji: value > 0.25 ? "DANGER" : value > 0.20 ? "WARNING" : value > 0.15 ? "WATCH" : "SAFE",
+      signal: value > 0.25 ? "Extreme overvaluation vs economy" : value > 0.20 ? "Markets outpacing GDP" : value > 0.15 ? "Above average" : "Fair value relative to GDP",
+    }),
+  },
+  {
+    slug: "djia-to-gdp",
+    name: "Dow Jones / GDP Ratio",
+    category: "market" as const,
+    trigger_level: ">1.5 = markets outpacing economy",
+    fetch: async () => {
+      const [dj, gdp] = await Promise.all([fetchLatestValue("DJIA"), fetchLatestValue("GDP")]);
+      if (dj && gdp) return { value: dj.value / gdp.value, date: dj.date };
+      return serperFallback("djia-to-gdp", "Dow Jones to GDP Ratio", 1.5);
+    },
+    evaluate: (value: number) => ({
+      status: value > 1.8 ? "danger" : value > 1.5 ? "warning" : value > 1.2 ? "watch" : "safe",
+      signal_emoji: value > 1.8 ? "DANGER" : value > 1.5 ? "WARNING" : value > 1.2 ? "WATCH" : "SAFE",
+      signal: value > 1.8 ? "Extreme overvaluation" : value > 1.5 ? "Elevated vs GDP" : value > 1.2 ? "Above average" : "Fair relative to GDP",
+    }),
+  },
+  {
+    slug: "nasdaq-to-gdp",
+    name: "NASDAQ / GDP Ratio",
+    category: "market" as const,
+    trigger_level: ">0.65 = tech valuations detached from economy",
+    fetch: async () => {
+      const [nq, gdp] = await Promise.all([fetchLatestValue("NASDAQCOM"), fetchLatestValue("GDP")]);
+      if (nq && gdp) return { value: nq.value / gdp.value, date: nq.date };
+      return serperFallback("nasdaq-to-gdp", "NASDAQ to GDP Ratio", 0.60);
+    },
+    evaluate: (value: number) => ({
+      status: value > 0.75 ? "danger" : value > 0.65 ? "warning" : value > 0.50 ? "watch" : "safe",
+      signal_emoji: value > 0.75 ? "DANGER" : value > 0.65 ? "WARNING" : value > 0.50 ? "WATCH" : "SAFE",
+      signal: value > 0.75 ? "Extreme tech overvaluation" : value > 0.65 ? "Tech frothy" : value > 0.50 ? "Above average" : "Fair value",
+    }),
+  },
+  // --- P/E Ratios (via Serper agent) ---
+  {
+    slug: "sp500-pe-ratio",
+    name: "S&P 500 P/E Ratio",
+    category: "market" as const,
+    trigger_level: ">25 = expensive, >30 = bubble",
+    fetch: async () => serperFallback("sp500-pe-ratio", "S&P 500 P/E Ratio trailing twelve months", 22),
+    evaluate: (value: number) => ({
+      status: value > 30 ? "danger" : value > 25 ? "warning" : value > 20 ? "watch" : "safe",
+      signal_emoji: value > 30 ? "DANGER" : value > 25 ? "WARNING" : value > 20 ? "WATCH" : "SAFE",
+      signal: value > 30 ? "Bubble valuations" : value > 25 ? "Historically expensive" : value > 20 ? "Above long-term average" : `${value.toFixed(1)}x — fair`,
+    }),
+  },
+  {
+    slug: "djia-pe-ratio",
+    name: "Dow Jones P/E Ratio",
+    category: "market" as const,
+    trigger_level: ">22 = expensive, mean ~16x",
+    fetch: async () => serperFallback("djia-pe-ratio", "Dow Jones Industrial Average P/E Ratio", 18),
+    evaluate: (value: number) => ({
+      status: value > 25 ? "danger" : value > 22 ? "warning" : value > 18 ? "watch" : "safe",
+      signal_emoji: value > 25 ? "DANGER" : value > 22 ? "WARNING" : value > 18 ? "WATCH" : "SAFE",
+      signal: value > 25 ? "Significantly overvalued" : value > 22 ? "Above historical average" : value > 18 ? "Slightly elevated" : `${value.toFixed(1)}x — reasonable`,
+    }),
+  },
+  {
+    slug: "nasdaq-pe-ratio",
+    name: "NASDAQ P/E Ratio",
+    category: "market" as const,
+    trigger_level: ">35 = richly valued, >50 = dot-com territory",
+    fetch: async () => serperFallback("nasdaq-pe-ratio", "NASDAQ Composite P/E Ratio trailing twelve months", 30),
+    evaluate: (value: number) => ({
+      status: value > 45 ? "danger" : value > 35 ? "warning" : value > 25 ? "watch" : "safe",
+      signal_emoji: value > 45 ? "DANGER" : value > 35 ? "WARNING" : value > 25 ? "WATCH" : "SAFE",
+      signal: value > 45 ? "Dot-com level valuations" : value > 35 ? "Priced for perfection" : value > 25 ? "Above average" : `${value.toFixed(1)}x — reasonable`,
     }),
   },
   // --- Tier 3: SLOOS Lending Standards (mock until Fed survey scraper built) ---

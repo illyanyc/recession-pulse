@@ -47,6 +47,7 @@ export interface RecessionIndicator {
   category: IndicatorCategory;
   reading_date?: string;
   updated_at: string;
+  daily_change_pct?: number | null;
 }
 
 export type TrendDirection = "up" | "down" | "flat";
@@ -87,7 +88,7 @@ export interface StockSignal {
   screened_at: string;
 }
 
-export type ViewMode = "grid" | "list";
+export type ViewMode = "heatmap" | "table" | "charts";
 export type CardDisplayMode = "card" | "chart";
 
 export interface UserProfile {
@@ -155,7 +156,7 @@ export const PLANS = {
     price: 0,
     description: "Real-time recession dashboard — no credit card required",
     features: [
-      "43 recession & macro indicators tracked",
+      "54 recession & macro indicators tracked",
       "Real-time dashboard access",
       "Daily email recession briefing",
       "Indicator status, signals & trends",

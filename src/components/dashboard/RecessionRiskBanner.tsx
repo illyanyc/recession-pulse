@@ -86,7 +86,7 @@ export function RecessionRiskBanner({ assessment: initialAssessment, hasSubscrip
           <Lock className="h-8 w-8 text-pulse-muted mb-3" />
           <h3 className="text-base font-bold text-white mb-1">AI Recession Risk Assessment</h3>
           <p className="text-xs text-pulse-muted mb-4 max-w-sm text-center">
-            Get daily AI-powered macro analysis with risk scoring across all 43 indicators.
+            Get daily AI-powered macro analysis with risk scoring across all 54 indicators.
           </p>
           <Link href="/pricing">
             <Button size="sm">Upgrade to Pulse — $6.99/mo</Button>

@@ -86,6 +86,48 @@ Example: if copper is $4.50/lb and gold is $2,900/oz, the ratio is 4.50/2900 = 0
 The result MUST be a small decimal like 0.001 to 0.002. If you find individual prices, DIVIDE copper by gold.
 DO NOT return the copper price alone (e.g. 4.32) — that is NOT the ratio.`,
   },
+  "sp500-to-gdp": {
+    searchTemplate: "S&P 500 to GDP ratio {date}",
+    latestSearchTemplate: "S&P 500 to GDP ratio 2026 current Buffett indicator",
+    expectedRange: [0.05, 0.40],
+    sourceDomains: ["currentmarketvaluation.com", "longtermtrends.net", "macrotrends.net"],
+    specialInstruction: `S&P 500 index value / GDP in billions. E.g. S&P at 6000, GDP at $29T → 6000/29000 ≈ 0.207. Return as a decimal.`,
+  },
+  "djia-to-gdp": {
+    searchTemplate: "Dow Jones to GDP ratio {date}",
+    latestSearchTemplate: "Dow Jones Industrial Average to GDP ratio 2026",
+    expectedRange: [0.5, 2.5],
+    sourceDomains: ["macrotrends.net", "longtermtrends.net", "tradingeconomics.com"],
+    specialInstruction: `DJIA index value / GDP in billions. E.g. DJIA at 44000, GDP at $29T → 44000/29000 ≈ 1.52.`,
+  },
+  "nasdaq-to-gdp": {
+    searchTemplate: "NASDAQ composite to GDP ratio {date}",
+    latestSearchTemplate: "NASDAQ composite to GDP ratio 2026",
+    expectedRange: [0.15, 1.0],
+    sourceDomains: ["macrotrends.net", "longtermtrends.net", "tradingeconomics.com"],
+    specialInstruction: `NASDAQ index value / GDP in billions. E.g. NASDAQ at 19000, GDP at $29T → 19000/29000 ≈ 0.655.`,
+  },
+  "sp500-pe-ratio": {
+    searchTemplate: "S&P 500 PE ratio trailing {date}",
+    latestSearchTemplate: "S&P 500 PE ratio current 2026 trailing twelve months",
+    expectedRange: [10, 50],
+    sourceDomains: ["multpl.com", "macrotrends.net", "currentmarketvaluation.com", "wsj.com"],
+    specialInstruction: `Return the S&P 500 trailing twelve month (TTM) price-to-earnings ratio as a number (e.g. 26.5). Not the forward PE.`,
+  },
+  "djia-pe-ratio": {
+    searchTemplate: "Dow Jones PE ratio {date}",
+    latestSearchTemplate: "Dow Jones Industrial Average PE ratio current 2026",
+    expectedRange: [8, 35],
+    sourceDomains: ["macrotrends.net", "wsj.com", "barrons.com", "tradingeconomics.com"],
+    specialInstruction: `Return the Dow Jones trailing PE ratio as a number (e.g. 22.1).`,
+  },
+  "nasdaq-pe-ratio": {
+    searchTemplate: "NASDAQ composite PE ratio {date}",
+    latestSearchTemplate: "NASDAQ composite PE ratio current 2026 trailing",
+    expectedRange: [15, 80],
+    sourceDomains: ["macrotrends.net", "wsj.com", "barrons.com", "tradingeconomics.com"],
+    specialInstruction: `Return the NASDAQ Composite trailing PE ratio as a number (e.g. 33.5).`,
+  },
 };
 
 async function serperSearch(query: string): Promise<string> {

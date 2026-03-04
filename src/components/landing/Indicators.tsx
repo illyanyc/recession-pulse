@@ -55,6 +55,17 @@ const FALLBACK_INDICATORS: IndicatorRow[] = [
   { slug: "freight-index", name: "Freight Index", value: "118.2", trigger: "Declining", status: "watch", statusText: "Moderate", signal: "Freight mixed", category: "realtime" },
   { slug: "gdpnow", name: "GDPNow", value: "2.1%", trigger: "<0%", status: "watch", statusText: "Slowing", signal: "Down from 2.8%", category: "realtime" },
   { slug: "silver-gold-ratio", name: "Gold/Silver Ratio", value: "88.5", trigger: ">80", status: "warning", statusText: "Elevated", signal: "Flight to gold", category: "market" },
+  { slug: "us-national-debt", name: "US National Debt", value: "$36.2T", trigger: ">$35T", status: "danger", statusText: "Constrained", signal: "Fiscal space limited", category: "liquidity" },
+  { slug: "debt-to-gdp", name: "Debt/GDP Ratio", value: "124%", trigger: ">120%", status: "warning", statusText: "Exceeds GDP", signal: "Japan-level territory", category: "liquidity" },
+  { slug: "sp500", name: "S&P 500", value: "5,955", trigger: ">20% drawdown", status: "safe", statusText: "Near highs", signal: "Bull market intact", category: "market" },
+  { slug: "djia", name: "Dow Jones", value: "43,841", trigger: ">20% drawdown", status: "safe", statusText: "Near highs", signal: "Blue chips healthy", category: "market" },
+  { slug: "nasdaq", name: "NASDAQ", value: "18,847", trigger: ">20% drawdown", status: "safe", statusText: "Near highs", signal: "Tech holding", category: "market" },
+  { slug: "sp500-to-gdp", name: "S&P 500/GDP", value: "0.2053", trigger: ">0.20", status: "warning", statusText: "Overvalued", signal: "Buffett indicator elevated", category: "market" },
+  { slug: "djia-to-gdp", name: "DJIA/GDP", value: "1.512", trigger: ">1.5", status: "warning", statusText: "Elevated", signal: "Above historical avg", category: "market" },
+  { slug: "nasdaq-to-gdp", name: "NASDAQ/GDP", value: "0.6499", trigger: ">0.65", status: "watch", statusText: "Above avg", signal: "Tech premium", category: "market" },
+  { slug: "sp500-pe-ratio", name: "S&P 500 P/E", value: "26.5x", trigger: ">25", status: "warning", statusText: "Expensive", signal: "Above historical avg", category: "market" },
+  { slug: "djia-pe-ratio", name: "DJIA P/E", value: "21.8x", trigger: ">22", status: "watch", statusText: "Elevated", signal: "Near trigger", category: "market" },
+  { slug: "nasdaq-pe-ratio", name: "NASDAQ P/E", value: "34.2x", trigger: ">35", status: "watch", statusText: "Rich", signal: "Growth premium", category: "market" },
 ];
 
 const FREE_SLUGS = new Set(["sahm-rule", "yield-curve-2s10s", "vix"]);
