@@ -4,6 +4,7 @@ import { SocialProof } from "@/components/landing/SocialProof";
 import { Features } from "@/components/landing/Features";
 import { Indicators } from "@/components/landing/Indicators";
 import { SMSPreview } from "@/components/landing/SMSPreview";
+import { RecentBlog } from "@/components/landing/RecentBlog";
 import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
 import { FinalCTA } from "@/components/landing/FinalCTA";
@@ -122,6 +123,7 @@ export default function LandingPage() {
         <Features />
         <Indicators />
         <SMSPreview />
+        <RecentBlog />
         <Pricing />
         <FAQ />
         <FinalCTA />

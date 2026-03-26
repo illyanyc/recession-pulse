@@ -269,10 +269,17 @@ export function buildWeeklyRecapEmail(
   };
 }
 
+export interface BlogPostPreview {
+  slug: string;
+  title: string;
+  excerpt: string;
+}
+
 export function buildDailyBriefingEmail(
   indicators: RecessionIndicator[] | IndicatorWithTrend[],
   stockSignals?: StockSignal[],
-  plan?: string
+  plan?: string,
+  blogPost?: BlogPostPreview
 ): { subject: string; html: string } {
   const date = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -344,6 +351,20 @@ export function buildDailyBriefingEmail(
     }
   }
 
+  let blogSection = "";
+  if (blogPost) {
+    const truncatedExcerpt = blogPost.excerpt.length > 220
+      ? blogPost.excerpt.slice(0, 217) + "..."
+      : blogPost.excerpt;
+    blogSection = `
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-left:3px solid #F0913A;border-radius:0px;padding:20px;margin-bottom:20px;">
+        <p style="margin:0 0 6px;color:#F0913A;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">Today's AI Risk Analysis</p>
+        <h3 style="margin:0 0 8px;font-size:17px;color:#D4D4D4;font-weight:700;">${blogPost.title}</h3>
+        <p style="margin:0 0 14px;font-size:13px;color:#9ca3af;line-height:1.6;">${truncatedExcerpt}</p>
+        ${btn("Read Full Analysis", `${APP_URL}/blog/${blogPost.slug}`)}
+      </div>`;
+  }
+
   let stockSection = "";
   if (plan === "pulse_pro" && stockSignals && stockSignals.length > 0) {
     const stockRows = stockSignals.slice(0, 8).map((s) => `
@@ -379,6 +400,8 @@ export function buildDailyBriefingEmail(
       <h2 style="margin:0 0 4px;font-size:20px;color:#D4D4D4;">Daily Recession Briefing</h2>
       <p style="margin:0 0 20px;font-size:13px;color:#808080;">${date}</p>
 
+      ${blogSection}
+
       <!-- Score bar -->
       ${scoreBar(safe.length, watch.length, danger.length)}
 
@@ -402,6 +425,62 @@ export function buildDailyBriefingEmail(
 
       <div style="margin-top:24px;text-align:center;">
         ${btn("View Full Dashboard", `${APP_URL}/dashboard`)}
+      </div>
+    `),
+  };
+}
+
+export function buildFeatureAnnouncementEmail(): { subject: string; html: string } {
+  return {
+    subject: "New: AI Risk Analysis Now in Your Daily Email",
+    html: wrapper(`
+      <h2 style="margin:0 0 4px;font-size:20px;color:#D4D4D4;">New Feature: Daily AI Analysis in Your Inbox</h2>
+      <p style="margin:0 0 20px;font-size:13px;color:#808080;">A quick update from RecessionPulse</p>
+
+      <p style="margin:0 0 16px;font-size:14px;color:#9ca3af;line-height:1.6;">
+        Starting today, your daily briefing email includes a new section at the top: a summary of our
+        <strong style="color:#D4D4D4;">AI-generated recession risk analysis</strong> with a direct link to the
+        full blog post.
+      </p>
+
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-left:3px solid #F0913A;border-radius:0px;padding:20px;margin-bottom:20px;">
+        <p style="margin:0 0 6px;color:#F0913A;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">What's new</p>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:8px 0;color:#F0913A;font-size:13px;font-weight:600;vertical-align:top;width:20px;">1.</td>
+            <td style="padding:8px 8px;color:#D4D4D4;font-size:13px;line-height:1.5;">
+              <strong>AI Risk Score &amp; Summary</strong> — Every morning, our AI analyzes 50+ indicators
+              with real-time web data and writes a comprehensive risk assessment.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#F0913A;font-size:13px;font-weight:600;vertical-align:top;width:20px;">2.</td>
+            <td style="padding:8px 8px;color:#D4D4D4;font-size:13px;line-height:1.5;">
+              <strong>Blog Post Link</strong> — The full analysis is published as a blog post every day.
+              Your email now links directly to it, above the indicator table.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#F0913A;font-size:13px;font-weight:600;vertical-align:top;width:20px;">3.</td>
+            <td style="padding:8px 8px;color:#D4D4D4;font-size:13px;line-height:1.5;">
+              <strong>Everything else stays the same</strong> — Your indicator table, trend arrows,
+              signal changes, and stock screener picks are all still there.
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <p style="margin:0 0 20px;font-size:14px;color:#9ca3af;line-height:1.6;">
+        No action needed on your end — this is already live in your next daily email.
+        You can also browse all past analyses on the blog anytime.
+      </p>
+
+      <div style="text-align:center;margin-bottom:16px;">
+        ${btn("Read Today's Analysis", `${APP_URL}/blog`)}
+      </div>
+
+      <div style="text-align:center;">
+        ${btn("View Dashboard", `${APP_URL}/dashboard`)}
       </div>
     `),
   };

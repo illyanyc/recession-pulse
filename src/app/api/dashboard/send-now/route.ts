@@ -4,6 +4,7 @@ import { sendSMS } from "@/lib/sms";
 import { sendEmail } from "@/lib/resend";
 import { formatRecessionSMS, formatStockAlertSMS } from "@/lib/message-formatter";
 import { buildDailyBriefingEmail } from "@/lib/email-templates";
+import type { BlogPostPreview } from "@/lib/email-templates";
 import { fetchIndicatorTrends, mergeWithTrends } from "@/lib/indicator-history";
 import { NextResponse } from "next/server";
 import type { RecessionIndicator, StockSignal } from "@/types";
@@ -60,6 +61,26 @@ export async function POST() {
       .select("*")
       .eq("screened_at", today);
 
+    // Fetch today's blog post if available
+    let todaysBlogPost: BlogPostPreview | undefined;
+    try {
+      const { data: blogPost } = await service
+        .from("blog_posts")
+        .select("slug, title, excerpt")
+        .eq("content_type", "daily_risk_assessment")
+        .eq("status", "published")
+        .gte("published_at", `${today}T00:00:00`)
+        .order("published_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (blogPost) {
+        todaysBlogPost = blogPost;
+      }
+    } catch {
+      // Blog post may not exist yet
+    }
+
     // SMS — coming soon (toll-free verification in progress)
     channels.push({ name: "SMS", status: "skipped", error: "Coming soon" });
 
@@ -69,7 +90,8 @@ export async function POST() {
       const { html } = buildDailyBriefingEmail(
         indicatorsWithTrends,
         (stockSignals as StockSignal[]) || [],
-        emailPlan
+        emailPlan,
+        todaysBlogPost
       );
       const result = await sendEmail({
         to: profile.email,
