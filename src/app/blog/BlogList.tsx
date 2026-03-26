@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { NewsletterSignup } from "@/components/shared/NewsletterSignup";
 import { Calendar, ArrowRight, BookOpen, Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BlogPost {
@@ -77,21 +76,6 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
           Weekly recession indicator reports, deep-dive analyses, and real-time
           market commentary powered by data.
         </p>
-      </div>
-
-      {/* Newsletter signup */}
-      <div className="bg-pulse-card border border-pulse-border rounded-xl p-6 mb-8">
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold text-white mb-1">
-              Free Weekly Recession Report
-            </h2>
-            <p className="text-sm text-pulse-muted">
-              Get our weekly analysis delivered to your inbox. No spam, unsubscribe anytime.
-            </p>
-          </div>
-          <NewsletterSignup />
-        </div>
       </div>
 
       {/* Search + Filters */}
