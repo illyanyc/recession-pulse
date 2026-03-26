@@ -5,7 +5,6 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { ShareButtons } from "@/components/shared/ShareButtons";
-import { NewsletterSignup } from "@/components/shared/NewsletterSignup";
 import { Calendar, ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
 import { markdownToHtml } from "@/lib/markdown";
 
@@ -202,21 +201,6 @@ export default async function BlogPostPage({ params }: PageProps) {
               url={`https://recessionpulse.com/blog/${slug}`}
               title={`${post.title} — RecessionPulse`}
             />
-          </div>
-
-          {/* Newsletter CTA */}
-          <div className="bg-pulse-card border border-pulse-border rounded-xl p-6 mb-12">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="flex-1">
-                <h2 className="text-lg font-semibold text-white mb-1">
-                  Get Weekly Reports in Your Inbox
-                </h2>
-                <p className="text-sm text-pulse-muted">
-                  Free weekly recession analysis. No spam.
-                </p>
-              </div>
-              <NewsletterSignup />
-            </div>
           </div>
 
           {/* Related posts */}

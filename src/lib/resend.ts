@@ -10,10 +10,12 @@ export async function sendEmail({
   to,
   subject,
   html,
+  scheduledAt,
 }: {
   to: string;
   subject: string;
   html: string;
+  scheduledAt?: string;
 }) {
   try {
     const { data, error } = await getResend().emails.send({
@@ -21,6 +23,7 @@ export async function sendEmail({
       to,
       subject,
       html,
+      ...(scheduledAt && { scheduledAt }),
     });
 
     if (error) {

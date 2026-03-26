@@ -430,6 +430,104 @@ export function buildDailyBriefingEmail(
   };
 }
 
+export function buildPromoEmail(): { subject: string; html: string } {
+  return {
+    subject: "Your first month of Pulse Pro is on us",
+    html: wrapper(`
+      <h2 style="margin:0 0 4px;font-size:20px;color:#D4D4D4;">Spring into smarter risk intelligence.</h2>
+      <p style="margin:0 0 20px;font-size:13px;color:#808080;">Limited-time offer from RecessionPulse</p>
+
+      <p style="margin:0 0 16px;font-size:14px;color:#9ca3af;line-height:1.6;">
+        For a limited time, we're giving you a full month of
+        <strong style="color:#D4D4D4;">Pulse Pro</strong> completely free.
+        Just apply coupon <strong style="color:#F0913A;">RPSPRING2026</strong> at checkout.
+      </p>
+
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-left:3px solid #F0913A;border-radius:0px;padding:20px;margin-bottom:20px;">
+        <p style="margin:0 0 6px;color:#F0913A;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">What's included in Pulse Pro ($9.99/mo)</p>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:6px 0;color:#D4D4D4;font-size:13px;line-height:1.5;">
+              ✓ &nbsp;Everything in Pulse (AI risk assessment, daily SMS alerts, threshold notifications)
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#D4D4D4;font-size:13px;line-height:1.5;">
+              ✓ &nbsp;<strong>Daily stock screener alerts</strong> — stocks below 200 EMA + RSI &lt;30 + P/E &lt;15
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#D4D4D4;font-size:13px;line-height:1.5;">
+              ✓ &nbsp;<strong>Value dividend picks</strong> — P/E &lt;12, near 200 EMA
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#D4D4D4;font-size:13px;line-height:1.5;">
+              ✓ &nbsp;<strong>Sector rotation signals</strong>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#D4D4D4;font-size:13px;line-height:1.5;">
+              ✓ &nbsp;<strong>Portfolio defense positioning</strong>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <p style="margin:0 0 16px;font-size:14px;color:#9ca3af;line-height:1.6;">
+        <strong style="color:#D4D4D4;">And we're just getting started</strong> — more AI-powered features
+        are being added to Pulse Pro this month. Lock in now and be the first to get them.
+      </p>
+
+      <p style="margin:0 0 20px;font-size:14px;color:#9ca3af;line-height:1.6;">
+        Whether markets are calm or volatile, Pulse Pro gives you the quant edge to stay ahead.
+      </p>
+
+      <div style="text-align:center;margin-bottom:12px;">
+        ${btn("Claim Your Free Month", `${APP_URL}/signup?plan=pulse_pro`)}
+      </div>
+
+      <p style="margin:0;text-align:center;font-size:12px;color:#808080;">
+        Use code <strong style="color:#F0913A;">RPSPRING2026</strong> during Stripe checkout. Cancel anytime.
+      </p>
+    `),
+  };
+}
+
+export function buildPromoFollowUpEmail(): { subject: string; html: string } {
+  return {
+    subject: "Reminder: Your free month of Pulse Pro expires soon",
+    html: wrapper(`
+      <h2 style="margin:0 0 4px;font-size:20px;color:#D4D4D4;">Don't miss your free month.</h2>
+      <p style="margin:0 0 20px;font-size:13px;color:#808080;">Quick reminder from RecessionPulse</p>
+
+      <p style="margin:0 0 16px;font-size:14px;color:#9ca3af;line-height:1.6;">
+        Yesterday we opened up a <strong style="color:#D4D4D4;">free month of Pulse Pro</strong> —
+        our full quant toolkit with daily stock screener alerts, value dividend picks,
+        sector rotation signals, and portfolio defense positioning.
+      </p>
+
+      <p style="margin:0 0 16px;font-size:14px;color:#9ca3af;line-height:1.6;">
+        We're also shipping more AI-powered features to Pulse Pro this month.
+        If you lock in now, you'll be the first to get them — at no cost for your first month.
+      </p>
+
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-radius:0px;padding:20px;margin-bottom:20px;text-align:center;">
+        <p style="margin:0 0 8px;font-size:16px;color:#F0913A;font-weight:700;">RPSPRING2026</p>
+        <p style="margin:0;font-size:13px;color:#808080;">Apply at Stripe checkout for 1 month free</p>
+      </div>
+
+      <div style="text-align:center;margin-bottom:12px;">
+        ${btn("Get Pulse Pro Free", `${APP_URL}/signup?plan=pulse_pro`)}
+      </div>
+
+      <p style="margin:0;text-align:center;font-size:12px;color:#808080;">
+        No risk. Cancel anytime. Limited-time offer.
+      </p>
+    `),
+  };
+}
+
 export function buildFeatureAnnouncementEmail(): { subject: string; html: string } {
   return {
     subject: "New: AI Risk Analysis Now in Your Daily Email",
