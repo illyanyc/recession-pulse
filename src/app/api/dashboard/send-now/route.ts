@@ -61,36 +61,64 @@ export async function POST() {
       .select("*")
       .eq("screened_at", today);
 
-    // Fetch today's blog post if available
+    // Fetch today's blog post if available; fall back to latest daily post
+    // so the email always includes the blog card even if today's cron skipped.
     let todaysBlogPost: BlogPostPreview | undefined;
     try {
-      const { data: blogPost } = await service
+      let { data: blogPost } = await service
         .from("blog_posts")
-        .select("slug, title, excerpt")
+        .select("slug, title, excerpt, published_at")
         .eq("content_type", "daily_risk_assessment")
         .eq("status", "published")
         .gte("published_at", `${today}T00:00:00`)
         .order("published_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
+
+      if (!blogPost) {
+        const { data: latestPost } = await service
+          .from("blog_posts")
+          .select("slug, title, excerpt, published_at")
+          .eq("content_type", "daily_risk_assessment")
+          .eq("status", "published")
+          .order("published_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        blogPost = latestPost;
+      }
 
       if (blogPost) {
-        todaysBlogPost = blogPost;
+        todaysBlogPost = {
+          slug: blogPost.slug,
+          title: blogPost.title,
+          excerpt: blogPost.excerpt,
+        };
       }
     } catch {
       // Blog post may not exist yet
     }
 
-    // Fetch today's AI risk assessment + 30d delta
+    // Fetch today's AI risk assessment + 30d delta; fall back to the latest
+    // assessment on record if today's row is missing.
     let todaysRiskAssessment: RiskAssessmentPreview | undefined;
     try {
-      const { data: todaysRow } = await service
+      let { data: assessmentRow } = await service
         .from("recession_risk_assessments")
         .select("score, risk_level, summary, assessment_date")
         .eq("assessment_date", today)
-        .single();
+        .maybeSingle();
 
-      if (todaysRow) {
+      if (!assessmentRow) {
+        const { data: latestRow } = await service
+          .from("recession_risk_assessments")
+          .select("score, risk_level, summary, assessment_date")
+          .order("assessment_date", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        assessmentRow = latestRow;
+      }
+
+      if (assessmentRow) {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const { data: priorRow } = await service
@@ -102,11 +130,11 @@ export async function POST() {
           .maybeSingle();
 
         todaysRiskAssessment = {
-          score: todaysRow.score,
-          risk_level: todaysRow.risk_level,
-          summary: todaysRow.summary,
-          assessment_date: todaysRow.assessment_date,
-          delta30d: priorRow?.score != null ? todaysRow.score - priorRow.score : null,
+          score: assessmentRow.score,
+          risk_level: assessmentRow.risk_level,
+          summary: assessmentRow.summary,
+          assessment_date: assessmentRow.assessment_date,
+          delta30d: priorRow?.score != null ? assessmentRow.score - priorRow.score : null,
         };
       }
     } catch {
