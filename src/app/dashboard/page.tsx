@@ -107,6 +107,21 @@ export default async function DashboardPage() {
     riskAssessment = data;
   }
 
+  // 30-day score history for the banner sparkline
+  const { data: riskHistoryRaw } = await supabase
+    .from("recession_risk_assessments")
+    .select("assessment_date, score, risk_level")
+    .order("assessment_date", { ascending: false })
+    .limit(30);
+
+  const riskHistory = (riskHistoryRaw ?? [])
+    .map((r) => ({
+      date: r.assessment_date as string,
+      score: r.score as number,
+      risk_level: r.risk_level as RecessionRiskAssessment["risk_level"],
+    }))
+    .reverse();
+
   return (
     <DashboardContent
       profile={profile}
@@ -115,6 +130,7 @@ export default async function DashboardPage() {
       stockSignals={stockSignals || []}
       messages={messages || []}
       riskAssessment={riskAssessment}
+      riskHistory={riskHistory}
     />
   );
 }

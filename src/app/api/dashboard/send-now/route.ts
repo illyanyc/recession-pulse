@@ -4,7 +4,7 @@ import { sendSMS } from "@/lib/sms";
 import { sendEmail } from "@/lib/resend";
 import { formatRecessionSMS, formatStockAlertSMS } from "@/lib/message-formatter";
 import { buildDailyBriefingEmail } from "@/lib/email-templates";
-import type { BlogPostPreview } from "@/lib/email-templates";
+import type { BlogPostPreview, RiskAssessmentPreview } from "@/lib/email-templates";
 import { fetchIndicatorTrends, mergeWithTrends } from "@/lib/indicator-history";
 import { NextResponse } from "next/server";
 import type { RecessionIndicator, StockSignal } from "@/types";
@@ -81,21 +81,54 @@ export async function POST() {
       // Blog post may not exist yet
     }
 
+    // Fetch today's AI risk assessment + 30d delta
+    let todaysRiskAssessment: RiskAssessmentPreview | undefined;
+    try {
+      const { data: todaysRow } = await service
+        .from("recession_risk_assessments")
+        .select("score, risk_level, summary, assessment_date")
+        .eq("assessment_date", today)
+        .single();
+
+      if (todaysRow) {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const { data: priorRow } = await service
+          .from("recession_risk_assessments")
+          .select("score")
+          .lte("assessment_date", thirtyDaysAgo.toISOString().split("T")[0])
+          .order("assessment_date", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        todaysRiskAssessment = {
+          score: todaysRow.score,
+          risk_level: todaysRow.risk_level,
+          summary: todaysRow.summary,
+          assessment_date: todaysRow.assessment_date,
+          delta30d: priorRow?.score != null ? todaysRow.score - priorRow.score : null,
+        };
+      }
+    } catch {
+      // Risk assessment may not exist yet
+    }
+
     // SMS — coming soon (toll-free verification in progress)
     channels.push({ name: "SMS", status: "skipped", error: "Coming soon" });
 
     // Email
     if (profile.email && profile.email_alerts_enabled) {
       const emailPlan = plan === "pulse_pro" ? "pulse_pro" : "pulse";
-      const { html } = buildDailyBriefingEmail(
+      const { subject, html } = buildDailyBriefingEmail(
         indicatorsWithTrends,
         (stockSignals as StockSignal[]) || [],
         emailPlan,
-        todaysBlogPost
+        todaysBlogPost,
+        todaysRiskAssessment
       );
       const result = await sendEmail({
         to: profile.email,
-        subject: `RecessionPulse Daily Briefing — ${new Date().toLocaleDateString()}`,
+        subject,
         html,
       });
       channels.push(result.success

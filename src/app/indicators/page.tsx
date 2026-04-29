@@ -1,12 +1,13 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { createServiceClient, createClient } from "@/lib/supabase/server";
-import { INDICATORS_SEO, ALL_INDICATOR_SLUGS } from "@/lib/indicators-metadata";
+import { INDICATORS_SEO, ALL_INDICATOR_SLUGS, INDICATOR_COUNT } from "@/lib/indicators-metadata";
+import { SLUG_CATEGORY_MAP } from "@/lib/indicator-categories";
 import { Badge } from "@/components/ui/Badge";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { TrendingDown, TrendingUp, Minus, ArrowRight, Activity, Lock } from "lucide-react";
-import type { IndicatorStatus, IndicatorCategory } from "@/types";
+import type { IndicatorStatus } from "@/types";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/types";
 
 const FREE_INDICATOR_SLUGS = new Set([
@@ -19,8 +20,7 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Recession Indicators — Live Economic Dashboard",
-  description:
-    "Track 38+ recession indicators in real time: Sahm Rule, yield curve, credit spreads, ISM PMI, JOLTS, building permits & more. Updated daily.",
+  description: `Track ${INDICATOR_COUNT} recession indicators in real time: Sahm Rule, yield curve, credit spreads, ISM PMI, JOLTS, building permits & more. Updated daily.`,
   keywords: [
     "recession indicators",
     "recession tracker",
@@ -33,10 +33,15 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "RecessionPulse",
     title: "Live Recession Indicators Dashboard — RecessionPulse",
-    description:
-      "38+ recession indicators tracked daily. Sahm Rule, yield curve, JOLTS, building permits, credit spreads, PMI, and more.",
+    description: `${INDICATOR_COUNT} recession indicators tracked daily. Sahm Rule, yield curve, JOLTS, building permits, credit spreads, PMI, and more.`,
     url: "https://recessionpulse.com/indicators",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "RecessionPulse Indicators Dashboard" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Live Recession Indicators Dashboard — RecessionPulse",
+    description: `${INDICATOR_COUNT} recession indicators tracked daily. Sahm Rule, yield curve, JOLTS, building permits, credit spreads, PMI, and more.`,
+    images: ["/og-image.png"],
   },
   alternates: { canonical: "https://recessionpulse.com/indicators" },
 };
@@ -59,47 +64,6 @@ interface IndicatorRow {
   category: string;
   reading_date: string;
 }
-
-const SLUG_CATEGORY_MAP: Record<string, IndicatorCategory> = {
-  "sahm-rule": "primary",
-  "yield-curve-2s10s": "primary",
-  "yield-curve-2s30s": "primary",
-  "conference-board-lei": "primary",
-  "ism-manufacturing": "primary",
-  "unemployment-rate": "primary",
-  "real-personal-income": "primary",
-  "industrial-production": "primary",
-  "jolts-quits-rate": "primary",
-  "temp-help-services": "primary",
-  "ny-fed-recession-prob": "primary",
-  "sos-recession": "primary",
-  "initial-claims": "secondary",
-  "consumer-sentiment": "secondary",
-  "fed-funds-rate": "secondary",
-  "gdp-growth": "secondary",
-  "jpm-recession-probability": "secondary",
-  "building-permits": "housing",
-  "housing-starts": "housing",
-  "corporate-profits": "business_activity",
-  "nfib-optimism": "business_activity",
-  "inventory-sales-ratio": "business_activity",
-  "sloos-lending": "business_activity",
-  "personal-savings-rate": "credit_stress",
-  "credit-card-delinquency": "credit_stress",
-  "debt-service-ratio": "credit_stress",
-  "nfci": "market",
-  "credit-spreads": "market",
-  "vix": "market",
-  "dxy-dollar-index": "market",
-  "emerging-markets": "market",
-  "m2-money-supply": "liquidity",
-  "on-rrp-facility": "liquidity",
-  "bank-unrealized-losses": "liquidity",
-  "us-interest-expense": "liquidity",
-  "gdpnow": "realtime",
-  "copper-gold-ratio": "realtime",
-  "freight-index": "realtime",
-};
 
 export default async function IndicatorsIndexPage() {
   const latestBySlug = new Map<string, IndicatorRow>();

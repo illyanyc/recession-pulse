@@ -3,8 +3,35 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { runAgenticRiskAssessment } from "@/lib/risk-assessment-agent";
 import { setRiskAssessment } from "@/lib/redis";
 import { verifyCronAuth } from "@/lib/cron-auth";
+import { INDICATOR_DEFINITIONS } from "@/lib/constants";
+import { CATEGORY_ORDER, type IndicatorCategory, type IndicatorStatus } from "@/types";
 
 export const maxDuration = 120;
+
+type CategoryCounts = Record<IndicatorCategory, { safe: number; watch: number; danger: number }>;
+
+function buildCategorySnapshot(
+  indicators: { slug: string; status: string }[]
+): CategoryCounts {
+  const slugToCategory = new Map<string, IndicatorCategory>();
+  for (const def of INDICATOR_DEFINITIONS) {
+    slugToCategory.set(def.slug, def.category as IndicatorCategory);
+  }
+  const counts = CATEGORY_ORDER.reduce<CategoryCounts>((acc, cat) => {
+    acc[cat] = { safe: 0, watch: 0, danger: 0 };
+    return acc;
+  }, {} as CategoryCounts);
+
+  for (const ind of indicators) {
+    const cat = slugToCategory.get(ind.slug);
+    if (!cat) continue;
+    const s = ind.status as IndicatorStatus;
+    if (s === "safe") counts[cat].safe++;
+    else if (s === "watch") counts[cat].watch++;
+    else counts[cat].danger++;
+  }
+  return counts;
+}
 
 export async function GET(request: Request) {
   const { authorized, response } = verifyCronAuth(request);
@@ -70,7 +97,24 @@ export async function GET(request: Request) {
       uniqueStocks
     );
 
-    // Persist to Supabase
+    const categorySnapshot = buildCategorySnapshot(currentIndicators);
+
+    // Fetch last 30 days of assessments for delta context (published before today)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const { data: scoreHistoryRows } = await supabase
+      .from("recession_risk_assessments")
+      .select("assessment_date, score, risk_level")
+      .gte("assessment_date", thirtyDaysAgo.toISOString().split("T")[0])
+      .lt("assessment_date", today)
+      .order("assessment_date", { ascending: true });
+
+    const scoreHistory = [
+      ...((scoreHistoryRows as { assessment_date: string; score: number; risk_level: string }[]) || []),
+      { assessment_date: today, score: result.score, risk_level: result.risk_level },
+    ];
+
+    // Persist to Supabase (+ sources + category_snapshot)
     const { error: insertError } = await supabase
       .from("recession_risk_assessments")
       .insert({
@@ -80,6 +124,8 @@ export async function GET(request: Request) {
         key_factors: result.key_factors,
         outlook: result.outlook,
         indicators_snapshot: currentIndicators,
+        sources: result.sources,
+        category_snapshot: categorySnapshot,
         model: result.model,
         assessment_date: today,
       });
@@ -107,7 +153,19 @@ export async function GET(request: Request) {
     try {
       const { generateRiskBlogPost } = await import("@/lib/content-generator");
       const todayLabel = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-      const blogArticle = await generateRiskBlogPost(currentIndicators, result, todayLabel, historyData || []);
+      const blogArticle = await generateRiskBlogPost(
+        currentIndicators,
+        result,
+        todayLabel,
+        historyData || [],
+        {
+          scoreHistory,
+          stockSignals: uniqueStocks,
+          sources: result.sources,
+          categorySnapshot,
+          assessmentDate: today,
+        }
+      );
 
       const dateSlug = blogArticle.slug;
       const { data: existingPost } = await supabase
@@ -117,6 +175,9 @@ export async function GET(request: Request) {
         .single();
 
       if (!existingPost) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://recessionpulse.com";
+        const ogImageUrl = `${appUrl}/api/og/risk-trend?size=og&date=${today}`;
+
         const { error: blogError } = await supabase.from("blog_posts").insert({
           slug: blogArticle.slug,
           title: blogArticle.title,
@@ -126,6 +187,7 @@ export async function GET(request: Request) {
           keywords: blogArticle.keywords,
           content_type: "daily_risk_assessment",
           status: "published",
+          og_image_url: ogImageUrl,
           published_at: new Date().toISOString(),
         });
 

@@ -9,30 +9,48 @@ interface MessageHistoryProps {
   messages: MessageQueueItem[];
 }
 
+const TABLE_CELL_SEP = " · ";
+
 function stripHtmlToText(html: string): string {
-  return html
+  const replaced = html
     .replace(/<style[\s\S]*?<\/style>/gi, "")
     .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<\/div>/gi, "\n")
-    .replace(/<\/tr>/gi, "\n")
-    .replace(/<\/li>/gi, "\n")
+    .replace(/<\/(p|div|tr|h[1-6]|li|section|article|header|footer)>/gi, "\n")
+    .replace(/<\/(td|th)>/gi, TABLE_CELL_SEP)
     .replace(/<li[^>]*>/gi, "• ")
-    .replace(/<\/h[1-6]>/gi, "\n")
+    .replace(/<a\s+[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, (_m, _href, inner) => inner)
+    .replace(/<img[^>]*alt="([^"]*)"[^>]*>/gi, "")
+    .replace(/<img[^>]*>/gi, "")
     .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<")
     .replace(/&gt;/gi, ">")
     .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+    .replace(/&#39;/gi, "'");
+
+  return replaced
+    .split("\n")
+    .map((line) =>
+      line
+        .replace(/\s+/g, " ")
+        .replace(/(\s·\s)+/g, TABLE_CELL_SEP)
+        .replace(/^\s*·\s*|\s*·\s*$/g, "")
+        .trim(),
+    )
+    .filter((line) => line.length > 0 && line !== "·")
+    .join("\n");
 }
 
 function isHtml(content: string): boolean {
-  return content.trimStart().startsWith("<!DOCTYPE") || content.trimStart().startsWith("<html");
+  const trimmed = content.trimStart();
+  return (
+    trimmed.startsWith("<!DOCTYPE") ||
+    trimmed.startsWith("<html") ||
+    /^<(table|div|body|head)\b/i.test(trimmed)
+  );
 }
 
 function getFullText(msg: MessageQueueItem): string {
@@ -42,9 +60,19 @@ function getFullText(msg: MessageQueueItem): string {
   return msg.content;
 }
 
+const PREVIEW_LINES = 3;
+
 function getPreview(fullText: string): string {
-  const lines = fullText.split("\n").map((l) => l.trim()).filter(Boolean);
-  return lines.slice(0, 5).join("\n");
+  const lines = fullText
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const skipIntro = new Set([
+    "RecessionPulse",
+    "Real-time recession intelligence",
+  ]);
+  const meaningful = lines.filter((l) => !skipIntro.has(l));
+  return meaningful.slice(0, PREVIEW_LINES).join("\n");
 }
 
 function isExpandable(fullText: string, preview: string): boolean {
@@ -149,10 +177,16 @@ function MessageRow({ msg }: { msg: MessageQueueItem }) {
             </span>
           </div>
 
-          <p className="text-xs text-pulse-muted whitespace-pre-wrap leading-relaxed">
+          <div
+            className={`text-xs text-pulse-muted whitespace-pre-wrap leading-relaxed ${
+              expanded
+                ? "max-h-80 overflow-y-auto rounded-md border border-pulse-border bg-pulse-dark/40 p-3 font-mono"
+                : "line-clamp-3"
+            }`}
+          >
             {expanded ? fullText : preview}
-            {!expanded && canExpand && "..."}
-          </p>
+            {!expanded && canExpand && "…"}
+          </div>
 
           {canExpand && (
             <button

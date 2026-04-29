@@ -953,6 +953,15 @@ export const INDICATORS_SEO: Record<string, IndicatorSEO> = {
 
 export const ALL_INDICATOR_SLUGS = Object.keys(INDICATORS_SEO);
 
+/**
+ * Single source of truth for the total indicator count displayed to users
+ * across marketing copy, metadata, JSON-LD, email templates, and dashboards.
+ *
+ * Prefer this constant over any hard-coded number — it auto-scales with
+ * `INDICATORS_SEO` so adding a new indicator updates every surface at once.
+ */
+export const INDICATOR_COUNT = ALL_INDICATOR_SLUGS.length;
+
 export function getIndicatorSEO(slug: string): IndicatorSEO | undefined {
   return INDICATORS_SEO[slug];
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { Providers } from "./providers";
+import { INDICATOR_COUNT } from "@/lib/indicators-metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,11 +20,10 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://recessionpulse.com"),
   title: {
-    default: "RecessionPulse — Track 54 Recession Indicators Free",
+    default: `RecessionPulse — Track ${INDICATOR_COUNT} Recession Indicators Free`,
     template: "%s | RecessionPulse",
   },
-  description:
-    "Track 54 recession & macro indicators free: Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI & more. SMS alerts from $6.99/mo.",
+  description: `Track ${INDICATOR_COUNT} recession & macro indicators free: Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI & more. SMS alerts from $6.99/mo.`,
   keywords: [
     "recession indicators",
     "recession tracker",
@@ -78,22 +78,20 @@ export const metadata: Metadata = {
     url: "https://recessionpulse.com",
     siteName: "RecessionPulse",
     title: "RecessionPulse — Think Like a Quant. Prepare for What's Next.",
-    description:
-      "54 recession & macro indicators tracked free. Sahm Rule, yield curves, VIX, JOLTS, GDPNow & more. SMS alerts from $6.99/mo.",
+    description: `${INDICATOR_COUNT} recession & macro indicators tracked free. Sahm Rule, yield curves, VIX, JOLTS, GDPNow & more. SMS alerts from $6.99/mo.`,
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "RecessionPulse — 54 Recession Indicators Dashboard",
+        alt: `RecessionPulse — ${INDICATOR_COUNT} Recession Indicators Dashboard`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "RecessionPulse — 54 Recession Indicators, Free Dashboard",
-    description:
-      "Track 54 recession indicators free. Sahm Rule, yield curves, VIX, JOLTS, building permits & more. SMS alerts from $6.99/mo.",
+    title: `RecessionPulse — ${INDICATOR_COUNT} Recession Indicators, Free Dashboard`,
+    description: `Track ${INDICATOR_COUNT} recession indicators free. Sahm Rule, yield curves, VIX, JOLTS, building permits & more. SMS alerts from $6.99/mo.`,
     images: ["/og-image.png"],
   },
   alternates: {
@@ -125,11 +123,7 @@ const websiteJsonLd = {
   name: "RecessionPulse",
   url: "https://recessionpulse.com",
   description: "Real-time recession indicator tracking and daily alerts.",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: "https://recessionpulse.com/indicators?q={search_term_string}",
-    "query-input": "required name=search_term_string",
-  },
+  // SearchAction intentionally omitted — no site-wide search handler wired yet.
 };
 
 

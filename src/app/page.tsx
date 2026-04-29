@@ -8,6 +8,7 @@ import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
 import { FinalCTA } from "@/components/landing/FinalCTA";
 import { Footer } from "@/components/landing/Footer";
+import { INDICATOR_COUNT } from "@/lib/indicators-metadata";
 
 const softwareAppJsonLd = {
   "@context": "https://schema.org",
@@ -15,8 +16,7 @@ const softwareAppJsonLd = {
   name: "RecessionPulse",
   applicationCategory: "FinanceApplication",
   operatingSystem: "Web",
-  description:
-    "Track 54 recession & macro indicators in real time. Free dashboard with Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI, and more.",
+  description: `Track ${INDICATOR_COUNT} recession & macro indicators in real time. Free dashboard with Sahm Rule, yield curves, VIX, JOLTS, building permits, GDPNow, NFCI, and more.`,
   url: "https://recessionpulse.com",
   offers: [
     {
@@ -24,8 +24,7 @@ const softwareAppJsonLd = {
       name: "Free Plan",
       price: "0",
       priceCurrency: "USD",
-      description:
-        "Free dashboard with all 54 recession and macro indicators tracked in real time",
+      description: `Free dashboard with all ${INDICATOR_COUNT} recession and macro indicators tracked in real time`,
       url: "https://recessionpulse.com/signup",
     },
     {
@@ -33,8 +32,7 @@ const softwareAppJsonLd = {
       name: "Pulse Plan",
       price: "6.99",
       priceCurrency: "USD",
-      description:
-        "Daily email and SMS recession alerts — 54 indicators tracked with threshold notifications",
+      description: `Daily email and SMS recession alerts — ${INDICATOR_COUNT} indicators tracked with threshold notifications`,
       url: "https://recessionpulse.com/pricing",
     },
     {
@@ -42,8 +40,7 @@ const softwareAppJsonLd = {
       name: "Pulse Pro Plan",
       price: "9.99",
       priceCurrency: "USD",
-      description:
-        "Full quant toolkit — 54 indicators + stock screener alerts. Stocks below 200 EMA, RSI <30, P/E <15.",
+      description: `Full quant toolkit — ${INDICATOR_COUNT} indicators + stock screener alerts. Stocks below 200 EMA, RSI <30, P/E <15.`,
       url: "https://recessionpulse.com/pricing",
     },
   ],
@@ -58,7 +55,7 @@ const faqJsonLd = {
       name: "What indicators does RecessionPulse track?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "RecessionPulse monitors 54 recession and macro indicators across 8 categories: Primary (Sahm Rule, unemployment, industrial production, JOLTS quits, temp help, SOS indicator), Housing (building permits, housing starts), Business Activity (corporate profits, NFIB, inventory-to-sales), Credit Stress (savings rate, credit card delinquency, SLOOS, debt service ratio, US National Debt, Debt-to-GDP ratio), Market (yield curves, VIX, NFCI, copper-gold ratio, gold-silver ratio, NY Fed & JPM recession probability, S&P 500, Dow Jones, NASDAQ, S&P 500/GDP, DJIA/GDP, NASDAQ/GDP Buffett Indicator variants, S&P 500 P/E, DJIA P/E, NASDAQ P/E ratios), Liquidity (M2), and Real-Time (freight index, GDPNow).",
+        text: `RecessionPulse monitors ${INDICATOR_COUNT} recession and macro indicators across 8 categories: Primary (Sahm Rule, unemployment, industrial production, JOLTS quits, temp help, SOS indicator), Housing (building permits, housing starts), Business Activity (corporate profits, NFIB, inventory-to-sales), Credit Stress (savings rate, credit card delinquency, SLOOS, debt service ratio, US National Debt, Debt-to-GDP ratio), Market (yield curves, VIX, NFCI, copper-gold ratio, gold-silver ratio, NY Fed & JPM recession probability, S&P 500, Dow Jones, NASDAQ, S&P 500/GDP, DJIA/GDP, NASDAQ/GDP Buffett Indicator variants, S&P 500 P/E, DJIA P/E, NASDAQ P/E ratios), Liquidity (M2), and Real-Time (freight index, GDPNow).`,
       },
     },
     {
@@ -66,7 +63,7 @@ const faqJsonLd = {
       name: "Is RecessionPulse really free?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. The full dashboard with all 54 indicators, signals, trends, historical context, and daily email briefings is completely free with no credit card required. The Pulse plan ($6.99/mo) adds AI recession risk assessment, SMS alerts, and threshold notifications. Pulse Pro ($9.99/mo) adds stock screener alerts, value picks, sector rotation signals, and portfolio defense positioning.",
+        text: `Yes. The full dashboard with all ${INDICATOR_COUNT} indicators, signals, trends, historical context, and daily email briefings is completely free with no credit card required. The Pulse plan ($6.99/mo) adds AI recession risk assessment, SMS alerts, and threshold notifications. Pulse Pro ($9.99/mo) adds stock screener alerts, value picks, sector rotation signals, and portfolio defense positioning.`,
       },
     },
     {
@@ -90,7 +87,7 @@ const faqJsonLd = {
       name: "How much does RecessionPulse cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "RecessionPulse has three tiers: Free (full dashboard with all 54 indicators plus daily email briefings), Pulse at $6.99/month (adds AI recession risk assessment, SMS alerts, and threshold notifications), and Pulse Pro at $9.99/month (adds stock screener alerts, value picks, sector rotation signals, and portfolio defense positioning). Cancel anytime. No contracts.",
+        text: `RecessionPulse has three tiers: Free (full dashboard with all ${INDICATOR_COUNT} indicators plus daily email briefings), Pulse at $6.99/month (adds AI recession risk assessment, SMS alerts, and threshold notifications), and Pulse Pro at $9.99/month (adds stock screener alerts, value picks, sector rotation signals, and portfolio defense positioning). Cancel anytime. No contracts.`,
       },
     },
     {

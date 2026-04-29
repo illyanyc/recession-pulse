@@ -4,7 +4,7 @@ import { sendSMS } from "@/lib/sms";
 import { sendEmail } from "@/lib/resend";
 import { formatRecessionSMS, formatStockAlertSMS } from "@/lib/message-formatter";
 import { buildDailyBriefingEmail } from "@/lib/email-templates";
-import type { BlogPostPreview } from "@/lib/email-templates";
+import type { BlogPostPreview, RiskAssessmentPreview } from "@/lib/email-templates";
 import { fetchIndicatorTrends, mergeWithTrends } from "@/lib/indicator-history";
 import { verifyCronAuth } from "@/lib/cron-auth";
 import type { RecessionIndicator, StockSignal } from "@/types";
@@ -74,6 +74,39 @@ export async function GET(request: Request) {
       // Blog post may not exist yet — email sends without it
     }
 
+    // 4b. Fetch today's AI recession risk assessment + compute 30d delta
+    let todaysRiskAssessment: RiskAssessmentPreview | undefined;
+    try {
+      const { data: todaysRow } = await supabase
+        .from("recession_risk_assessments")
+        .select("score, risk_level, summary, assessment_date")
+        .eq("assessment_date", today)
+        .single();
+
+      if (todaysRow) {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const { data: priorRow } = await supabase
+          .from("recession_risk_assessments")
+          .select("score, assessment_date")
+          .lte("assessment_date", thirtyDaysAgo.toISOString().split("T")[0])
+          .order("assessment_date", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const delta30d = priorRow?.score != null ? todaysRow.score - priorRow.score : null;
+        todaysRiskAssessment = {
+          score: todaysRow.score,
+          risk_level: todaysRow.risk_level,
+          summary: todaysRow.summary,
+          assessment_date: todaysRow.assessment_date,
+          delta30d,
+        };
+      }
+    } catch {
+      // Assessment may not exist yet — email sends without it
+    }
+
     // 5. Get ALL users with email alerts enabled (emails go to every tier)
     const { data: allProfiles } = await supabase
       .from("profiles")
@@ -102,6 +135,17 @@ export async function GET(request: Request) {
     const recessionMessage = formatRecessionSMS(indicatorsWithTrends);
     const stockMessage = formatStockAlertSMS((stockSignals as StockSignal[]) || []);
 
+    // Capture the canonical daily briefing subject once — subject line is
+    // plan-independent, so we reuse it for every recession_alert in this batch
+    // (this is the subject actually used by the sender below).
+    const { subject: dailyBriefingSubject } = buildDailyBriefingEmail(
+      indicatorsWithTrends,
+      (stockSignals as StockSignal[]) || [],
+      "free",
+      todaysBlogPost,
+      todaysRiskAssessment
+    );
+
     // 6. Queue messages for each user
     const messagesToInsert: {
       user_id: string;
@@ -125,7 +169,8 @@ export async function GET(request: Request) {
           indicatorsWithTrends,
           (stockSignals as StockSignal[]) || [],
           emailPlan,
-          todaysBlogPost
+          todaysBlogPost,
+          todaysRiskAssessment
         );
         messagesToInsert.push({
           user_id: user.id,
@@ -171,8 +216,9 @@ export async function GET(request: Request) {
             errorMsg = result.error || "";
           } else if (msg.channel === "email") {
             const isHtml = msg.content.includes("<!DOCTYPE") || msg.content.includes("<html");
+            // Use the dynamic subject from the template (score + alert band + changed-signal count)
             const subject = msg.message_type === "recession_alert"
-              ? `RecessionPulse Daily Briefing — ${new Date().toLocaleDateString()}`
+              ? dailyBriefingSubject
               : "RecessionPulse Alert";
             const result = await sendEmail({
               to: msg.recipient,

@@ -2,17 +2,16 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/landing/Navbar";
 import { Pricing } from "@/components/landing/Pricing";
 import { Footer } from "@/components/landing/Footer";
+import { INDICATOR_COUNT } from "@/lib/indicators-metadata";
 
 export const metadata: Metadata = {
   title: "Pricing — RecessionPulse",
-  description:
-    "Compare RecessionPulse plans: Free dashboard with 54 indicators, Pulse ($6.99/mo) with SMS alerts, or Pulse Pro ($9.99/mo) with stock screener.",
+  description: `Compare RecessionPulse plans: Free dashboard with ${INDICATOR_COUNT} indicators, Pulse ($6.99/mo) with SMS alerts, or Pulse Pro ($9.99/mo) with stock screener.`,
   openGraph: {
     type: "website",
     siteName: "RecessionPulse",
     title: "Pricing — RecessionPulse",
-    description:
-      "Compare RecessionPulse plans: Free dashboard with 54 indicators, Pulse with SMS alerts, or Pulse Pro with stock screener.",
+    description: `Compare RecessionPulse plans: Free dashboard with ${INDICATOR_COUNT} indicators, Pulse with SMS alerts, or Pulse Pro with stock screener.`,
     url: "https://recessionpulse.com/pricing",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "RecessionPulse Pricing" }],
   },

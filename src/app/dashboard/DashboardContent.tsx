@@ -32,6 +32,12 @@ interface RefreshStatusPayload {
   error?: string;
 }
 
+export interface RiskHistoryPoint {
+  date: string;
+  score: number;
+  risk_level: RecessionRiskAssessment["risk_level"];
+}
+
 interface DashboardContentProps {
   profile: UserProfile;
   indicators: RecessionIndicator[];
@@ -39,6 +45,7 @@ interface DashboardContentProps {
   stockSignals: StockSignal[];
   messages: MessageQueueItem[];
   riskAssessment: RecessionRiskAssessment | null;
+  riskHistory: RiskHistoryPoint[];
 }
 
 export function DashboardContent({
@@ -48,6 +55,7 @@ export function DashboardContent({
   stockSignals,
   messages,
   riskAssessment,
+  riskHistory,
 }: DashboardContentProps) {
   const router = useRouter();
   const isPro = profile?.subscription_tier === "pulse_pro";
@@ -222,7 +230,7 @@ export function DashboardContent({
 
       {/* Overall Recession Risk — Pulse+ only */}
       <section>
-        <RecessionRiskBanner assessment={riskAssessment} hasSubscription={hasSubscription} />
+        <RecessionRiskBanner assessment={riskAssessment} history={riskHistory} hasSubscription={hasSubscription} />
       </section>
 
       {/* Indicators */}

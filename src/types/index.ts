@@ -1,3 +1,5 @@
+import { INDICATOR_COUNT } from "@/lib/indicators-metadata";
+
 export type IndicatorStatus = "safe" | "watch" | "warning" | "danger";
 
 export type IndicatorCategory =
@@ -156,7 +158,7 @@ export const PLANS = {
     price: 0,
     description: "Real-time recession dashboard — no credit card required",
     features: [
-      "54 recession & macro indicators tracked",
+      `${INDICATOR_COUNT} recession & macro indicators tracked`,
       "Real-time dashboard access",
       "Daily email recession briefing",
       "Indicator status, signals & trends",

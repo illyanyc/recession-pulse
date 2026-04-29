@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getIndicatorSEO, ALL_INDICATOR_SLUGS, INDICATORS_SEO } from "@/lib/indicators-metadata";
+import { getCategorySiblings } from "@/lib/indicator-categories";
 import { getChartLimit } from "@/lib/constants";
 import { getGlobalSummary } from "@/lib/redis";
 import { Badge } from "@/components/ui/Badge";
@@ -127,7 +128,7 @@ export default async function IndicatorPage({ params }: PageProps) {
     // Supabase unavailable at build time — render with static content only
   }
 
-  const relatedSlugs = ALL_INDICATOR_SLUGS.filter((s) => s !== slug).slice(0, 3);
+  const relatedSlugs = getCategorySiblings(slug, ALL_INDICATOR_SLUGS, 3);
 
   const jsonLd = {
     "@context": "https://schema.org",

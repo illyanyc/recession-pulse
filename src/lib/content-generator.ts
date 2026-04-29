@@ -65,6 +65,140 @@ interface HistoricalReading {
   reading_date: string;
 }
 
+interface ScoreHistoryRow {
+  assessment_date: string;
+  score: number;
+  risk_level?: string;
+}
+
+interface StockSignalCtx {
+  ticker: string;
+  company_name: string;
+  signal_type: string;
+  forward_pe?: number;
+  dividend_yield?: number;
+  rsi_14?: number;
+  market_cap?: number;
+}
+
+type CategoryCountsCtx = Record<string, { safe: number; watch: number; danger: number }>;
+
+export interface BlogContext {
+  scoreHistory?: ScoreHistoryRow[];
+  stockSignals?: StockSignalCtx[];
+  sources?: string[];
+  categorySnapshot?: CategoryCountsCtx;
+  assessmentDate?: string;
+}
+
+const CATEGORY_NAMES: Record<string, string> = {
+  primary: "Primary Indicators",
+  secondary: "Secondary Indicators",
+  liquidity: "Liquidity",
+  market: "Market Signals",
+  housing: "Housing & Construction",
+  credit_stress: "Consumer Credit Stress",
+  business_activity: "Business Activity",
+  realtime: "Real-Time / High-Frequency",
+};
+
+function buildScoreTrajectoryBlock(history: ScoreHistoryRow[]): string {
+  if (!history.length) return "No prior score history available.";
+  const sorted = [...history].sort((a, b) => a.assessment_date.localeCompare(b.assessment_date));
+  const first = sorted[0];
+  const last = sorted[sorted.length - 1];
+  const delta30d = last.score - first.score;
+  const scores = sorted.map((s) => s.score);
+  const min = Math.min(...scores);
+  const max = Math.max(...scores);
+  const avg = Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
+  const recent = sorted.slice(-10);
+  const recentTrail = recent.map((s) => `  ${s.assessment_date}: ${s.score}`).join("\n");
+  return `Window: ${first.assessment_date} → ${last.assessment_date}
+Start: ${first.score} | End: ${last.score} | Δ: ${delta30d >= 0 ? "+" : ""}${delta30d}
+Min: ${min} | Max: ${max} | Avg: ${avg} | Samples: ${sorted.length}
+Last 10 readings:
+${recentTrail}`;
+}
+
+function buildCategoryBreakdownBlock(snapshot: CategoryCountsCtx | undefined): string {
+  if (!snapshot) return "No category breakdown available.";
+  const rows: string[] = [];
+  for (const [cat, counts] of Object.entries(snapshot)) {
+    const total = counts.safe + counts.watch + counts.danger;
+    if (total === 0) continue;
+    const label = CATEGORY_NAMES[cat] || cat;
+    rows.push(`- ${label}: ${counts.safe} safe / ${counts.watch} watch / ${counts.danger} danger`);
+  }
+  return rows.length ? rows.join("\n") : "No category breakdown available.";
+}
+
+function buildStockBlockCtx(stocks: StockSignalCtx[] | undefined): string {
+  if (!stocks?.length) return "No stock screener signals today.";
+  return stocks
+    .slice(0, 10)
+    .map((s) => {
+      const parts = [`$${s.ticker} (${s.company_name}) — ${s.signal_type.replace(/_/g, " ")}`];
+      if (s.forward_pe != null) parts.push(`P/E ${s.forward_pe.toFixed(1)}`);
+      if (s.rsi_14 != null) parts.push(`RSI ${s.rsi_14.toFixed(0)}`);
+      if (s.dividend_yield != null) parts.push(`Yield ${(s.dividend_yield * 100).toFixed(2)}%`);
+      return `- ${parts.join(" | ")}`;
+    })
+    .join("\n");
+}
+
+function buildMoversBlock(history: HistoricalReading[], current: IndicatorSnapshot[]): string {
+  if (!history.length) return "No recent history available for movers.";
+  const bySlug = new Map<string, HistoricalReading[]>();
+  for (const h of history) {
+    const arr = bySlug.get(h.slug) || [];
+    arr.push(h);
+    bySlug.set(h.slug, arr);
+  }
+
+  const movers: { name: string; slug: string; delta1d: number | null; delta7d: number | null; latest: string }[] = [];
+  for (const ind of current) {
+    const readings = (bySlug.get(ind.slug) || []).sort((a, b) => a.reading_date.localeCompare(b.reading_date));
+    if (readings.length < 2) continue;
+    const latest = readings[readings.length - 1];
+    const prev1 = readings.length >= 2 ? readings[readings.length - 2] : null;
+    const prev7 = readings.find((r) => {
+      const latestDate = new Date(latest.reading_date);
+      const rDate = new Date(r.reading_date);
+      const diffDays = (latestDate.getTime() - rDate.getTime()) / (1000 * 60 * 60 * 24);
+      return diffDays >= 6 && diffDays <= 9;
+    }) || readings[0];
+
+    if (latest.numeric_value == null) continue;
+    const base1 = prev1?.numeric_value;
+    const base7 = prev7?.numeric_value;
+    const delta1d = base1 != null && base1 !== 0 ? ((latest.numeric_value - base1) / Math.abs(base1)) * 100 : null;
+    const delta7d = base7 != null && base7 !== 0 ? ((latest.numeric_value - base7) / Math.abs(base7)) * 100 : null;
+    movers.push({
+      name: ind.name,
+      slug: ind.slug,
+      delta1d,
+      delta7d,
+      latest: ind.latest_value,
+    });
+  }
+
+  const top = movers
+    .filter((m) => m.delta7d != null)
+    .sort((a, b) => Math.abs(b.delta7d!) - Math.abs(a.delta7d!))
+    .slice(0, 5);
+
+  if (!top.length) return "No meaningful movers over the past 7 days.";
+
+  return top
+    .map((m) => {
+      const d1 = m.delta1d != null ? `${m.delta1d >= 0 ? "+" : ""}${m.delta1d.toFixed(1)}% 1D` : "—";
+      const d7 = m.delta7d != null ? `${m.delta7d >= 0 ? "+" : ""}${m.delta7d.toFixed(1)}% 7D` : "—";
+      return `- ${m.name} (${m.latest}): ${d1} / ${d7}`;
+    })
+    .join("\n");
+}
+
 export async function generateRecessionRiskAssessment(
   indicators: IndicatorSnapshot[],
   history: HistoricalReading[]
@@ -186,7 +320,8 @@ export async function generateRiskBlogPost(
   indicators: IndicatorSnapshot[],
   assessment: { score: number; risk_level: string; summary: string; key_factors: string[]; outlook: string },
   dateLabel: string,
-  history?: HistoricalReading[]
+  history?: HistoricalReading[],
+  context?: BlogContext
 ): Promise<GeneratedArticle> {
   const indicatorBlock = indicators
     .map((i) => `- ${i.signal_emoji} ${i.name}: ${i.latest_value} (${i.status.toUpperCase()}) — ${i.signal}`)
@@ -195,6 +330,30 @@ export async function generateRiskBlogPost(
   const historySection = history?.length
     ? `\n\n90-DAY INDICATOR HISTORY (use this for comprehensive trend analysis):\n${buildHistoryBlock(history)}`
     : "";
+
+  const scoreHistoryBlock = context?.scoreHistory?.length
+    ? buildScoreTrajectoryBlock(context.scoreHistory)
+    : "No prior score history available.";
+
+  const categoryBreakdownBlock = buildCategoryBreakdownBlock(context?.categorySnapshot);
+  const moversBlock = history?.length ? buildMoversBlock(history, indicators) : "No history available.";
+  const stockScreenerBlock = buildStockBlockCtx(context?.stockSignals);
+  const sourcesBlock = context?.sources?.length
+    ? context.sources.map((u) => `- ${u}`).join("\n")
+    : "No web-sourced citations available.";
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://recessionpulse.com";
+  const trendImageDate = context?.assessmentDate || new Date().toISOString().split("T")[0];
+  const trendImageUrl = `${appUrl}/api/og/risk-trend?size=blog&date=${trendImageDate}`;
+
+  const first = context?.scoreHistory?.[0];
+  const delta30d =
+    context?.scoreHistory && context.scoreHistory.length > 1 && first
+      ? assessment.score - first.score
+      : null;
+  const deltaLabel = delta30d == null
+    ? ""
+    : ` (${delta30d >= 0 ? "+" : ""}${delta30d} vs 30 days ago)`;
 
   const MODEL = "gpt-5.2";
 
@@ -205,21 +364,38 @@ export async function generateRiskBlogPost(
       {
         role: "system",
         content: `You are a macro-economic analyst writing a daily recession risk update for RecessionPulse.com.
-Write a comprehensive, data-driven blog post (1000-1500 words) in Markdown.
+Write a comprehensive, data-driven blog post (1800-2400 words) in Markdown.
 You have access to web search — USE IT to find the latest economic news, Fed statements, jobs data, and market developments from the past 48 hours to enrich your analysis.
 You also have up to 90 days of historical indicator data — USE IT to identify meaningful trends, inflection points, and the direction of travel for each indicator.
+You also have a 30-day recession score trajectory — USE IT to contextualize today's reading against the recent trend.
 
-Structure your article:
-## Recession Risk Score: [score]/100 — [LEVEL]
-Opening verdict paragraph with the score and what it means.
+Structure your article EXACTLY in this order:
+
+## Recession Risk Score: ${assessment.score}/100 — ${assessment.risk_level.toUpperCase()}${deltaLabel}
+Opening verdict paragraph. State the score, the band, and whether the score has risen, fallen, or held steady over the past 30 days. Keep it sharp — 3-4 sentences.
+
+## Score Trend — Last 30 Days
+Embed this exact markdown image at the top of this section (no other prose before it):
+![Recession risk score — last 30 days](${trendImageUrl})
+
+Then narrate the trajectory in 2-3 paragraphs. Reference the start/end score, min/max, and what the shape implies (accelerating, stabilizing, mean-reverting, etc.).
 
 ## Key Drivers
-The 4-6 most important factors, each with specific data points.
+The 4-6 most important factors driving today's score, each with specific data points.
+
+## Category Breakdown
+Summarize the signal state by indicator family (primary, secondary, liquidity, market, housing, credit stress, business activity, real-time). Use the CATEGORY BREAKDOWN data block for exact counts. Add one sentence of commentary per category that has meaningful signals.
+
+## Biggest Movers
+Highlight the 5 indicators with the largest % change over the past 7 days (from the BIGGEST MOVERS data block). Note whether the move is confirmatory (worsening risk) or contradictory (improving).
 
 ## 90-Day Indicator Trends
 Analyze how indicators have moved over the past 90 days. Identify significant trend changes, accelerations, or reversals. Compare current readings to where they were 30, 60, and 90 days ago.
 
-## Latest Economic Developments
+${context?.stockSignals?.length ? `## Stock Screener Signals
+Interpret today's quant screener output (from the STOCK SCREENER data block). 2-3 paragraphs on what the flagged names suggest about market positioning — oversold mean reversion, defensive dividends, value rotation, etc.
+
+` : ""}## Latest Economic Developments
 Synthesize the latest news from your web search — Fed decisions, jobs data, GDP, market movements.
 
 ## Near-Term Outlook (Next 30 Days)
@@ -231,17 +407,21 @@ Broader structural analysis. Are the underlying macro trends improving or deteri
 ## What to Watch
 Specific upcoming events, data releases, and thresholds that could move the needle.
 
+## Sources
+Render the provided SOURCES data block as a deduped bulleted list of inline markdown links (use the domain as the link text, e.g. "- [reuters.com](https://reuters.com/...)"). Do not invent URLs — only use ones provided.
+
 Guidelines:
 - Use ## headings, **bold** for emphasis, bullet points for lists
 - Be direct and actionable. No disclaimers.
 - Reference specific numbers, dates, and sources from web search
 - Use the 90-day history to quantify trends (e.g. "up 0.3 points over the past 90 days")
-- Compare current readings to 30/60/90-day-ago levels where meaningful`,
+- Compare current readings to 30/60/90-day-ago levels where meaningful
+- DO NOT omit any of the required sections above, even if a data block is empty — in that case write "No data available for this window."`,
       },
       {
         role: "user",
         content: `Daily Recession Risk Assessment — ${dateLabel}
-Risk Score: ${assessment.score}/100 (${assessment.risk_level.toUpperCase()})
+Risk Score: ${assessment.score}/100 (${assessment.risk_level.toUpperCase()})${deltaLabel}
 Summary: ${assessment.summary}
 Key Factors:
 ${assessment.key_factors.map((f) => `- ${f}`).join("\n")}
@@ -250,7 +430,22 @@ Outlook: ${assessment.outlook}
 TODAY'S INDICATOR READINGS:
 ${indicatorBlock}${historySection}
 
-Search the web for the latest economic news and data, then write a comprehensive daily recession risk blog post.`,
+SCORE TRAJECTORY (last 30 daily scores):
+${scoreHistoryBlock}
+
+CATEGORY BREAKDOWN (signal counts per indicator family):
+${categoryBreakdownBlock}
+
+BIGGEST MOVERS (top 5 indicators by |7-day % change|):
+${moversBlock}
+
+STOCK SCREENER (today's quant-flagged names):
+${stockScreenerBlock}
+
+SOURCES (web-search citations consulted — reuse these in the ## Sources section):
+${sourcesBlock}
+
+Search the web for any additional latest economic news and data, then write the full daily recession risk blog post with ALL required sections. Embed the trend image exactly as specified.`,
       },
     ],
   });
@@ -281,6 +476,8 @@ Search the web for the latest economic news and data, then write a comprehensive
       `recession risk ${dateLabel.toLowerCase()}`,
       "recession probability",
       "economic outlook",
+      "recession score trend",
+      "macro risk analysis",
     ],
   };
 }

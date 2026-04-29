@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { Activity, Bell, Phone, Mail, Save, ArrowLeft, BellOff } from "lucide-react";
+import { Bell, Phone, Mail, Save, ArrowLeft, BellOff } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/lib/toast-context";
 import type { UserProfile, Subscription } from "@/types";
@@ -108,7 +108,7 @@ export function SettingsContent() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Activity className="h-8 w-8 text-pulse-green animate-spin" />
+        <div className="h-10 w-10 border-2 border-pulse-green/20 border-t-pulse-green rounded-full animate-spin" />
       </div>
     );
   }

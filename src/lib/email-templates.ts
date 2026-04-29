@@ -6,8 +6,9 @@ import type {
   TrendDirection,
   IndicatorStatus,
 } from "@/types";
+import { INDICATOR_COUNT } from "@/lib/indicators-metadata";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://recessionpulse.com";
+const APP_URL = "https://recessionpulse.com";
 
 function wrapper(content: string): string {
   return `
@@ -177,7 +178,7 @@ export function buildWelcomeEmail(name: string): { subject: string; html: string
       <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-radius:0px;padding:20px;margin-bottom:20px;">
         <p style="margin:0 0 12px;color:#F0913A;font-weight:600;font-size:14px;">What to expect:</p>
         <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">54 recession indicators tracked daily</td></tr>
+          <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">${INDICATOR_COUNT} recession indicators tracked daily</td></tr>
           <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Morning briefing at 7:15 AM ET</td></tr>
           <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Real-time dashboard with AI analysis</td></tr>
           <tr><td style="padding:6px 0;color:#F0913A;font-size:13px;font-weight:600;">-</td><td style="padding:6px 8px;color:#D4D4D4;font-size:13px;">Instant alerts if critical thresholds breach</td></tr>
@@ -275,11 +276,28 @@ export interface BlogPostPreview {
   excerpt: string;
 }
 
+export interface RiskAssessmentPreview {
+  score: number;
+  risk_level: "low" | "moderate" | "elevated" | "high" | "critical";
+  summary: string;
+  delta30d?: number | null;
+  assessment_date?: string;
+}
+
+const RISK_LEVEL_COLORS: Record<RiskAssessmentPreview["risk_level"], string> = {
+  low: "#00CC66",
+  moderate: "#F2C94C",
+  elevated: "#F0913A",
+  high: "#EB5757",
+  critical: "#BB0A1F",
+};
+
 export function buildDailyBriefingEmail(
   indicators: RecessionIndicator[] | IndicatorWithTrend[],
   stockSignals?: StockSignal[],
   plan?: string,
-  blogPost?: BlogPostPreview
+  blogPost?: BlogPostPreview,
+  riskAssessment?: RiskAssessmentPreview
 ): { subject: string; html: string } {
   const date = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -294,7 +312,19 @@ export function buildDailyBriefingEmail(
   const hasTrends = indicators.length > 0 && "trend" in indicators[0];
 
   let subjectPrefix: string;
-  if (danger.length >= 3) subjectPrefix = "[HIGH ALERT]";
+  if (riskAssessment) {
+    const score = riskAssessment.score;
+    subjectPrefix =
+      score >= 81
+        ? "[CRITICAL]"
+        : score >= 61
+          ? "[HIGH RISK]"
+          : score >= 41
+            ? "[ELEVATED]"
+            : score >= 21
+              ? "[MODERATE]"
+              : "[LOW RISK]";
+  } else if (danger.length >= 3) subjectPrefix = "[HIGH ALERT]";
   else if (danger.length >= 1) subjectPrefix = "[CAUTION]";
   else if (watch.length >= 3) subjectPrefix = "[WATCHFUL]";
   else subjectPrefix = "[ALL CLEAR]";
@@ -351,6 +381,46 @@ export function buildDailyBriefingEmail(
     }
   }
 
+  let riskScoreSection = "";
+  if (riskAssessment) {
+    const scoreColor = RISK_LEVEL_COLORS[riskAssessment.risk_level] || "#F0913A";
+    const delta = riskAssessment.delta30d;
+    const deltaText =
+      delta == null
+        ? "&nbsp;"
+        : `${delta > 0 ? "▲ +" : delta < 0 ? "▼ " : "– "}${delta} vs 30 days ago`;
+    const deltaColor = delta == null ? "#808080" : delta > 2 ? "#EB5757" : delta < -2 ? "#00CC66" : "#9ca3af";
+    const trendDate = riskAssessment.assessment_date || new Date().toISOString().split("T")[0];
+    const trendImg = `${APP_URL}/api/og/risk-trend?size=email&date=${trendDate}`;
+    const truncSummary = riskAssessment.summary.length > 280
+      ? riskAssessment.summary.slice(0, 277) + "..."
+      : riskAssessment.summary;
+
+    riskScoreSection = `
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-radius:0px;padding:20px;margin-bottom:20px;">
+        <p style="margin:0 0 10px;color:#F0913A;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">AI Recession Risk Score</p>
+        <table cellpadding="0" cellspacing="0" border="0" style="width:100%;margin-bottom:12px;">
+          <tr>
+            <td style="vertical-align:baseline;padding-right:18px;">
+              <span style="font-size:48px;font-weight:800;color:${scoreColor};font-family:monospace;line-height:1;">${riskAssessment.score}</span>
+              <span style="font-size:18px;color:#6b7280;font-family:monospace;margin-left:2px;">/100</span>
+            </td>
+            <td style="vertical-align:baseline;">
+              <div style="font-size:13px;font-weight:700;color:${scoreColor};text-transform:uppercase;letter-spacing:0.08em;">${riskAssessment.risk_level}</div>
+              <div style="font-size:12px;color:${deltaColor};margin-top:2px;">${deltaText}</div>
+            </td>
+          </tr>
+        </table>
+        <p style="margin:0 0 14px;font-size:13px;color:#9ca3af;line-height:1.6;">${truncSummary}</p>
+        <img
+          src="${trendImg}"
+          alt="Recession risk score — last 30 days"
+          width="560"
+          style="display:block;width:100%;max-width:560px;height:auto;border:1px solid #2A2A2A;border-radius:0px;"
+        />
+      </div>`;
+  }
+
   let blogSection = "";
   if (blogPost) {
     const truncatedExcerpt = blogPost.excerpt.length > 220
@@ -394,11 +464,16 @@ export function buildDailyBriefingEmail(
     `;
   }
 
+  const dateShort = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const scoreSegment = riskAssessment ? ` · ${riskAssessment.score}/100` : "";
+
   return {
-    subject: `${subjectPrefix} — RecessionPulse ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}${subjectSuffix}`,
+    subject: `${subjectPrefix} RecessionPulse ${dateShort}${scoreSegment}${subjectSuffix}`,
     html: wrapper(`
       <h2 style="margin:0 0 4px;font-size:20px;color:#D4D4D4;">Daily Recession Briefing</h2>
       <p style="margin:0 0 20px;font-size:13px;color:#808080;">${date}</p>
+
+      ${riskScoreSection}
 
       ${blogSection}
 
@@ -580,6 +655,120 @@ export function buildFeatureAnnouncementEmail(): { subject: string; html: string
       <div style="text-align:center;">
         ${btn("View Dashboard", `${APP_URL}/dashboard`)}
       </div>
+    `),
+  };
+}
+
+export function buildProductUpdatesEmail(): { subject: string; html: string } {
+  return {
+    subject: "What's new on RecessionPulse — April 2026 updates",
+    html: wrapper(`
+      <h2 style="margin:0 0 4px;font-size:20px;color:#D4D4D4;">A bigger, clearer picture of recession risk.</h2>
+      <p style="margin:0 0 20px;font-size:13px;color:#808080;">Product updates · April 2026</p>
+
+      <p style="margin:0 0 16px;font-size:14px;color:#9ca3af;line-height:1.6;">
+        We've shipped a batch of updates designed to make recession risk easier to see, understand, and act on —
+        on the dashboard, in your daily briefing, and across the site.
+      </p>
+
+      <!-- #1 Score history on dashboard -->
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-left:3px solid #F0913A;border-radius:0px;padding:20px;margin-bottom:16px;">
+        <p style="margin:0 0 6px;color:#F0913A;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">New · Dashboard</p>
+        <h3 style="margin:0 0 8px;font-size:16px;color:#D4D4D4;font-weight:700;">30-day recession score history</h3>
+        <p style="margin:0 0 12px;font-size:13px;color:#9ca3af;line-height:1.6;">
+          Your dashboard now shows a full 30-day chart of the AI recession score alongside today's number —
+          plus a 30-day delta badge so you can see the trajectory at a glance. Each risk band (low → extreme)
+          is shaded in the background so you can read the direction, not just the value.
+        </p>
+        <div style="text-align:left;">
+          <a href="${APP_URL}/dashboard" style="color:#F0913A;font-size:13px;font-weight:600;text-decoration:none;">Open dashboard →</a>
+        </div>
+      </div>
+
+      <!-- #2 Daily briefing upgrade -->
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-left:3px solid #F0913A;border-radius:0px;padding:20px;margin-bottom:16px;">
+        <p style="margin:0 0 6px;color:#F0913A;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">Upgraded · Daily briefing</p>
+        <h3 style="margin:0 0 8px;font-size:16px;color:#D4D4D4;font-weight:700;">Numeric AI score + 30-day trend in every email</h3>
+        <p style="margin:0 0 12px;font-size:13px;color:#9ca3af;line-height:1.6;">
+          The 7:15 AM ET briefing now leads with the numeric risk score, the 30-day change,
+          and an embedded 30-day trend chart — so you see direction before you see the indicator table.
+          Existing signal changes, stock picks, and indicator table are unchanged.
+        </p>
+      </div>
+
+      <!-- #3 Blog post expansion -->
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-left:3px solid #F0913A;border-radius:0px;padding:20px;margin-bottom:16px;">
+        <p style="margin:0 0 6px;color:#F0913A;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">Expanded · Daily AI Analysis</p>
+        <h3 style="margin:0 0 8px;font-size:16px;color:#D4D4D4;font-weight:700;">Deeper daily analysis — now 1,800–2,400 words</h3>
+        <p style="margin:0 0 10px;font-size:13px;color:#9ca3af;line-height:1.6;">
+          Every daily risk post now includes five new sections:
+        </p>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:4px;">
+          <tr><td style="padding:3px 0;color:#D4D4D4;font-size:13px;line-height:1.5;">✓ &nbsp;30-day score trajectory chart</td></tr>
+          <tr><td style="padding:3px 0;color:#D4D4D4;font-size:13px;line-height:1.5;">✓ &nbsp;Category breakdown — safe / watch / danger counts per group</td></tr>
+          <tr><td style="padding:3px 0;color:#D4D4D4;font-size:13px;line-height:1.5;">✓ &nbsp;Biggest movers — top 5 indicators by 1D and 7D change</td></tr>
+          <tr><td style="padding:3px 0;color:#D4D4D4;font-size:13px;line-height:1.5;">✓ &nbsp;Stock screener signals (Pulse Pro)</td></tr>
+          <tr><td style="padding:3px 0;color:#D4D4D4;font-size:13px;line-height:1.5;">✓ &nbsp;Source list — every URL the AI consulted, deduped</td></tr>
+        </table>
+        <div style="text-align:left;margin-top:10px;">
+          <a href="${APP_URL}/blog" style="color:#F0913A;font-size:13px;font-weight:600;text-decoration:none;">Read today's analysis →</a>
+        </div>
+      </div>
+
+      <!-- #4 Learning library -->
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-left:3px solid #F0913A;border-radius:0px;padding:20px;margin-bottom:16px;">
+        <p style="margin:0 0 6px;color:#F0913A;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">New · Learn</p>
+        <h3 style="margin:0 0 8px;font-size:16px;color:#D4D4D4;font-weight:700;">Glossary + historical recessions library</h3>
+        <p style="margin:0 0 12px;font-size:13px;color:#9ca3af;line-height:1.6;">
+          A searchable glossary of ~50 macro terms (Sahm Rule, NBER dating, yield curve inversion, soft landing, stagflation…) and
+          a library of every US recession since 1973 with modern parallels — both cross-linked to the live indicators.
+        </p>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:0 8px 0 0;width:50%;">
+              <a href="${APP_URL}/learn/glossary" style="color:#F0913A;font-size:13px;font-weight:600;text-decoration:none;">Browse glossary →</a>
+            </td>
+            <td style="padding:0 0 0 8px;width:50%;">
+              <a href="${APP_URL}/learn/recessions" style="color:#F0913A;font-size:13px;font-weight:600;text-decoration:none;">Historical recessions →</a>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- #5 Compare tool -->
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-left:3px solid #F0913A;border-radius:0px;padding:20px;margin-bottom:16px;">
+        <p style="margin:0 0 6px;color:#F0913A;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">New · Indicators</p>
+        <h3 style="margin:0 0 8px;font-size:16px;color:#D4D4D4;font-weight:700;">Head-to-head indicator comparisons</h3>
+        <p style="margin:0 0 12px;font-size:13px;color:#9ca3af;line-height:1.6;">
+          Curated high-signal pairs (Sahm Rule vs Yield Curve, LEI vs Conference Board, etc.) with a dual-line
+          chart and AI-written verdict on which leads, which lags, and which you should watch right now.
+        </p>
+        <a href="${APP_URL}/indicators/compare" style="color:#F0913A;font-size:13px;font-weight:600;text-decoration:none;">Browse comparisons →</a>
+      </div>
+
+      <!-- #6 Category hubs -->
+      <div style="background:#0D0D0D;border:1px solid #2A2A2A;border-left:3px solid #F0913A;border-radius:0px;padding:20px;margin-bottom:20px;">
+        <p style="margin:0 0 6px;color:#F0913A;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;">New · Indicators</p>
+        <h3 style="margin:0 0 8px;font-size:16px;color:#D4D4D4;font-weight:700;">Category hub pages</h3>
+        <p style="margin:0 0 12px;font-size:13px;color:#9ca3af;line-height:1.6;">
+          Every indicator category (labor, housing, credit, sentiment, yields, growth, stocks, liquidity) now has
+          its own hub with pillar copy, current signal summary, and a 30-day category chart.
+        </p>
+        <a href="${APP_URL}/indicators" style="color:#F0913A;font-size:13px;font-weight:600;text-decoration:none;">All indicators →</a>
+      </div>
+
+      <p style="margin:0 0 20px;font-size:14px;color:#9ca3af;line-height:1.6;">
+        As always, no action needed on your end — everything is live and backfilled. Hit reply with feedback
+        or feature requests; we read every email.
+      </p>
+
+      <div style="text-align:center;margin-bottom:12px;">
+        ${btn("Open Dashboard", `${APP_URL}/dashboard`)}
+      </div>
+
+      <p style="margin:8px 0 0;text-align:center;font-size:12px;color:#808080;">
+        — The RecessionPulse team
+      </p>
     `),
   };
 }

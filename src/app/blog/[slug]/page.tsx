@@ -69,6 +69,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       title: post.title,
       description: post.meta_description,
+      images: [post.og_image_url || "/og-image.png"],
     },
     alternates: { canonical: `https://recessionpulse.com/blog/${slug}` },
   };

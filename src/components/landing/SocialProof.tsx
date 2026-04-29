@@ -1,9 +1,10 @@
 import { BarChart3, Clock, Shield, TrendingUp } from "lucide-react";
+import { INDICATOR_COUNT } from "@/lib/indicators-metadata";
 
 const stats = [
   {
     icon: TrendingUp,
-    value: "54",
+    value: String(INDICATOR_COUNT),
     label: "Recession & macro indicators",
   },
   {
