@@ -4,6 +4,7 @@ import { buildDailyBriefingEmail } from "@/lib/email-templates";
 import type { BlogPostPreview, RiskAssessmentPreview } from "@/lib/email-templates";
 import { fetchIndicatorTrends, mergeWithTrends } from "@/lib/indicator-history";
 import { verifyCronAuth } from "@/lib/cron-auth";
+import { sendEmail } from "@/lib/resend";
 import type { RecessionIndicator, StockSignal } from "@/types";
 
 /**
@@ -144,7 +145,7 @@ export async function GET(request: Request) {
     debug.assessmentError = err instanceof Error ? err.message : String(err);
   }
 
-  const { html } = buildDailyBriefingEmail(
+  const { subject, html } = buildDailyBriefingEmail(
     indicatorsWithTrends,
     (stockSignals as StockSignal[]) || [],
     "free",
@@ -153,12 +154,31 @@ export async function GET(request: Request) {
   );
 
   const url = new URL(request.url);
+  const sendTo = url.searchParams.get("sendTo");
+  if (sendTo) {
+    const result = await sendEmail({
+      to: sendTo,
+      subject: `[TEST] ${subject}`,
+      html,
+    });
+    return NextResponse.json({
+      sentTo: sendTo,
+      subject,
+      success: result.success,
+      error: result.error ?? null,
+      debug,
+      riskAssessmentRendered: !!todaysRiskAssessment,
+      blogPostRendered: !!todaysBlogPost,
+    });
+  }
+
   if (url.searchParams.get("format") === "json") {
     return NextResponse.json({
       debug,
       riskAssessmentRendered: !!todaysRiskAssessment,
       blogPostRendered: !!todaysBlogPost,
       htmlLength: html.length,
+      subject,
     });
   }
 
