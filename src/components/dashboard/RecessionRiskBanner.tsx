@@ -124,7 +124,7 @@ function ScoreHistoryChart({ history, color }: { history: RiskHistoryPoint[]; co
             }}
             labelStyle={{ color: "#9ca3af" }}
             itemStyle={{ color: "#D4D4D4" }}
-            formatter={(v: number) => [`${v}/100`, "Score"]}
+            formatter={(v) => [`${v}/100`, "Score"]}
           />
           <Line
             type="monotone"
