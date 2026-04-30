@@ -391,7 +391,7 @@ export function buildDailyBriefingEmail(
         : `${delta > 0 ? "▲ +" : delta < 0 ? "▼ " : "– "}${delta} vs 30 days ago`;
     const deltaColor = delta == null ? "#808080" : delta > 2 ? "#EB5757" : delta < -2 ? "#00CC66" : "#9ca3af";
     const trendDate = riskAssessment.assessment_date || new Date().toISOString().split("T")[0];
-    const trendImg = `${APP_URL}/api/og/risk-trend?size=email&date=${trendDate}`;
+    const trendImg = `${APP_URL}/api/og/risk-trend?size=email&date=${trendDate}&v=2`;
     const truncSummary = riskAssessment.summary.length > 280
       ? riskAssessment.summary.slice(0, 277) + "..."
       : riskAssessment.summary;
