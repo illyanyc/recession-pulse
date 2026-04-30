@@ -473,9 +473,9 @@ export function buildDailyBriefingEmail(
       <h2 style="margin:0 0 4px;font-size:20px;color:#D4D4D4;">Daily Recession Briefing</h2>
       <p style="margin:0 0 20px;font-size:13px;color:#808080;">${date}</p>
 
-      ${riskScoreSection}
-
       ${blogSection}
+
+      ${riskScoreSection}
 
       <!-- Score bar -->
       ${scoreBar(safe.length, watch.length, danger.length)}
