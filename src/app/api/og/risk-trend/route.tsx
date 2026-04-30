@@ -99,7 +99,7 @@ export async function GET(request: Request) {
   const metaFont = scale === "email" ? 11 : scale === "blog" ? 13 : 16;
 
   const deltaColor = delta > 2 ? "#EB5757" : delta < -2 ? "#00CC66" : "#9ca3af";
-  const deltaArrow = delta > 0 ? "▲" : delta < 0 ? "▼" : "–";
+  const deltaArrow = delta > 0 ? "+" : delta < 0 ? "-" : "=";
 
   const linePath = points.length > 1
     ? points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ")
@@ -199,56 +199,91 @@ export async function GET(request: Request) {
           </div>
         </div>
 
-        {/* Chart */}
-        <svg
-          width={chartWidth}
-          height={chartHeight}
-          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-          style={{ marginTop: scale === "email" ? 8 : 16 }}
+        {/*
+          Chart. next/og (Satori) does not support <text> or <g>; only a
+          limited set of SVG primitives plus an absolutely-positioned HTML
+          layer works reliably. We render tick labels as HTML divs and keep
+          only <rect>, <path>, and <circle> inside the SVG.
+        */}
+        <div
+          style={{
+            display: "flex",
+            position: "relative",
+            width: `${chartWidth}px`,
+            height: `${chartHeight}px`,
+            marginTop: scale === "email" ? 8 : 16,
+          }}
         >
-          {bandRows.map((b, i) => (
-            <rect
-              key={i}
-              x={0}
-              y={b.yTop}
-              width={chartWidth}
-              height={b.height}
-              fill={b.color}
-              opacity={0.06}
-            />
-          ))}
+          <svg
+            width={chartWidth}
+            height={chartHeight}
+            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+            style={{ position: "absolute", top: 0, left: 0 }}
+          >
+            {bandRows.map((b, i) => (
+              <rect
+                key={i}
+                x={0}
+                y={b.yTop}
+                width={chartWidth}
+                height={b.height}
+                fill={b.color}
+                opacity={0.06}
+              />
+            ))}
+            {[0, 20, 40, 60, 80, 100].map((tick) => {
+              const y = (1 - tick / 100) * chartHeight;
+              return (
+                <rect
+                  key={tick}
+                  x={0}
+                  y={y}
+                  width={chartWidth}
+                  height={1}
+                  fill="#2A2A2A"
+                />
+              );
+            })}
+            {linePath ? (
+              <path
+                d={linePath}
+                fill="none"
+                stroke={currentColor}
+                strokeWidth={scale === "email" ? 2 : 3}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+            ) : null}
+            {points.length > 0 && (
+              <circle
+                cx={points[points.length - 1].x}
+                cy={points[points.length - 1].y}
+                r={scale === "email" ? 4 : 6}
+                fill={currentColor}
+                stroke="#0D0D0D"
+                strokeWidth={2}
+              />
+            )}
+          </svg>
           {[0, 20, 40, 60, 80, 100].map((tick) => {
             const y = (1 - tick / 100) * chartHeight;
             return (
-              <g key={tick}>
-                <line x1={0} x2={chartWidth} y1={y} y2={y} stroke="#2A2A2A" strokeWidth={1} />
-                <text x={chartWidth - 4} y={y - 2} fill="#6b7280" fontSize={metaFont - 2} textAnchor="end">
-                  {tick}
-                </text>
-              </g>
+              <div
+                key={tick}
+                style={{
+                  position: "absolute",
+                  right: 4,
+                  top: Math.max(0, y - metaFont),
+                  fontSize: metaFont - 2,
+                  color: "#6b7280",
+                  display: "flex",
+                }}
+              >
+                {tick}
+              </div>
             );
           })}
-          {linePath ? (
-            <path
-              d={linePath}
-              fill="none"
-              stroke={currentColor}
-              strokeWidth={scale === "email" ? 2 : 3}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-          ) : null}
-          {points.length > 0 && (
-            <circle
-              cx={points[points.length - 1].x}
-              cy={points[points.length - 1].y}
-              r={scale === "email" ? 4 : 6}
-              fill={currentColor}
-              stroke="#0D0D0D"
-              strokeWidth={2}
-            />
-          )}
-        </svg>
+        </div>
 
         <div
           style={{
