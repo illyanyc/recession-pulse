@@ -311,23 +311,13 @@ export function buildDailyBriefingEmail(
   const safe = indicators.filter((i) => i.status === "safe");
   const hasTrends = indicators.length > 0 && "trend" in indicators[0];
 
-  let subjectPrefix: string;
-  if (riskAssessment) {
-    const score = riskAssessment.score;
-    subjectPrefix =
-      score >= 81
-        ? "[CRITICAL]"
-        : score >= 61
-          ? "[HIGH RISK]"
-          : score >= 41
-            ? "[ELEVATED]"
-            : score >= 21
-              ? "[MODERATE]"
-              : "[LOW RISK]";
-  } else if (danger.length >= 3) subjectPrefix = "[HIGH ALERT]";
-  else if (danger.length >= 1) subjectPrefix = "[CAUTION]";
-  else if (watch.length >= 3) subjectPrefix = "[WATCHFUL]";
-  else subjectPrefix = "[ALL CLEAR]";
+  // 30d delta segment for the subject line, e.g. "(+3)", "(-5)", "(=)".
+  // Omitted entirely when we don't have an assessment or a delta yet.
+  let deltaSegment = "";
+  if (riskAssessment && riskAssessment.delta30d != null) {
+    const d = riskAssessment.delta30d;
+    deltaSegment = d > 0 ? ` (+${d})` : d < 0 ? ` (${d})` : " (=)";
+  }
 
   // Build subject suffix for status changes
   let subjectSuffix = "";
@@ -468,7 +458,7 @@ export function buildDailyBriefingEmail(
   const scoreSegment = riskAssessment ? ` · ${riskAssessment.score}/100` : "";
 
   return {
-    subject: `${subjectPrefix} RecessionPulse ${dateShort}${scoreSegment}${subjectSuffix}`,
+    subject: `RecessionPulse${deltaSegment} ${dateShort}${scoreSegment}${subjectSuffix}`,
     html: wrapper(`
       <h2 style="margin:0 0 4px;font-size:20px;color:#D4D4D4;">Daily Recession Briefing</h2>
       <p style="margin:0 0 20px;font-size:13px;color:#808080;">${date}</p>
