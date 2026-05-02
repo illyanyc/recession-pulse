@@ -281,6 +281,8 @@ export interface RiskAssessmentPreview {
   risk_level: "low" | "moderate" | "elevated" | "high" | "critical";
   summary: string;
   delta30d?: number | null;
+  /** Absolute score delta vs the most recent prior assessment (typically yesterday). */
+  deltaYesterday?: number | null;
   assessment_date?: string;
 }
 
@@ -311,11 +313,12 @@ export function buildDailyBriefingEmail(
   const safe = indicators.filter((i) => i.status === "safe");
   const hasTrends = indicators.length > 0 && "trend" in indicators[0];
 
-  // 30d delta segment for the subject line, e.g. "(+3)", "(-5)", "(=)".
-  // Omitted entirely when we don't have an assessment or a delta yet.
+  // Day-over-day delta segment for the subject line, e.g. "(+3)", "(-5)", "(=)".
+  // Compares today's score with the most recent prior assessment (typically
+  // yesterday). Omitted entirely when no assessment / delta is available.
   let deltaSegment = "";
-  if (riskAssessment && riskAssessment.delta30d != null) {
-    const d = riskAssessment.delta30d;
+  if (riskAssessment && riskAssessment.deltaYesterday != null) {
+    const d = riskAssessment.deltaYesterday;
     deltaSegment = d > 0 ? ` (+${d})` : d < 0 ? ` (${d})` : " (=)";
   }
 
@@ -381,7 +384,7 @@ export function buildDailyBriefingEmail(
         : `${delta > 0 ? "▲ +" : delta < 0 ? "▼ " : "– "}${delta} vs 30 days ago`;
     const deltaColor = delta == null ? "#808080" : delta > 2 ? "#EB5757" : delta < -2 ? "#00CC66" : "#9ca3af";
     const trendDate = riskAssessment.assessment_date || new Date().toISOString().split("T")[0];
-    const trendImg = `${APP_URL}/api/og/risk-trend?size=email&date=${trendDate}&v=2`;
+    const trendImg = `${APP_URL}/api/og/risk-trend?size=email&date=${trendDate}&v=3`;
     const truncSummary = riskAssessment.summary.length > 280
       ? riskAssessment.summary.slice(0, 277) + "..."
       : riskAssessment.summary;

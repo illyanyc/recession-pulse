@@ -45,6 +45,9 @@
 - Supabase auth email templates: `getSupabaseEmailTemplates()` — branded dark theme with orange CTA
 - Hardcode `https://recessionpulse.com` for logos, images, and CTA links — never use `NEXT_PUBLIC_APP_URL` / `APP_URL` (they resolve to `http://localhost:3000` from `.env.local` and break images/links in real inboxes)
 - Resend bakes HTML at `scheduledAt` — post-schedule template edits don't propagate; must cancel and reschedule if the template changes (track batch IDs in Supabase/Redis)
+- Subject line format: `RecessionPulse (±N) <date> · <score>/100 · N signals changed` — `(±N)` is the **day-over-day** score delta (today vs most recent prior assessment, typically yesterday), `(=)` when unchanged, omitted when no assessment; do NOT reintroduce the old `[ELEVATED]/[HIGH RISK]` bracketed risk-band prefix. The body's score pill shows the **30d** delta and must match the embedded 30d trend PNG — both use the same "most recent assessment ≤ T−30 days" baseline (NOT `series[0]` from the 30-day window, which can drift when no row exists exactly 30 days ago)
+- Daily-email layout has been silently dropped multiple times — every email-template change MUST verify the briefing still renders, in order: blog card (title + excerpt) → score pill (with delta + min/max) → 30d score trend PNG → indicator table; check via `/api/dev/email-preview?secret=$CRON_SECRET&sendTo=...` before shipping
+- `next/og` (Satori) PNG routes (e.g. `/api/og/risk-trend`) only support a subset of JSX — no `<text>` or `<g>` SVG nodes (use absolutely positioned HTML divs for axis labels) and no ▲/▼ glyphs (default font lacks them; use `+`/`-`/`=`); a crashing route returns a 200 with 0 bytes which Vercel CDN caches for hours — bump a `?v=N` query string in the email template to force a cache miss after fixing
 
 ## SMS Formatting
 - Blank lines between every section (header, CHANGES, ALERTS, WATCHING, score bar, dashboard link)

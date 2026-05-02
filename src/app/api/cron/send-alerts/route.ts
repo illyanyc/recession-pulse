@@ -116,23 +116,38 @@ export async function GET(request: Request) {
       }
 
       if (assessmentRow) {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        // Anchor the 30d window on the assessment's own date (UTC) so this
+        // matches the chart's startDate logic in /api/og/risk-trend.
+        const anchor = new Date(`${assessmentRow.assessment_date}T00:00:00Z`);
+        anchor.setUTCDate(anchor.getUTCDate() - 30);
+        const thirtyDaysAgoIso = anchor.toISOString().split("T")[0];
         const { data: priorRow } = await supabase
           .from("recession_risk_assessments")
           .select("score, assessment_date")
-          .lte("assessment_date", thirtyDaysAgo.toISOString().split("T")[0])
+          .lte("assessment_date", thirtyDaysAgoIso)
+          .order("assessment_date", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        // Day-over-day reference: most recent assessment strictly before today's row.
+        const { data: yesterdayRow } = await supabase
+          .from("recession_risk_assessments")
+          .select("score, assessment_date")
+          .lt("assessment_date", assessmentRow.assessment_date)
           .order("assessment_date", { ascending: false })
           .limit(1)
           .maybeSingle();
 
         const delta30d = priorRow?.score != null ? assessmentRow.score - priorRow.score : null;
+        const deltaYesterday =
+          yesterdayRow?.score != null ? assessmentRow.score - yesterdayRow.score : null;
         todaysRiskAssessment = {
           score: assessmentRow.score,
           risk_level: assessmentRow.risk_level,
           summary: assessmentRow.summary,
           assessment_date: assessmentRow.assessment_date,
           delta30d,
+          deltaYesterday,
         };
       }
     } catch {

@@ -50,6 +50,10 @@ export async function GET(request: Request) {
   startDate.setUTCDate(endDate.getUTCDate() - days);
 
   let series: ScoreRow[] = [];
+  // Baseline used by the email body for "vs Nd ago" — most recent assessment
+  // strictly before the visible window. Falls back to series[0] when there is
+  // no row older than `startDate` (e.g. early in the product's history).
+  let baselineScore: number | null = null;
   try {
     const supabase = createServiceClient();
     const { data } = await supabase
@@ -59,12 +63,26 @@ export async function GET(request: Request) {
       .lte("assessment_date", endDate.toISOString().split("T")[0])
       .order("assessment_date", { ascending: true });
     series = (data as ScoreRow[]) || [];
+
+    const { data: priorRow } = await supabase
+      .from("recession_risk_assessments")
+      .select("score")
+      .lte("assessment_date", startDate.toISOString().split("T")[0])
+      .order("assessment_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (priorRow?.score != null) baselineScore = priorRow.score as number;
   } catch {
     series = [];
   }
 
   const currentScore = series.length > 0 ? series[series.length - 1].score : 0;
-  const previousScore = series.length > 1 ? series[0].score : currentScore;
+  const previousScore =
+    baselineScore != null
+      ? baselineScore
+      : series.length > 1
+        ? series[0].score
+        : currentScore;
   const delta = currentScore - previousScore;
   const minScore = series.length ? Math.min(...series.map((s) => s.score)) : 0;
   const maxScore = series.length ? Math.max(...series.map((s) => s.score)) : 0;
